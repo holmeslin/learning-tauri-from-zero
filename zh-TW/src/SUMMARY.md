@@ -42,3 +42,7 @@
     - [async command 裡的狀態](chapter4/03_async_mutex.md)
     - [在 `setup` 裡初始化](chapter4/04_setup.md)
     - [從 `AppHandle` 取得狀態](chapter4/05_apphandle_state.md)
+- [事件與 Channel](chapter5/README.md)
+    - [Rust 送事件給前端：`emit`](chapter5/01_emit.md)
+    - [前端 `listen` 與取消監聽](chapter5/02_listen.md)
+    - [前端送事件給 Rust](chapter5/03_emit_from_frontend.md)
