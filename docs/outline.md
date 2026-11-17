@@ -16,7 +16,7 @@ Tauri 2.12 · Rust 1.99（edition 2024）· Node LTS + npm · 前端 vanilla Typ
 ## 第 2 章 前端速成
 01 網頁由什麼組成（HTML 結構、CSS 外觀、JS/TS 行為）· 02 HTML 元素與屬性 · 03 CSS 選擇器與 flex 排版 · 04 TypeScript 是什麼（跟 JavaScript、跟 Rust 的型別比一比）· 05 `let`、`const` 與函式、箭頭函式 · 06 物件、陣列、`type` 與 `interface` · 07 DOM：`querySelector`、修改內容與 `console.log`（輸出到開發者工具的 Console）· 08 事件：`addEventListener` · 09 表單與輸入值 · 10 `Promise` 與 `async`/`await`（跟 Rust 的 `Future` 比一比）· 11 `import`/`export`、npm 與 Vite
 
-邊界：本章只在第 1 章建好的專案的 `index.html`、`src/main.ts`、`src/styles.css` 裡寫前端，完全不碰 `src-tauri`，也不呼叫 `invoke`。範例用瀏覽器 API 就能完成的事，不用框架。
+邊界：本章只在第 1 章建好的專案的 `index.html`、`src/main.ts`、`src/styles.css` 裡寫前端，第 11 集可以在 `src/` 底下新增 `.ts` 模組檔；完全不碰 `src-tauri`，也不呼叫 `invoke`。不用框架，不另外安裝 npm 套件，範例用瀏覽器內建的 API 完成；範本本來就有的 npm 與 Vite 到第 11 集才說明。
 
 ## 第 3 章 Command：前端呼叫 Rust
 01 `#[tauri::command]` 與 `generate_handler!` · 02 前端的 `invoke` · 03 傳參數（snake_case 與 camelCase 的對應）· 04 回傳值與 serde · 05 struct 當參數與回傳值（`Serialize`、`Deserialize`）· 06 回傳 `Result` · 07 自訂錯誤型別（thiserror 加 `Serialize`）· 08 async command · 09 在 command 裡拿到 `AppHandle` 與 `WebviewWindow` · 10 把 command 拆到模組
