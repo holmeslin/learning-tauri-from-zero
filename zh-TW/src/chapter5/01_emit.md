@@ -18,7 +18,7 @@ command 是前端問、Rust 答，呼叫一定由前端發起。可是有些訊�
 
 ### 範例：每秒送一次 `tick`
 
-延續第 4 章第 5 集：在 `setup` 裡開一條背景執行緒，每秒一次。這次不改狀態，而是把經過的秒數送給前端。payload 寫成一個 struct，規則跟第 3 章第 5 集一樣：`Serialize` 讓它變成 JSON，`rename_all` 讓欄位在前端是 `camelCase`。另外多了 `Clone`，原因見本集最後。
+延續第 4 章第 5 集：在 `setup` 裡開一條背景執行緒，每秒一次。這次不改狀態，而是把經過的秒數送給前端。payload 寫成一個 struct，規則跟第 3 章第 5 集一樣：`Serialize` 讓它變成 JSON，`rename_all` 讓欄位在前端是 `camelCase`。另外多了 `Clone`，規則見本集最後。
 
 `src-tauri/src/lib.rs`：
 
@@ -117,7 +117,7 @@ listen<Tick>("tick", (event) => {
 
 ### payload 與名稱的規則
 
-- payload 的型別要同時是 `Serialize` 與 `Clone`（`emit` 的簽名是 `emit<S: Serialize + Clone>`）。數字、字串本來就都有；自己的 struct 少了 `Clone`，編譯器會說 `the trait bound `Tick: Clone` is not satisfied`，並建議加上 `#[derive(Clone)]`。
+- payload 的型別要同時是 `Serialize` 與 `Clone`（`emit` 的簽名是 `emit<S: Serialize + Clone>`）。數字、字串本來就都有；自己的 struct 少了 `Clone`，編譯器會報 `error[E0277]`，指出 `Tick` 沒有實作 `Clone`，並建議加上 `#[derive(Clone)]`。
 - 事件名稱只能用英數字、`-`、`/`、`:`、`_`。像 `tick.second` 有句點，`emit` 會回傳 `Err(IllegalEventName("tick.second"))`；範例的 `unwrap()` 遇到它，這條執行緒就 panic 了。
 - 沒有人在聽時，`emit` 一樣回傳 `Ok(())`，不會報錯。
 - `AppHandle` 之外，`App` 與視窗也能 `emit`，用法一樣。視窗第 6 章會正式介紹。

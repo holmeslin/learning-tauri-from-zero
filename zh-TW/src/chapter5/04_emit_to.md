@@ -36,7 +36,7 @@ pub fn run() {
 }
 ```
 
-`target` 是 `Option<String>`（第 3 章第 3 集）：前端沒傳就 `emit`，傳了就 `emit_to`，兩邊的 payload 都是字串。`emit_to` 的第一個參數放字串，意思是「label 等於這個字串的視窗」。沒有任何視窗叫這個名字也不會報錯，只是沒人收到。`emit`、`emit_to` 回傳 `tauri::Result<()>`，這裡直接當成 command 的回傳值（第 3 章第 6 集）。
+`target` 是 `Option<String>`（第 3 章第 3 集）：前端沒傳就 `emit`，傳了就 `emit_to`，兩邊的 payload 都是字串。`emit_to` 的第一個參數放字串，意思是「label 等於這個字串的視窗」。沒有任何視窗叫這個名字也不會報錯，只是沒人收到。`emit`、`emit_to` 回傳 `tauri::Result<()>`，這裡直接當成 command 的回傳值（第 3 章第 6 集），`tauri::Error` 本來就能 `Serialize`。
 
 前端放兩個 `notice` 的監聽，一個照舊，一個用第三個參數指定 `target`（用法在後面說明），再加三個按鈕：
 
@@ -136,7 +136,7 @@ document.querySelector("#report-btn")?.addEventListener("click", () => {
 
 ### Rust 端也一樣
 
-第 3 集的 `app.listen` 對象是 App 本身：收得到 `emit` 與 `emit_to(EventTarget::app(), …)`，收不到 `emit_to("main", …)`。要什麼都收，改用 `listen_any`。前端的 `emitTo("main", …)` 一樣是送給 label 為 `main` 的視窗，Rust 的 `app.listen` 也收不到。`emit_to` 的目標還能用 `EventTarget::app()`、`EventTarget::any()` 指定；`emit_filter` 則讓你用函式挑目標，這裡不展開。
+第 3 集的 `app.listen` 對象是 App 本身：收得到 `emit` 與 `emit_to(EventTarget::app(), …)`，收不到 `emit_to("main", …)`。要什麼都收，改用 `listen_any`。前端的 `emitTo("main", …)` 一樣是送給 label 為 `main` 的視窗，Rust 的 `app.listen` 也收不到。`emit_to` 的目標還能用 `EventTarget::app()`、`EventTarget::any()` 指定。
 
 ### 跟 Electron 比一比
 
