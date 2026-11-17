@@ -46,3 +46,6 @@
     - [Rust 送事件給前端：`emit`](chapter5/01_emit.md)
     - [前端 `listen` 與取消監聽](chapter5/02_listen.md)
     - [前端送事件給 Rust](chapter5/03_emit_from_frontend.md)
+    - [只送給某個視窗](chapter5/04_emit_to.md)
+    - [`Channel`：串流資料](chapter5/05_channel.md)
+    - [長時間工作回報進度](chapter5/06_progress.md)

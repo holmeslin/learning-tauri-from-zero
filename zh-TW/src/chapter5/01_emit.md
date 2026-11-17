@@ -8,7 +8,7 @@
 
 ### 事件：不用問，直接說
 
-command 是前端問、Rust 答，呼叫一定由前端發起。可是有些消息該由 Rust 先開口：時間到了、背景工作做完了、檔案變了。這時用事件（event）：
+command 是前端問、Rust 答，呼叫一定由前端發起。可是有些訊息該由 Rust 先開口：時間到了、背景工作做完了、檔案變了。這時用事件（event）：
 
 - 事件有一個名字（例如 `tick`），可以帶一份資料，叫 payload。
 - 送出去就算了，不等回覆。
@@ -125,7 +125,7 @@ listen<Tick>("tick", (event) => {
 
 ## 重點整理
 
-- 事件是有名字、可帶 payload 的消息；Rust 可以隨時主動送，不等回覆。
+- 事件是有名字、可帶 payload 的訊息；Rust 可以隨時主動送，不等回覆。
 - `use tauri::Emitter` 之後，用 `handle.emit("名稱", payload)` 送出，回傳 `tauri::Result<()>`。
 - payload 要 `Serialize + Clone`；少了 `Clone` 編譯不過。
 - 事件名稱只能用英數字與 `-`、`/`、`:`、`_`，否則 `emit` 回傳 `Err`。
