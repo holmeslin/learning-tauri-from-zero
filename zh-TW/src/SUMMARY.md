@@ -49,3 +49,7 @@
     - [只送給某個視窗](chapter5/04_emit_to.md)
     - [`Channel`：串流資料](chapter5/05_channel.md)
     - [長時間工作回報進度](chapter5/06_progress.md)
+- [視窗](chapter6/README.md)
+    - [視窗設定：大小、標題與縮放](chapter6/01_window_config.md)
+    - [從前端操作視窗：`getCurrentWindow`](chapter6/02_get_current_window.md)
+    - [從 Rust 開新視窗：`WebviewWindowBuilder`](chapter6/03_webview_window_builder.md)
