@@ -15,7 +15,7 @@
 
 ### 範例：App 與視窗的資訊
 
-`app_info` 一個參數從前端來（`name`），另外兩個由 Tauri 填：
+`app_info` 的 `name` 來自前端，`app` 與 `window` 是上面兩個型別：
 
 `src-tauri/src/lib.rs`：
 
@@ -44,15 +44,36 @@ pub fn run() {
 }
 ```
 
-- `app.package_info()` 是 App 的名稱與版本，來源是 `tauri.conf.json` 的 `productName` 與 `version`。
+- `app.package_info()` 是 App 的名稱與版本，來源是 `tauri.conf.json` 的 `productName` 與 `version`，沒寫的話退回 `Cargo.toml` 的套件名稱與版本。
 - `app.config()` 是整份 `tauri.conf.json` 讀進來的設定，這裡取 `identifier`（第 1 章第 6 集）。
 - `window.label()` 是視窗的 label，第 1 章第 6 集說過，範本的視窗沒有指定，預設是 `main`。視窗還能做哪些事，第 6 章會正式介紹。
 
-前端用範本現成的 Greet 表單就好，不必改頁面。打開 `src/main.ts`，把 `invoke("greet", ...` 的 `"greet"` 改成 `"app_info"`，其他一個字都不動：
+前端用範本現成的 Greet 表單，`index.html` 不用動，`src/main.ts` 只要把 `invoke` 的 command 名字從 `"greet"` 換成 `"app_info"`：
 
-```ts,ignore
-greetMsgEl.textContent = await invoke("app_info", {
-  name: greetInputEl.value,
+`src/main.ts`：
+
+```ts
+import { invoke } from "@tauri-apps/api/core";
+
+let greetInputEl: HTMLInputElement | null;
+let greetMsgEl: HTMLElement | null;
+
+async function greet() {
+  if (greetMsgEl && greetInputEl) {
+    // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
+    greetMsgEl.textContent = await invoke("app_info", {
+      name: greetInputEl.value,
+    });
+  }
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  greetInputEl = document.querySelector("#greet-input");
+  greetMsgEl = document.querySelector("#greet-msg");
+  document.querySelector("#greet-form")?.addEventListener("submit", (e) => {
+    e.preventDefault();
+    greet();
+  });
 });
 ```
 
@@ -70,11 +91,11 @@ greetMsgEl.textContent = await invoke("app_info", {
 你好，Ada！這裡是 tauri-app 0.1.0（identifier：tw.example.tauri-app，視窗 label：main）
 ```
 
-前端只傳了 `name`，`app` 與 `window` 不在 `invoke` 的物件裡，Tauri 自己補上了。這類參數跟一般參數可以混著寫，順序隨意。
+這類參數跟一般參數可以混著寫，順序隨意。
 
 ### 這些參數從哪裡來
 
-這兩種型別是從「這次呼叫是誰發的」推出來的，不是從前端傳的 JSON 還原的，所以不經過 `Deserialize`。這也是為什麼同一個 command，從不同視窗呼叫，`WebviewWindow` 會是不同的視窗；範本只有一個視窗，要到第 6 章才會看到多個視窗。
+這兩種型別是從「這次呼叫是誰發的」推出來的，不經過 `Deserialize`。所以同一個 command，從不同視窗呼叫，`WebviewWindow` 會是不同的視窗；範本只有一個視窗，要到第 6 章才會看到多個視窗。
 
 它們也都是擁有所有權的型別，不是借用，所以 `async` command 可以放心使用（第 8 集的借用限制不會碰到）：
 
@@ -87,7 +108,7 @@ async fn app_name(app: AppHandle, window: WebviewWindow) -> String {
 
 ## 重點整理
 
-- command 的參數除了前端傳的資料，也可以寫 `AppHandle`、`WebviewWindow` 這類 Tauri 自己填的型別，前端不用傳。
+- command 的參數除了前端傳的資料，也可以直接寫 `AppHandle`、`WebviewWindow`。
 - `AppHandle` 是整個 App 的把手，可以讀設定與版本資訊，可以 `clone()`。
 - `WebviewWindow` 是呼叫這個 command 的視窗，`label()` 是它的名字標記。
 - 這類參數跟一般參數可以混用，也能用在 `async` command。

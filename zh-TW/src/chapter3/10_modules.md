@@ -91,7 +91,7 @@ pub fn say_hello() -> String {
      Running `target/debug/tauri-app`
 ```
 
-前端不用動：範本的 Greet 照常運作。前端用的 command 名字還是 `"greet"`，跟它放在哪個模組無關；寫成 `"commands::greet"` 反而會得到 `Command commands::greet not found`。
+前端不用動：範本的 Greet 照常運作。command 的名字預設是函式名字，所以前端用的還是 `"greet"`，跟它放在哪個模組無關；寫成 `"commands::greet"` 反而會得到 `Command commands::greet not found`。
 
 ### 幾條規則
 
@@ -105,11 +105,10 @@ pub fn say_hello() -> String {
 
   訊息只說名字重複定義，沒提 `pub`；看到它，先檢查 `lib.rs` 的 command 有沒有多寫 `pub`。
 - command 的名字在整個專案裡不能重複，就算放在不同模組也一樣：兩個模組各有一個 `greet`，會得到 `E0428`（`__cmd__greet` 重複定義）。原因是 `pub` 的 command 生出來的巨集都放在整個 crate 的最上層，不分模組。
-- 模組可以再分層，路徑照寫就好，如 `commands::greeting::greet`（`commands/mod.rs` 裡要 `pub mod greeting;`）。
 
 ## 重點整理
 
 - 把 command 搬到模組，`lib.rs` 就只剩 `run()` 與一個 `generate_handler!`。
 - 模組裡的 command 要 `pub`，登記時寫完整路徑（`commands::greet`）。
 - `lib.rs` 裡的 command 不能 `pub`；command 名字全專案不能重複。
-- 前端呼叫的名字只看函式名字，跟模組無關，搬家不影響前端。
+- 前端呼叫的名字預設只看函式名字，跟模組無關，搬家不影響前端。

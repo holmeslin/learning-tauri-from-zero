@@ -41,6 +41,33 @@ pub fn run() {
 }
 ```
 
+前端的 `invoke` 下一集才正式介紹，這裡先借範本現成的寫法試一下：把 `greet()` 裡 `invoke("greet", ...)` 那一段換成 `invoke("say_hello")`，其他維持範本原樣。`say_hello` 不收參數，所以不必再傳 `{ name: ... }`：
+
+`src/main.ts`：
+
+```ts
+import { invoke } from "@tauri-apps/api/core";
+
+let greetInputEl: HTMLInputElement | null;
+let greetMsgEl: HTMLElement | null;
+
+async function greet() {
+  if (greetMsgEl && greetInputEl) {
+    // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
+    greetMsgEl.textContent = await invoke("say_hello");
+  }
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  greetInputEl = document.querySelector("#greet-input");
+  greetMsgEl = document.querySelector("#greet-msg");
+  document.querySelector("#greet-form")?.addEventListener("submit", (e) => {
+    e.preventDefault();
+    greet();
+  });
+});
+```
+
 `npm run tauri dev` 的輸出（節錄）：
 
 ```text
@@ -49,27 +76,18 @@ pub fn run() {
      Running `target/debug/tauri-app`
 ```
 
+在視窗按 Greet，下方會出現「哈囉，我是 Rust」。
+
 ### 兩個東西各做什麼
 
 - `#[tauri::command]` 是一個屬性巨集（attribute macro）。函式本身原封不動留著，它另外替函式生出一段轉接程式：從前端送來的資料取出參數、呼叫函式、把回傳值送回前端。所以 command 不能少了它。
-- `generate_handler!` 收一串 command 的名字，生出一個「處理器」（handler）：前端傳來一個名字，就找到同名函式的轉接程式去執行。
-- `.invoke_handler(...)` 把這個處理器裝到 `Builder` 上。
+- `generate_handler!` 收一串 command 的名字，生出一個「處理器」（handler）：前端傳來一個名字，就找到同名函式的轉接程式去執行。處理器再由 `.invoke_handler(...)` 裝到 `Builder` 上。
 
-所以前端呼叫時用的名字，就是函式的名字，一個字都不能差，像 `say_hello` 的底線也要照寫。
+所以前端呼叫時用的名字，預設就是函式的名字，一個字都不能差，像 `say_hello` 的底線也要照寫（也能用 `#[tauri::command(rename = "...")]` 改名，本書不用）。
 
 `invoke_handler` 只能呼叫一次：再呼叫一次，後面的會整個蓋掉前面的。所有 command 都要放進同一個 `generate_handler![...]`，用逗號隔開。
 
 自己寫的 command 不必在 `capabilities` 裡另外設定 permission 就能呼叫（範本的 `capabilities/default.json` 不用動）。怎麼替自己的 command 加上限制，第 14 章會正式介紹。
-
-### 在前端試試看
-
-前端的 `invoke` 下一集才正式介紹，這裡先借範本現成的寫法試一下。打開 `src/main.ts`，把 `greet()` 裡呼叫 `invoke` 的那一段換成：
-
-```ts,ignore
-greetMsgEl.textContent = await invoke("say_hello");
-```
-
-存檔後在視窗按 Greet，下方會出現「哈囉，我是 Rust」。`say_hello` 不收參數，所以不必再傳 `{ name: ... }`。試完可以改回去。
 
 ### 少了 `#[tauri::command]` 會怎樣
 
@@ -104,18 +122,11 @@ pub fn run() {
 error: cannot find macro `__tauri_command_name_say_hello` in this scope
   --> src/lib.rs:15:25
    |
- 2 | #[tauri::command]
-   | ----------------- similarly named macro `__tauri_command_name_greet` defined here
-...
 15 |         .invoke_handler(tauri::generate_handler![greet, say_hello])
    |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-   |
-   = note: this error originates in the macro `tauri::generate_handler` (in Nightly builds, run with -Z macro-backtrace for more info)
 help: a macro with a similar name exists
-   |
 15 -         .invoke_handler(tauri::generate_handler![greet, say_hello])
 15 +         .invoke_handler(__tauri_command_name_greet)
-   |
 
 error: cannot find macro `__cmd__say_hello` in this scope
   --> src/lib.rs:15:57
@@ -132,7 +143,7 @@ error: could not compile `tauri-app` (lib) due to 2 previous errors
 
 ## 重點整理
 
-- command 是加了 `#[tauri::command]` 的 Rust 函式；前端用函式的名字呼叫它。
+- command 是加了 `#[tauri::command]` 的 Rust 函式；前端預設用函式的名字呼叫它。
 - `#[tauri::command]` 生出轉接程式，負責取參數、呼叫函式、送回回傳值；`generate_handler!` 依名字把前端的呼叫分派給對應的轉接程式。
 - `invoke_handler` 只能呼叫一次，所有 command 放進同一個 `generate_handler![...]`。
 - 缺 `#[tauri::command]` 會編譯失敗；缺登記則編得過，但執行時前端會得到 `Command … not found`。

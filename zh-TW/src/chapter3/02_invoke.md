@@ -8,7 +8,7 @@
 
 ### `invoke` 回傳 Promise
 
-前端這一側的入口只有一個函式 `invoke`，從 `@tauri-apps/api/core` 匯入（`import` 在第 2 章第 11 集解釋過）。它的第一個參數是 command 的名字，字串，要跟 Rust 函式的名字一模一樣。第二個參數是要傳給 command 的資料，下一集再說。
+前端這一側的入口只有一個函式 `invoke`，從 `@tauri-apps/api/core` 匯入（`import` 在第 2 章第 11 集解釋過）。它的第一個參數是 command 的名字，字串，要跟 command 的名字一模一樣。第二個參數是要傳給 command 的資料，下一集再說。
 
 前端和 Rust 是不同的行程（第 1 章），請 Rust 做事不會立刻有結果，所以 `invoke` 回傳的是 `Promise`，用 `await` 等它（第 2 章第 10 集）。
 
@@ -101,7 +101,7 @@ Found 1 error in src/main.ts:9
 
 ### `invoke<string>`：告訴 TypeScript 會收到什麼
 
-`invoke` 只拿到一個名字字串，TypeScript 沒辦法知道那個 command 會回傳什麼，所以預設把結果當成 `unknown`（第 2 章第 4 集）。`unknown` 不能直接放進 `textContent`，於是 `tsc` 報錯。（範本的 `greetMsgEl.textContent = await invoke(...)` 沒寫 `<string>` 也能過，是因為結果直接賦值給 `textContent`，TypeScript 從 `textContent` 要的型別反推出 `T`；先存進變數，就沒有這條線索了。）
+`invoke` 只拿到一個名字字串，TypeScript 沒辦法知道那個 command 會回傳什麼，所以預設把結果當成 `unknown`（第 2 章第 10 集看過，`catch` 拿到的 `error` 也是它）。`unknown` 不能直接放進 `textContent`，於是 `tsc` 報錯。
 
 解法是在名字後面用角括號，說出你預期的型別：
 

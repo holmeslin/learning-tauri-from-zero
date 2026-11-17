@@ -16,8 +16,7 @@ command 可以寫成一般的 `fn`，也可以寫成 `async fn`，前端的呼�
 所以要花時間的工作（等網路、等檔案）該寫成 `async fn`。下面實際量一次。`async fn` 裡的等待要用 `tokio::time::sleep`，得先把 tokio 加成自己的相依套件，並打開 `time` 功能（Tauri 自己用的 tokio 沒有打開它）：
 
 ```bash
-cd src-tauri
-cargo add tokio@1 --features time
+cargo add --manifest-path src-tauri/Cargo.toml tokio@1 --features time
 ```
 
 ### 範例：量兩次呼叫的時間
@@ -84,19 +83,20 @@ pub fn run() {
 ```ts
 import { invoke } from "@tauri-apps/api/core";
 
+type SlowCommand = "slow_sync" | "slow_async";
+
 const syncBtnEl: HTMLButtonElement | null = document.querySelector("#sync-btn");
 const asyncBtnEl: HTMLButtonElement | null = document.querySelector("#async-btn");
 const timeMsgEl: HTMLElement | null = document.querySelector("#time-msg");
 
-async function timeTwoCalls(command: string): Promise<void> {
-  const start = performance.now();
+async function timeTwoCalls(command: SlowCommand): Promise<void> {
+  const start = Date.now();
   const first = invoke<string>(command, { name: "Ada" });
   const second = invoke<string>(command, { name: "Bob" });
   await first;
   await second;
-  const seconds = ((performance.now() - start) / 1000).toFixed(1);
   if (timeMsgEl) {
-    timeMsgEl.textContent = `兩次呼叫共花了 ${seconds} 秒`;
+    timeMsgEl.textContent = `兩次呼叫共花了 ${Date.now() - start} 毫秒`;
   }
 }
 
@@ -104,7 +104,7 @@ syncBtnEl?.addEventListener("click", () => timeTwoCalls("slow_sync"));
 asyncBtnEl?.addEventListener("click", () => timeTwoCalls("slow_async"));
 ```
 
-`performance.now()` 是瀏覽器內建的計時函式，回傳毫秒；`toFixed(1)` 把數字四捨五入到小數點後一位。兩次 `invoke` 都不先 `await`：Promise 一建立就開始跑（第 2 章第 10 集），所以兩次呼叫幾乎同時送出。
+`SlowCommand` 是只能放這兩個字串的聯集型別（第 2 章第 6 集），`invoke` 就不會被傳進寫錯的名字。`Date.now()` 是瀏覽器內建的函式，回傳現在的時間（毫秒），前後相減就是花掉的時間，照抄就好。兩次 `invoke` 都不先 `await`：Promise 一建立就開始跑（第 2 章第 10 集），所以兩次呼叫幾乎同時送出。
 
 `npm run tauri dev` 的輸出（節錄）：
 
@@ -114,7 +114,7 @@ asyncBtnEl?.addEventListener("click", () => timeTwoCalls("slow_async"));
      Running `target/debug/tauri-app`
 ```
 
-按「同步 ×2」，顯示「兩次呼叫共花了 2.0 秒」：兩個 command 在主執行緒上排隊，一個接一個睡。按「非同步 ×2」，顯示 1.0 秒：兩個一起在等。
+按「同步 ×2」，顯示約 2000 毫秒：兩個 command 在主執行緒上排隊，一個接一個睡。按「非同步 ×2」，顯示約 1000 毫秒：兩個一起在等。
 
 ### async command 的參數不能借用
 
@@ -128,23 +128,15 @@ error[E0277]: async commands that contain references as inputs must return a `Re
    |                                    ^^^^^^ the trait `AsyncCommandMustReturnResult` is not implemented for `std::string::String`
 ```
 
-規則寫在訊息裡：`async` command 的參數若含有參考（`&str` 這種借用），就必須回傳 `Result`。最直接的解法是把參數改成 `String`，它擁有自己的資料，不是借用；或是維持借用，把回傳型別改成 `Result<String, String>`（第 6 集）。
+規則寫在訊息裡：`async` command 的參數若含有參考（`&str` 這種借用），就必須回傳 `Result`。最直接的解法是把參數改成 `String`，它擁有自己的資料，不是借用；或是維持借用，把回傳型別改成 `Result<String, String>`（第 6 集）。第 4 章的 `State<'_, T>` 也是借用的參數，在 async command 裡用到它，同樣要回傳 `Result`，到時再說。
 
 ### 不想改成 async 的話
 
-同步函式想離開主執行緒，可以在屬性上加 `async`，`fn` 本身不用改。它就會跑在工作執行緒上，兩次呼叫一樣只花 1 秒左右：
-
-```rust,ignore
-#[tauri::command(async)]
-fn slow_sync(name: &str) -> String {
-    std::thread::sleep(Duration::from_secs(1));
-    format!("你好，{name}！")
-}
-```
+同步函式也可以只在屬性上加 `async`，寫成 `#[tauri::command(async)]`，`fn` 本身不用改，它就改到非同步執行環境的工作執行緒上跑。不過工作執行緒是共用的，函式裡的 `std::thread::sleep` 這類會卡住執行緒的呼叫，照樣佔住一條工作執行緒不放。耗時的等待還是寫成 `async fn` 加 `.await`。
 
 ## 重點整理
 
 - 沒有 `async` 的 command 在主執行緒執行，會排隊；`async fn` 在 Tauri 的非同步執行環境（tokio）執行，可以同時進行。
-- 耗時的工作寫成 `async fn`，等待用 `.await`；tokio 的 `time` 功能要自己用 `cargo add tokio@1 --features time` 加。
+- 耗時的工作寫成 `async fn`，等待用 `.await`；tokio 的 `time` 功能要自己加（`cargo add --manifest-path src-tauri/Cargo.toml tokio@1 --features time`）。
 - `async fn` 的參數含借用型別時，必須回傳 `Result`；最簡單是把參數改成 `String`。
-- `#[tauri::command(async)]` 可以讓同步函式改到工作執行緒上跑。
+- `#[tauri::command(async)]` 能讓同步函式改到工作執行緒上跑，但函式裡卡住執行緒的呼叫仍會佔住一條工作執行緒。

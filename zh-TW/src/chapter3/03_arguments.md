@@ -118,25 +118,15 @@ invoke<string>("full_greeting", { familyName: "王", givenName: 42 });
 invalid args `givenName` for command `full_greeting`: invalid type: integer `42`, expected a borrowed string
 ```
 
-前端傳來的資料，Tauri 會用 serde 反序列化（deserialize）成 Rust 參數的型別，型別對不上就失敗；serde 在第 4 集介紹。要注意 `input.value` 一律是字串：要傳數字給 `u32` 這種參數，得先用 `Number(字串)` 轉成數字。
+前端傳來的資料，Tauri 會用 serde 反序列化（deserialize）成 Rust 參數的型別，型別對不上就失敗；serde 在第 4 集介紹。要注意 `input.value` 一律是字串，直接傳給數字型別的參數就是上面這種錯；這種情況讓 Rust 收 `&str`、自己 `parse`，第 6 集就是這樣做的。
 
 ### 不想轉換：`rename_all`
 
-想讓前端的鍵跟 Rust 的參數名稱一模一樣，可以在屬性上指定：
-
-```rust,ignore
-#[tauri::command(rename_all = "snake_case")]
-fn full_greeting(family_name: &str, given_name: &str) -> String {
-    format!("你好，{family_name}{given_name}！")
-}
-```
-
-這樣前端就要寫 `{ family_name: ..., given_name: ... }`，寫 `familyName` 反而失敗。這只影響加了這個屬性的那個 command。除非有理由，建議維持預設，整個專案的前端才一致。
+想讓某個 command 的鍵跟 Rust 的參數名稱一模一樣，可以寫 `#[tauri::command(rename_all = "snake_case")]`，這樣前端反而要寫 `snake_case`。除非有理由，建議維持預設，整個專案的前端才一致。
 
 ## 重點整理
 
 - `invoke("名字", { 鍵: 值 })`，物件的鍵對上 Rust 的參數，順序不重要。
-- Rust 的 `snake_case` 參數預設對應前端的 `camelCase` 鍵；command 的名字不轉換。
+- Rust 的 `snake_case` 參數預設對應前端的 `camelCase` 鍵（可用 `rename_all` 改，但建議維持預設）；command 的名字不轉換。
 - 鍵寫錯，錯誤是 `missing required key …`；型別不對，是 `invalid type …`。兩種都是 Promise 被拒絕。
-- `#[tauri::command(rename_all = "snake_case")]` 讓某個 command 的鍵維持 `snake_case`。
 - `Option<T>` 參數可以不傳。
