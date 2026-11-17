@@ -59,6 +59,8 @@ pub fn run() {
 
 `invoke_handler` 只能呼叫一次：再呼叫一次，後面的會整個蓋掉前面的。所有 command 都要放進同一個 `generate_handler![...]`，用逗號隔開。
 
+自己寫的 command 不必在 `capabilities` 裡另外設定 permission 就能呼叫（範本的 `capabilities/default.json` 不用動）。怎麼替自己的 command 加上限制，第 14 章會正式介紹。
+
 ### 在前端試試看
 
 前端的 `invoke` 下一集才正式介紹，這裡先借範本現成的寫法試一下。打開 `src/main.ts`，把 `greet()` 裡呼叫 `invoke` 的那一段換成：

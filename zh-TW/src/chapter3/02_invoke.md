@@ -101,7 +101,7 @@ Found 1 error in src/main.ts:9
 
 ### `invoke<string>`：告訴 TypeScript 會收到什麼
 
-`invoke` 只拿到一個名字字串，TypeScript 沒辦法知道那個 command 會回傳什麼，所以預設把結果當成 `unknown`（第 2 章第 4 集）。`unknown` 不能直接放進 `textContent`，於是 `tsc` 報錯。
+`invoke` 只拿到一個名字字串，TypeScript 沒辦法知道那個 command 會回傳什麼，所以預設把結果當成 `unknown`（第 2 章第 4 集）。`unknown` 不能直接放進 `textContent`，於是 `tsc` 報錯。（範本的 `greetMsgEl.textContent = await invoke(...)` 沒寫 `<string>` 也能過，是因為結果直接賦值給 `textContent`，TypeScript 從 `textContent` 要的型別反推出 `T`；先存進變數，就沒有這條線索了。）
 
 解法是在名字後面用角括號，說出你預期的型別：
 
@@ -135,10 +135,9 @@ helloBtnEl?.addEventListener("click", callHello);
 
 `<string>` 是你對 TypeScript 的承諾，不是檢查。`tsc` 看不到 Rust 的程式，也不會驗證 Rust 真的回傳字串，它只拿你寫的 `string` 去檢查後面的程式。如果 Rust 那邊把回傳型別改了而前端沒跟著改，`tsc` 照樣通過，不一致要到執行時才會出現。所以 `<...>` 裡的型別要自己對著 Rust 函式的回傳型別寫；每種 Rust 型別對應到什麼，第 4 集會整理。
 
-### 命名與失敗
+### 呼叫失敗
 
-- command 的名字不會轉換：Rust 函式叫 `say_hello`，前端就寫 `"say_hello"`，不會變成 `sayHello`。要轉換大小寫的是參數的名字，第 3 集會說明。
-- 呼叫失敗（找不到 command，或 command 回傳錯誤）時，Promise 會被拒絕（reject）。怎麼接，第 6 集再說。
+找不到 command，或 command 回傳錯誤時，Promise 會被拒絕（reject）。怎麼接，第 6 集再說。
 
 ## 重點整理
 
@@ -146,4 +145,4 @@ helloBtnEl?.addEventListener("click", callHello);
 - `invoke` 回傳 `Promise`，用 `await` 等結果。
 - `invoke<T>("名字")` 的 `T` 是你預期的回傳型別；不寫，結果是 `unknown`，多半無法直接使用。
 - `T` 只給 `tsc` 看，執行時不會驗證，要自己跟 Rust 的回傳型別對上。
-- command 名字照 Rust 函式的名字，不轉換大小寫。
+- 呼叫失敗時 Promise 會被拒絕，第 6 集再接。

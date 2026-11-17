@@ -1,4 +1,4 @@
-# 自訂錯誤型別（`thiserror` 加 `Serialize`）
+# 自訂錯誤型別：`thiserror` 與 `Serialize`
 
 ## 本集目標
 
@@ -10,7 +10,7 @@
 
 command 的錯誤來源通常不只一種：文字轉數字失敗、讀檔失敗、資料不合理。每一種都 `map_err(|e| e.to_string())`，很快就煩了，也看不出錯在哪一類。Rust 的慣例是定義一個 enum，每個變體代表一類錯誤，再用 `?` 自動轉換。
 
-這裡用 `thiserror`，一個替錯誤型別省掉樣板程式的 crate。它的 `#[derive(thiserror::Error)]` 會幫你實作 `std::error::Error` 與 `Display`，`#[error("...")]` 指定錯誤訊息，`#[from]` 順便實作 `From`，`?` 就能自動轉換。範本沒有它，要先在專案裡加上：
+這裡用 `thiserror`，一個替錯誤型別省掉重複程式碼的 crate。它的 `#[derive(thiserror::Error)]` 會幫你實作 `std::error::Error` 與 `Display`，`#[error("...")]` 指定錯誤訊息，`#[from]` 順便實作 `From`，`?` 就能自動轉換。範本沒有它，要先在專案裡加上：
 
 ```bash
 cd src-tauri

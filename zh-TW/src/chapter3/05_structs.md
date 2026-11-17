@@ -109,7 +109,7 @@ birthdayBtnEl?.addEventListener("click", async () => {
 
 ### 兩層名稱，兩套規則
 
-`invoke` 的第二個參數是 `{ profile: profile }`，這裡有兩層名稱，由不同的人負責轉換：
+`invoke` 的第二個參數是 `{ profile: profile }`，這裡有兩層名稱，各由不同的程式碼負責轉換：
 
 | | 例子 | 誰轉換 | 規則 |
 | --- | --- | --- | --- |

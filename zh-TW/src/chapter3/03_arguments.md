@@ -1,4 +1,4 @@
-# 傳參數（`snake_case` 與 `camelCase` 的對應）
+# 傳參數：`snake_case` 與 `camelCase`
 
 ## 本集目標
 

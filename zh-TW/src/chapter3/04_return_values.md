@@ -119,12 +119,12 @@ null
 
 | Rust 型別 | JSON | `invoke<T>` 的 `T` |
 | --- | --- | --- |
-| `String`、`&str` | 字串 | `string` |
+| `String` | 字串 | `string` |
 | 整數、浮點數 | 數字 | `number` |
 | `bool` | 布林 | `boolean` |
 | `Vec<T>`、陣列 | 陣列 | `T[]` |
 | `Option<T>` | `None` 是 `null`，`Some(x)` 是 `x` | `T \| null` |
-| `(A, B)` | 兩個元素的陣列 | `[A, B]`（恰好兩個元素的陣列） |
+| `(A, B)`（tuple） | 兩個元素的陣列 | `[A, B]`（恰好兩個元素的陣列） |
 | `BTreeMap<String, V>`、`HashMap<String, V>` | 物件 | `Record<string, V>`（鍵是字串的物件） |
 | `()` | `null` | `null` |
 
@@ -139,7 +139,7 @@ Electron 在行程之間傳資料，用的是 HTML 標準的結構化複製演�
 ## 重點整理
 
 - 回傳值經過 serde 變成 JSON，所以 command 的回傳型別必須實作 `Serialize`；標準函式庫的常見型別都已經實作。
-- `Vec<T>` 對應陣列、`Option<T>` 對應 `T | null`、元組對應固定長度的陣列、map 對應物件、`()` 對應 `null`。
+- `Vec<T>` 對應陣列、`Option<T>` 對應 `T | null`、tuple 對應固定長度的陣列、map 對應物件、`()` 對應 `null`。
 - `invoke<T>` 的 `T` 要自己對照 Rust 的回傳型別寫，沒有人會幫你檢查。
 - 超過 2 的 53 次方的整數在前端會失真，改用字串傳。
 - Tauri 傳的是 JSON，不像 Electron 的結構化複製能直接傳 `Date`、`Map`。
