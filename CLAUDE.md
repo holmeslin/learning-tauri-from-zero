@@ -1,3 +1,7 @@
+## Writing the book
+
+Before writing or editing anything under `zh-TW/src/`, read `docs/style-guide.md` (rules and the code-verification conventions), `docs/outline.md` (chapter plan and per-chapter boundaries) and `GLOSSARY.md` (terms). Verify examples with `cargo run --manifest-path tools/checkcode/Cargo.toml -- zh-TW/src`.
+
 ## Agent skills
 
 ### Issue tracker

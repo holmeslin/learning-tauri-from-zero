@@ -1,0 +1,6 @@
+zh-TW/book/
+public/
+target/
+tools/checkcode/work/
+node_modules/
+.DS_Store

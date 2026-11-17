@@ -1,0 +1,24 @@
+[book]
+title = "從零開始學 Tauri"
+authors = ["Holmes Lin"]
+language = "zh-TW"
+
+[build]
+create-missing = false
+
+[rust]
+edition = "2024"
+
+[output.html]
+default-theme = "light"
+preferred-dark-theme = "ayu"
+git-repository-url = "https://github.com/holmeslin/learning-tauri-from-zero"
+edit-url-template = "https://github.com/holmeslin/learning-tauri-from-zero/edit/main/zh-TW/{path}"
+site-url = "/learning-tauri-from-zero/zh-TW/"
+
+# Tauri 範例無法在 Rust Playground 執行。
+[output.html.playground]
+runnable = false
+
+[output.html.print]
+page-break = false
