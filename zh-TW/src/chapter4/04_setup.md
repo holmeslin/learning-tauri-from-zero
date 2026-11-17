@@ -116,15 +116,16 @@ infoBtnEl?.addEventListener("click", async () => {
 
 ```text
 error[E0599]: no method named `manage` found for mutable reference `&mut tauri::App` in the current scope
-  --> src/lib.rs:24:17
-   |
-24 |             app.manage(Session {
-   |             ----^^^^^^
-   |
-   = help: items from traits can only be used if the trait is in scope
+    --> src/lib.rs:24:17
+     |
+  24 |             app.manage(Session {
+     |             ----^^^^^^
+     |
+     = help: items from traits can only be used if the trait is in scope
+...
 help: trait `Manager` which provides `manage` is implemented but not in scope; perhaps you want to import it
-   |
- 1 + use tauri::Manager;
+     |
+   1 + use tauri::Manager;
 ```
 
 ### `setup` 什麼時候跑、失敗了會怎樣

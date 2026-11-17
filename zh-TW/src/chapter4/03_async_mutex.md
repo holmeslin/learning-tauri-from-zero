@@ -8,7 +8,7 @@
 
 ### 直接改成 async 會失敗
 
-要等的工作該寫成 async command（第 3 章第 8 集）。把上一集的 `increment` 改一下：加一之前先等半秒，假裝在做耗時的事。等待用 `tokio::time::sleep`，要沿用第 3 章第 8 集加進專案的 tokio（`time` 功能），還沒加的話先執行 `cargo add --manifest-path src-tauri/Cargo.toml tokio@1 --features time`。照直覺，只多寫 `async` 與 `.await`：
+要等的工作該寫成 async command（第 3 章第 8 集）。把上一集的 `increment` 改一下：加一之前先等半秒，假裝在做耗時的事。等待用 `tokio::time::sleep`，要沿用第 3 章第 8 集加進專案的 tokio（`time` 功能），還沒加的話先執行 `cargo add --manifest-path src-tauri/Cargo.toml tokio@1 --features time`。照直覺，只多寫 `async` 與 `.await`（`async fn` 的參數不能省略生命週期，所以 `State` 要寫成 `State<'_, …>`，不寫會得到 `E0726`，編譯器的建議就是補上 `'_`）：
 
 ```rust,ignore
 #[tauri::command]
@@ -28,18 +28,18 @@ error[E0277]: async commands that contain references as inputs must return a `Re
    |
 10 | async fn slow_increment(state: State<'_, Mutex<Counter>>) -> u32 {
    |                                                              ^^^ the trait `_::AsyncCommandMustReturnResult` is not implemented for `u32`
+...
 
 error: future cannot be sent between threads safely
   --> src/lib.rs:9:1
    |
  9 | #[tauri::command]
    | ^^^^^^^^^^^^^^^^^ future returned by `slow_increment` is not `Send`
+...
    = help: within `impl std::future::Future<Output = u32>`, the trait `std::marker::Send` is not implemented for `std::sync::MutexGuard<'_, Counter>`
 ```
 
-第一個是第 3 章第 8 集預告過的：`State<'_, T>` 是借用的參數（`'_` 就是借用的生命週期），async command 的參數只要有借用，就必須回傳 `Result`。回傳型別改成 `Result<u32, String>` 就好。
-
-第二個比較難懂。async command 在 Tauri 的工作執行緒上跑，睡醒之後可能被換到另一條執行緒繼續，所以整個 future 必須是 `Send`。可是 std 的 `MutexGuard` 不是 `Send`，而它在 `.await` 前後一直活著（`counter` 到函式結束才放掉），future 就不是 `Send` 了。
+第一個是第 3 章第 8 集預告過的：`State<'_, T>` 是借用的參數（`'_` 就是借用的生命週期），async command 的參數只要有借用，就必須回傳 `Result`。回傳型別改成 `Result<u32, String>` 就好。第二個比較難懂。async command 在 Tauri 的工作執行緒上跑，睡醒之後可能被換到另一條執行緒繼續，所以整個 future 必須是 `Send`。可是 std 的 `MutexGuard` 不是 `Send`，而它在 `.await` 前後一直活著（`counter` 到函式結束才放掉），future 就不是 `Send` 了。
 
 ### 換成 async 的 `Mutex`
 
