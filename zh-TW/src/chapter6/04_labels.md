@@ -2,13 +2,15 @@
 
 ## 本集目標
 
-知道 label 是視窗的唯一名字：同名的視窗不能再建，可以用 label 找回已經開著的視窗，新視窗的 label 也要列進 capability。
+知道 label 是視窗的唯一名字：同名的視窗不能再建，要先用 label 找找看有沒有開著的視窗。
 
 ## 正文
 
 ### label 不能重複
 
-建視窗時，label 是你取的字串，只能用字母、數字與 `-`、`/`、`:`、`_`，違反的話 `build()` 回傳 `Err`。一個 App 裡每個 label 也只能有一個視窗：上一集的 `open_about` 再按一次，`build()` 回傳 `Err`，前端的 Promise 被拒絕，錯誤訊息是 ``a webview with label `about` already exists``。所以建視窗之前，先看看是不是已經開過了。
+建視窗時，label 是你取的字串。字母、數字（非 ASCII 的字母也算，例如中文）與 `-`、`/`、`:`、`_` 都可以用，句點、空白這類字元不行，`build()` 會回傳 `Err`。
+
+一個 App 裡，每個 label 也只能有一個視窗。上一集的 `open_about` 再按一次，`build()` 同樣回傳 `Err`，前端的 Promise 被拒絕，就是上一集段落裡的那則錯誤。所以建視窗之前，先看看是不是已經開過了。
 
 ### 用 label 找視窗
 
@@ -41,9 +43,35 @@ pub fn run() {
 }
 ```
 
-`get_webview_window` 定義在 `Manager` 上，要先 `use`，跟第 4 章第 4 集一樣。`app.webview_windows()` 則回傳所有視窗，是 label 對上視窗的 `HashMap`。
+`get_webview_window` 定義在 `Manager` 上，要先 `use`，跟第 4 章第 4 集一樣。
 
-前端借用範本的 Greet 表單，`index.html` 不用動：輸入框填 label，按 Greet 就呼叫 `open_window`。每個視窗載入時，也把自己的 label 與標題寫在 `#greet-msg`：
+前端用一個輸入框填 label，按下按鈕就呼叫 `open_window`。每個視窗載入時，也把自己的 label 寫在畫面上：
+
+`index.html`：
+
+```html
+<!doctype html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>多個視窗</title>
+    <link rel="stylesheet" href="/src/styles.css" />
+    <script type="module" src="/src/main.ts" defer></script>
+  </head>
+
+  <body>
+    <main class="container">
+      <h1 id="label-msg"></h1>
+      <form class="row" id="open-form">
+        <input id="label-input" placeholder="新視窗的 label" />
+        <button type="submit">開視窗</button>
+      </form>
+      <p id="open-msg"></p>
+    </main>
+  </body>
+</html>
+```
 
 `src/main.ts`：
 
@@ -51,33 +79,25 @@ pub fn run() {
 import { invoke } from "@tauri-apps/api/core";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 
-const appWindow = getCurrentWindow();
-const formEl: HTMLFormElement | null = document.querySelector("#greet-form");
-const inputEl: HTMLInputElement | null = document.querySelector("#greet-input");
-const msgEl: HTMLElement | null = document.querySelector("#greet-msg");
+const labelMsgEl: HTMLElement | null = document.querySelector("#label-msg");
+const openMsgEl: HTMLElement | null = document.querySelector("#open-msg");
+const formEl: HTMLFormElement | null = document.querySelector("#open-form");
+const inputEl: HTMLInputElement | null = document.querySelector("#label-input");
 
-async function showTitle(): Promise<void> {
-  if (!msgEl) {
-    return;
-  }
-  try {
-    msgEl.textContent = `視窗 ${appWindow.label} 的標題：${await appWindow.title()}`;
-  } catch (error) {
-    msgEl.textContent = `視窗 ${appWindow.label} 出錯了：${error}`;
-  }
+if (labelMsgEl) {
+  labelMsgEl.textContent = `這是視窗：${getCurrentWindow().label}`;
 }
-
-showTitle();
 
 formEl?.addEventListener("submit", async (event) => {
   event.preventDefault();
-  if (!inputEl || !msgEl) {
+  if (!inputEl || !openMsgEl) {
     return;
   }
   try {
     await invoke("open_window", { label: inputEl.value });
+    openMsgEl.textContent = "";
   } catch (error) {
-    msgEl.textContent = `出錯了：${error}`;
+    openMsgEl.textContent = `出錯了：${error}`;
   }
 });
 ```
@@ -90,54 +110,22 @@ formEl?.addEventListener("submit", async (event) => {
      Running `target/debug/tauri-app`
 ```
 
-主視窗顯示「視窗 main 的標題：tauri-app」。輸入 `note-1` 按 Greet，開出一個標題是 `note-1` 的視窗，可是它的段落是：
+主視窗顯示「這是視窗：main」。輸入 `note-1` 按下按鈕，開出一個標題是 `note-1` 的視窗，畫面寫著「這是視窗：note-1」。在主視窗再輸入一次 `note-1`，沒有錯誤，只是 `note-1` 跳到最前面。輸入 `note.1`（有句點），段落出現錯誤：
 
 ```text
-視窗 note-1 出錯了：window.title not allowed on window "note-1", webview "note-1", URL: local allowed on: [windows: "main", URL: local] referenced by: capability: default, permission: allow-title
+出錯了：runtime error: Window labels must only include alphanumeric characters, `-`, `/`, `:` and `_`.
 ```
 
-在主視窗再輸入一次 `note-1`，沒有錯誤，只是 `note-1` 跳到最前面。
+第 3 章第 9 集說過，command 參數裡的 `WebviewWindow` 是呼叫它的視窗：同一個 command 從 `note-1` 呼叫，拿到的就是 `note-1`，不再是 `main`。
 
-### capability 只認得 `main`
-
-範本的 `capabilities/default.json` 寫著 `"windows": ["main"]`：這份 permission 只給 label 是 `main` 的視窗。訊息裡的 `allowed on: [windows: "main"…]` 就是在說這件事。`note-1` 不在清單裡，連 `core:default` 的 `title()` 都不能用。自己寫的 command 不受影響：`note-1` 裡一樣能呼叫 `open_window`。第 3 章第 9 集說過，command 參數裡的 `WebviewWindow` 是呼叫它的視窗：同一個 command，從 `note-1` 呼叫，拿到的就是 `note-1` 這個視窗，不再是 `main`。
-
-`windows` 可以寫 label，也可以用 `*` 當萬用字元。`note-*` 涵蓋所有 `note-` 開頭的視窗：
-
-`src-tauri/capabilities/default.json`：
-
-```json
-{
-  "$schema": "../gen/schemas/desktop-schema.json",
-  "identifier": "default",
-  "description": "Capability for the main window",
-  "windows": ["main", "note-*"],
-  "permissions": [
-    "core:default",
-    "opener:default"
-  ]
-}
-```
-
-`npm run tauri dev` 的輸出（改了 `capabilities/default.json` 之後）：
-
-```text
-        Info File src-tauri/capabilities/default.json changed. Rebuilding application...
-     Running DevCommand (`cargo  run --no-default-features --color always --`)
-   Compiling tauri-app v0.1.0 (~/tauri-app/src-tauri)
-    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.88s
-     Running `target/debug/tauri-app`
-```
-
-重新開 `note-1`，段落變成「視窗 note-1 的標題：note-1」。之後開 `note-2`、`note-3` 也都有同樣的 permission。
+範本的 capability 只把 permission 給 label 是 `main` 的視窗，所以 `note-1` 呼叫 `title()` 這類需要 permission 的方法會被擋。這一集的新視窗只讀 `label`，加上 `invoke` 自己寫的 command（我們還沒替它們定義過 permission，Tauri 不會檢查），所以沒事。capability 怎麼涵蓋更多視窗，第 14 章會正式介紹。
 
 ### 跟 Electron 比一比
 
-Electron 的 `BrowserWindow` 由系統編一個數字 `id`，你拿著視窗物件，或用 `BrowserWindow.getAllWindows()` 去找。Tauri 的視窗由你命名，名字就是身分：不能重複，找視窗、送事件（第 5 章第 4 集的 `emit_to`）、設定 permission，全都靠 label。
+在 Electron 裡，同一段 `new BrowserWindow()` 執行幾次，就開幾個視窗，系統給每個視窗一個數字 `id`，不會報錯。照這個直覺寫 Tauri，像上一集的 `open_about` 連按兩次，第二次就失敗了：Tauri 的視窗由你命名，label 就是身分，不能重複。所以要開視窗之前，先用 `get_webview_window` 找找看。
 
 ## 重點整理
 
-- label 是視窗的唯一名字，只能用字母、數字與 `-`、`/`、`:`、`_`；同名的視窗再建會得到 `Err`。
+- label 只能用字母、數字（非 ASCII 的字母也算）與 `-`、`/`、`:`、`_`，其他字元會讓 `build()` 回傳 `Err`。
+- label 是視窗的唯一名字：跟已開的視窗同名，`build()` 一樣回傳 `Err`。
 - `app.get_webview_window(label)` 回傳 `Option<WebviewWindow>`，要先 `use tauri::Manager`；找到就 `set_focus()`，不要重複建。
-- capability 的 `windows` 依 label 比對，可以用 `*` 萬用字元；新視窗的 label 不在清單裡，就連 `core:default` 都用不了。
-- 自己寫的 command 不看 capability，從任何視窗都能呼叫。

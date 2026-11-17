@@ -120,7 +120,7 @@ listen<Tick>("tick", (event) => {
 - payload 的型別要同時是 `Serialize` 與 `Clone`（`emit` 的簽名是 `emit<S: Serialize + Clone>`）。數字、字串本來就都有；自己的 struct 少了 `Clone`，編譯器會報 `error[E0277]`，指出 `Tick` 沒有實作 `Clone`，並建議加上 `#[derive(Clone)]`。
 - 事件名稱只能用字母、數字（非 ASCII 的字母也算，例如中文）與 `-`、`/`、`:`、`_`。像 `tick.second` 有句點，`emit` 會回傳 `Err(IllegalEventName("tick.second"))`；範例的 `unwrap()` 遇到它，這條執行緒就 panic 了。
 - 沒有人在聽時，`emit` 一樣回傳 `Ok(())`，不會報錯。
-- `AppHandle` 之外，`App` 與視窗也能 `emit`，用法一樣。視窗第 6 章會正式介紹。
+- `AppHandle` 之外，`App` 與視窗（`WebviewWindow`）也能 `emit`，用法一樣，送出的範圍也一樣是所有接收者。
 - 前端的 `listen` 需要 `core:event` 這組 permission。範本 `capabilities/default.json` 裡的 `core:default` 已經包含，不用動；permission 第 7 章會正式介紹。
 
 ## 重點整理

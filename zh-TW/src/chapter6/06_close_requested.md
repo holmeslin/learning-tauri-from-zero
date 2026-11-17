@@ -51,6 +51,9 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 
 const appWindow = getCurrentWindow();
 const confirmBarEl: HTMLElement | null = document.querySelector("#confirm-bar");
+if (!confirmBarEl) {
+  throw new Error("找不到 #confirm-bar");
+}
 let dirty = false;
 
 document.querySelector("#note-input")?.addEventListener("input", () => {
@@ -62,7 +65,7 @@ document.querySelector("#save-btn")?.addEventListener("click", () => {
 });
 
 appWindow.onCloseRequested((event) => {
-  if (dirty && confirmBarEl) {
+  if (dirty) {
     event.preventDefault();
     confirmBarEl.hidden = false;
   }
@@ -73,11 +76,11 @@ document.querySelector("#discard-btn")?.addEventListener("click", () => {
 });
 
 document.querySelector("#stay-btn")?.addEventListener("click", () => {
-  if (confirmBarEl) {
-    confirmBarEl.hidden = true;
-  }
+  confirmBarEl.hidden = true;
 });
 ```
+
+少了 `#confirm-bar` 這支程式就沒有意義，所以找不到時直接丟錯停下來，後面的程式碼就不用一再檢查 `null`。
 
 `npm run tauri dev` 的輸出（節錄）：
 
@@ -131,11 +134,12 @@ window.destroy not allowed. Permissions associated with this command: core:windo
 
 ### 為什麼不用 `confirm()`
 
-瀏覽器內建的 `window.confirm("確定嗎？")` 會彈出對話框，傳回 `true` 或 `false`。我在 macOS 上試過，Tauri 的視窗裡它不會彈出任何東西，立刻傳回 `false`，關閉就永遠被擋下來。所以這一集用頁面上的確認列。要原生的對話框，用 dialog plugin，第 7 章會正式介紹。
+瀏覽器內建的 `window.confirm("確定嗎？")` 會彈出對話框，傳回 `true` 或 `false`。但在 macOS 的 WebView 裡，它不會彈出任何東西，立刻傳回 `false`，關閉就永遠被擋下來。其他平台的 WebView 可能會彈出對話框，各平台的行為不一致，所以這一集一律用頁面上的確認列。要原生的對話框，用 dialog plugin，第 7 章會正式介紹。
 
 ## 重點整理
 
 - `getCurrentWindow().onCloseRequested(函式)` 在使用者要關視窗時被呼叫；`event.preventDefault()` 擋下關閉，沒有擋就照常關。
-- 有了這個監聽，關視窗由 `destroy()` 完成，要在 `capabilities/default.json` 放行 `core:window:allow-destroy`，否則視窗關不掉，Console 出現缺少 permission 的錯誤。
+- 有了這個監聽，關視窗由 `destroy()` 完成。
+- 要在 `capabilities/default.json` 放行 `core:window:allow-destroy`，否則視窗關不掉，Console 會出現缺少 permission 的錯誤。
 - 確認之後用 `destroy()` 關，不要用 `close()`：`close()` 會再觸發一次要求關閉的事件。
 - macOS 的 `window.confirm()` 不會彈出對話框，立刻傳回 `false`；確認要自己畫在頁面上，或之後用 dialog plugin。

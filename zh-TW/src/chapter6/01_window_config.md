@@ -8,7 +8,7 @@
 
 ### 視窗寫在 `app.windows`
 
-第 1 章第 6 集看過，`app.windows` 是一個陣列，每個元素是一個視窗，範本只有一個。這一集只改它。沒寫的欄位都有預設值：`title` 是 `Tauri App`、`width` 是 800、`height` 是 600、label 是 `main`。
+第 1 章第 6 集看過，`app.windows` 是一個陣列，每個元素是一個視窗，範本只有一個。這一集只改它。沒寫的欄位都有預設值：`title` 是 `Tauri App`、`width` 是 800、`height` 是 600，`label`（視窗的名字）是 `main`。`windows` 裡放兩個以上的視窗時，每個都要自己寫一個不重複的 `label`，第 4 集再細講。
 
 ### 標題、大小與位置
 

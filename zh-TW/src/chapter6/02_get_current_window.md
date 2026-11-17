@@ -100,7 +100,7 @@ formEl?.addEventListener("submit", async (event) => {
 }
 ```
 
-`permissions` 是一份清單，每一項放行一組功能；`windows` 說這份清單適用於哪些視窗，`main` 就是範本那個視窗。`core:window:allow-set-title` 的意思是：核心（`core`）的視窗（`window`）功能裡，允許（`allow`）`set_title`。permission 與 capability 第 7 章會正式介紹。
+`permissions` 是一份清單，每一項放行一組功能，把缺的那一項加進去就行；`windows` 寫著這份清單給哪個視窗用，`main` 是範本的視窗。permission 第 7 章會正式介紹，capability 完整的模型留到第 14 章。
 
 `npm run tauri dev` 的輸出（改了 `capabilities/default.json` 之後）：
 
@@ -112,15 +112,10 @@ formEl?.addEventListener("submit", async (event) => {
      Running `target/debug/tauri-app`
 ```
 
-再試一次，標題列變成 `新標題`，段落顯示「標題改成了：新標題」。
-
-### 其他方法要哪一項
-
-方法名稱改成用連字號連起來的小寫，前面加上 `core:window:allow-`，就是它的 permission：`minimize()` 是 `core:window:allow-minimize`，`close()` 是 `core:window:allow-close`。不確定的話，把編輯器的游標停在方法上，說明裡的 `Requires the ... permission` 就寫著。
+再試一次，標題列變成 `新標題`，段落顯示「標題改成了：新標題」。`minimize()`、`close()` 這類會改動視窗的方法也一樣，沒放行就被擋，錯誤訊息的最後一段會寫出缺哪一項。
 
 ## 重點整理
 
 - `getCurrentWindow()` 回傳目前視窗的 `Window` 物件，方法回傳 Promise，要 `await`。
 - 範本的 `core:default` 對視窗的方法只放行查詢（`title()`、`isMaximized()` 等）；改動視窗的方法會被擋，錯誤訊息最後一段就是缺的 permission。
 - 到 `src-tauri/capabilities/default.json` 的 `permissions` 加上 `core:window:allow-set-title` 這類項目；改完會重新編譯。
-- permission 名稱規則：`core:window:allow-` 加上用連字號連起來的方法名。
