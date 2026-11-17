@@ -62,7 +62,7 @@ window.addEventListener("DOMContentLoaded", () => {
 先看形狀就好，語法之後會一一補上：
 
 - 第一行從 Tauri 的 JavaScript 套件拿到 `invoke`，這是前端呼叫 Rust 的入口。
-- `window.addEventListener("DOMContentLoaded", ...)` 在頁面載好之後，用 `querySelector` 找出輸入框和結果段落，再註冊一個「表單送出時就執行 `greet()`」的處理函式。`e.preventDefault()` 是擋掉瀏覽器預設的送出行為。這幾個用法在第 2 章第 7、8 集。
+- `window.addEventListener("DOMContentLoaded", ...)` 在頁面載好之後，用 `querySelector` 找出輸入框和結果段落，再註冊一個「表單送出時就執行 `greet()`」的處理函式。`e.preventDefault()` 是擋掉瀏覽器預設的送出行為。這幾個用法在第 2 章第 7 到 9 集。
 - `greet()` 裡的 `await invoke("greet", { name: ... })`：呼叫 Rust 端叫 `greet` 的 command，把輸入框的值當成 `name` 傳過去，等結果回來，放進段落的 `textContent`。`async`、`await` 在第 2 章第 10 集，`invoke` 的細節在第 3 章第 2 集。
 - `HTMLInputElement | null` 是 TypeScript 的型別寫法，第 2 章第 4 到 6 集會教。
 

@@ -16,7 +16,7 @@ npm run tauri dev
 
 `npm run tauri` 會執行 `package.json` 的 `scripts` 裡叫 `tauri` 的那一行，也就是專案裡裝的 Tauri 命令列工具，後面的 `dev` 是交給它的子命令。第一次要下載並編譯兩百多個 crate，視電腦而定，要幾十秒到幾分鐘。
 
-`npm run tauri dev` 的輸出（中間大量的 `Compiling` 行省略）：
+`npm run tauri dev` 的輸出（節錄，中間大量的編譯訊息省略）：
 
 ```text
 > tauri-app@0.1.0 tauri
