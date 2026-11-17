@@ -40,3 +40,5 @@
     - [`manage` 與 `State`](chapter4/01_manage_state.md)
     - [用 `Mutex` 包住可變狀態](chapter4/02_mutex.md)
     - [async command 裡的狀態](chapter4/03_async_mutex.md)
+    - [在 `setup` 裡初始化](chapter4/04_setup.md)
+    - [從 `AppHandle` 取得狀態](chapter4/05_apphandle_state.md)
