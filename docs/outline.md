@@ -14,7 +14,7 @@ Tauri 2.12 · Rust 1.99（edition 2024）· Node LTS + npm · 前端 vanilla Typ
 邊界：第 7 集只「讀懂」範本：前端的語法第 2 章才教，`#[tauri::command]` 與 `invoke` 的寫法第 3 章才正式教。
 
 ## 第 2 章 前端速成
-01 網頁由什麼組成（HTML 結構、CSS 外觀、JS/TS 行為）· 02 HTML 元素與屬性 · 03 CSS 選擇器與 flex 排版 · 04 TypeScript 是什麼（跟 JavaScript、跟 Rust 的型別比一比）· 05 `let`、`const` 與函式、箭頭函式 · 06 物件、陣列、`type` 與 `interface` · 07 DOM：`querySelector` 與修改內容 · 08 事件：`addEventListener` · 09 表單與輸入值 · 10 `Promise` 與 `async`/`await`（跟 Rust 的 `Future` 比一比）· 11 `import`/`export`、npm 與 Vite
+01 網頁由什麼組成（HTML 結構、CSS 外觀、JS/TS 行為）· 02 HTML 元素與屬性 · 03 CSS 選擇器與 flex 排版 · 04 TypeScript 是什麼（跟 JavaScript、跟 Rust 的型別比一比）· 05 `let`、`const` 與函式、箭頭函式 · 06 物件、陣列、`type` 與 `interface` · 07 DOM：`querySelector`、修改內容與 `console.log`（輸出到開發者工具的 Console）· 08 事件：`addEventListener` · 09 表單與輸入值 · 10 `Promise` 與 `async`/`await`（跟 Rust 的 `Future` 比一比）· 11 `import`/`export`、npm 與 Vite
 
 邊界：本章只在第 1 章建好的專案的 `index.html`、`src/main.ts`、`src/styles.css` 裡寫前端，完全不碰 `src-tauri`，也不呼叫 `invoke`。範例用瀏覽器 API 就能完成的事，不用框架。
 
@@ -65,7 +65,7 @@ Tauri 2.12 · Rust 1.99（edition 2024）· Node LTS + npm · 前端 vanilla Typ
 01 Tauri 的安全模型 · 02 capabilities 深入 · 03 permission 與 scope · 04 替自己的 command 定義 permission · 05 CSP · 06 isolation pattern
 
 ## 第 15 章 打包與安裝檔
-01 `npm run tauri build` · 02 圖示（`tauri icon`）· 03 bundle 設定與版本號 · 04 macOS：`.app` 與 `.dmg` · 05 Windows：MSI 與 NSIS · 06 Linux：AppImage、deb、rpm · 07 一起打包資源檔
+01 `npm run tauri build`（含 `--debug`，以及用 `devtools` feature 在 release 版打開開發者工具）· 02 圖示（`tauri icon`）· 03 bundle 設定與版本號 · 04 macOS：`.app` 與 `.dmg` · 05 Windows：MSI 與 NSIS · 06 Linux：AppImage、deb、rpm · 07 一起打包資源檔
 
 ## 第 16 章 自動更新與程式碼簽章
 01 updater plugin · 02 產生簽章金鑰 · 03 更新資訊檔 `latest.json` · 04 在 app 裡檢查與安裝更新 · 05 macOS 簽章與公證 · 06 Windows 簽章
