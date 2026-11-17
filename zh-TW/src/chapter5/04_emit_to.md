@@ -16,7 +16,7 @@
 use tauri::{AppHandle, Emitter};
 
 #[tauri::command]
-fn notify(app: AppHandle, target: Option<String>) -> tauri::Result<()> {
+fn send_notice(app: AppHandle, target: Option<String>) -> tauri::Result<()> {
     match target {
         Some(label) => {
             let text = format!("只送給 {label}");
@@ -30,7 +30,7 @@ fn notify(app: AppHandle, target: Option<String>) -> tauri::Result<()> {
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![notify])
+        .invoke_handler(tauri::generate_handler![send_notice])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
@@ -96,15 +96,15 @@ listen<string>(
 );
 
 document.querySelector("#all-btn")?.addEventListener("click", () => {
-  invoke("notify");
+  invoke("send_notice");
 });
 
 document.querySelector("#main-btn")?.addEventListener("click", () => {
-  invoke("notify", { target: "main" });
+  invoke("send_notice", { target: "main" });
 });
 
 document.querySelector("#report-btn")?.addEventListener("click", () => {
-  invoke("notify", { target: "report" });
+  invoke("send_notice", { target: "report" });
 });
 ```
 
@@ -132,11 +132,11 @@ document.querySelector("#report-btn")?.addEventListener("click", () => {
 | `emit_to("main", …)` | 收到 | 收到 |
 | `emit_to("report", …)` | 收到 | 沒收到 |
 
-所以想讓事件真的只到某個視窗，兩邊要配合：Rust 用 `emit_to` 指定，前端的 `listen` 也要指定 `target`。視窗物件（第 6 章會正式介紹）自己的 `listen` 會自動只收給自己的。
+所以想讓事件真的只到某個視窗，兩邊要配合：Rust 用 `emit_to` 指定，前端的 `listen` 也要指定 `target`。視窗物件自己的 `listen` 也一樣，目標就是那個視窗：收得到 `emit` 與送給它的 `emit_to`，規則跟表格最右欄相同。
 
 ### Rust 端也一樣
 
-第 3 集的 `app.listen` 對象是 App 本身：收得到 `emit` 與 `emit_to(EventTarget::app(), …)`，收不到 `emit_to("main", …)`。要什麼都收，改用 `listen_any`。前端的 `emitTo("main", …)` 一樣是送給 label 為 `main` 的視窗，Rust 的 `app.listen` 也收不到。`emit_to` 的目標還能用 `EventTarget::app()`、`EventTarget::any()` 指定。
+第 3 集的 `app.listen` 目標是 App 本身，所以收得到 `emit`，收不到 `emit_to("main", …)`。
 
 ### 跟 Electron 比一比
 
@@ -147,4 +147,4 @@ Electron 的 `win.webContents.send(...)` 本來就只送給那一個視窗。Tau
 - `emit_to(目標, 事件名稱, payload)` 指定接收者；目標是字串時，代表 label 等於它的視窗，沒有這個視窗也不會報錯。
 - `listen` 也有目標：沒指定 `target` 就是什麼都收，包括送給別的 label 的。
 - 要讓事件只到某個視窗，Rust 用 `emit_to`，前端 `listen` 加上 `{ target: "label" }`。
-- Rust 的 `app.listen` 只收 `emit` 與送給 App 的；`listen_any` 什麼都收。
+- Rust 的 `app.listen` 目標是 App：收得到 `emit`，收不到送給視窗 label 的 `emit_to`。

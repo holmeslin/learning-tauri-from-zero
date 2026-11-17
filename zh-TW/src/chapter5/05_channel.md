@@ -113,17 +113,15 @@ document.querySelector("#start-btn")?.addEventListener("click", async () => {
 
 - 配對的方式：事件靠名字，Channel 靠「這次 `invoke` 傳進去的那一個」。只有那次呼叫收得到，兩次呼叫各用各的，不會混在一起。
 - 順序：同一個 Channel 的訊息，到前端時的順序一定跟 `send` 的順序一樣。
-- 收尾：Channel 不用像 `listen` 那樣自己取消，Rust 端最後一份 Channel 被丟掉，Tauri 會通知前端收尾。
-- 壽命：`Channel` 可以 `clone`，也能搬到別的執行緒。command 已經回傳，只要還握著它，就還能繼續 `send`。
+- 收尾：Channel 不用像 `listen` 那樣自己取消。Rust 端的 Channel 被丟掉（這個範例是 command 結束時），Tauri 會通知前端收尾。
 
 ### 別用 `invoke` 的回傳判斷結束
 
-訊息之間有順序，但訊息和 `invoke` 的回傳值之間沒有。比較大的訊息（約 8 KB 以上的 JSON）走的是另一條路，可能比 `invoke` 的 Promise 晚到。所以不能靠 `invoke` 的 Promise 判斷「訊息都收完了」。要知道的話，自己在訊息裡帶記號；下一集的做法則是：進度只管畫面上的數字，結果以 `invoke` 的回傳為準，之後晚到的進度直接忽略。
+訊息之間有順序，但訊息和 `invoke` 的回傳值之間沒有：兩者走不同的路，Tauri 沒有保證誰先到。所以不能靠 `invoke` 的 Promise 判斷「訊息都收完了」。要知道的話，自己在訊息裡帶記號；下一集的做法則是：進度只管畫面上的數字，結果以 `invoke` 的回傳為準，之後晚到的進度直接忽略。
 
 ## 重點整理
 
 - 前端 `new Channel<T>()`、設好 `onmessage`，當成參數交給 `invoke`；Rust 的參數型別是 `Channel<T>`。
 - Rust 端 `send(資料)` 一次傳一則，`T` 要 `Serialize`，回傳 `tauri::Result<()>`。
 - 同一個 Channel 的訊息保證順序，也只有傳進去的那次呼叫收得到。
-- command 回傳之後，握著 Channel 的程式仍能繼續 `send`。
 - 訊息和 `invoke` 的回傳值之間沒有順序保證，不能用 `invoke` 回來當作訊息都收完了。

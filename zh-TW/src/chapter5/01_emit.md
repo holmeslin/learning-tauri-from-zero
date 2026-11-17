@@ -118,7 +118,7 @@ listen<Tick>("tick", (event) => {
 ### payload 與名稱的規則
 
 - payload 的型別要同時是 `Serialize` 與 `Clone`（`emit` 的簽名是 `emit<S: Serialize + Clone>`）。數字、字串本來就都有；自己的 struct 少了 `Clone`，編譯器會報 `error[E0277]`，指出 `Tick` 沒有實作 `Clone`，並建議加上 `#[derive(Clone)]`。
-- 事件名稱只能用英數字、`-`、`/`、`:`、`_`。像 `tick.second` 有句點，`emit` 會回傳 `Err(IllegalEventName("tick.second"))`；範例的 `unwrap()` 遇到它，這條執行緒就 panic 了。
+- 事件名稱只能用字母、數字（非 ASCII 的字母也算，例如中文）與 `-`、`/`、`:`、`_`。像 `tick.second` 有句點，`emit` 會回傳 `Err(IllegalEventName("tick.second"))`；範例的 `unwrap()` 遇到它，這條執行緒就 panic 了。
 - 沒有人在聽時，`emit` 一樣回傳 `Ok(())`，不會報錯。
 - `AppHandle` 之外，`App` 與視窗也能 `emit`，用法一樣。視窗第 6 章會正式介紹。
 - 前端的 `listen` 需要 `core:event` 這組 permission。範本 `capabilities/default.json` 裡的 `core:default` 已經包含，不用動；permission 第 7 章會正式介紹。
@@ -128,5 +128,5 @@ listen<Tick>("tick", (event) => {
 - 事件是有名字、可帶 payload 的訊息；Rust 可以隨時主動送，不等回覆。
 - `use tauri::Emitter` 之後，用 `handle.emit("名稱", payload)` 送出，回傳 `tauri::Result<()>`。
 - payload 要 `Serialize + Clone`；少了 `Clone` 編譯不過。
-- 事件名稱只能用英數字與 `-`、`/`、`:`、`_`，否則 `emit` 回傳 `Err`。
+- 事件名稱只能用字母、數字與 `-`、`/`、`:`、`_`，否則 `emit` 回傳 `Err`。
 - 前端用 `listen("名稱", 函式)` 收，`event.payload` 是資料；沒人在聽也不會出錯。

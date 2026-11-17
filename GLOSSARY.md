@@ -34,7 +34,7 @@ _Avoid_: 樣板專案、boilerplate
 
 原則：跟 Tauri、Rust、Web 平台 API 名稱相同的詞保留英文；其他翻成台灣用語，第一次出現時附英文。
 
-保留英文：command、plugin、capability、permission、scope、WebView、IPC、CSP、label（視窗的）、`AppHandle`、`State`、`Channel`、`invoke`、`emit`、`listen`、DOM、HTML、CSS、TypeScript、JavaScript、npm、Vite、crate、serde、JSON、AppImage、MSI、NSIS、APK、AAB、IPA、tray（只在 API 名稱裡，正文寫「系統匣」）。
+保留英文：command、plugin、capability、permission、scope、WebView、IPC、CSP、label（視窗的）、`AppHandle`、`State`、`Channel`、`invoke`、`emit`、`listen`、payload、DOM、HTML、CSS、TypeScript、JavaScript、npm、Vite、crate、serde、JSON、AppImage、MSI、NSIS、APK、AAB、IPA、tray（只在 API 名稱裡，正文寫「系統匣」）。
 
 | 書中用語 | 英文 | 不要用 |
 | --- | --- | --- |
@@ -50,6 +50,7 @@ _Avoid_: 樣板專案、boilerplate
 | 剪貼簿 | clipboard | 剪貼板 |
 | 事件 | event | 消息 |
 | 監聽 | listen | 偵聽 |
+| payload（事件附帶的資料） | payload | 負載 |
 | 熱重載 | hot reload | 熱更新 |
 | 打包 | bundle | 捆綁 |
 | 安裝檔 | installer | 安裝包 |

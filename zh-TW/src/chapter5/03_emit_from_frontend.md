@@ -12,7 +12,7 @@
 
 ### 範例：前端喊加，Rust 算總和
 
-前端 `emit("add", { amount: 5 })`，Rust 收到後把數字加進狀態，再 `emit("total", 總和)` 回報。Rust 的 `listen` 要用在 App（或 `AppHandle`）上，所以寫在 `setup` 裡（第 4 章第 4 集）：
+前端 `emit("add", { amount: 5 })`，Rust 收到後把數字加進狀態，再 `emit("total", 總和)` 回報。Rust 的 `listen` 是 `Listener` trait 的方法，`App`、`AppHandle`（視窗等型別也有）都能呼叫。這裡在 `setup` 裡用 `app.listen` 登記（第 4 章第 4 集）：
 
 `src-tauri/src/lib.rs`：
 
@@ -27,11 +27,13 @@ struct AddRequest {
     amount: u32,
 }
 
+struct Total(u32);
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
-        .manage(Mutex::new(0u32))
+        .manage(Mutex::new(Total(0)))
         .setup(|app| {
             let handle = app.handle().clone();
             app.listen("add", move |event| {
@@ -42,10 +44,13 @@ pub fn run() {
                         return;
                     }
                 };
-                let state = handle.state::<Mutex<u32>>();
-                let mut total = state.lock().unwrap();
-                *total += request.amount;
-                handle.emit("total", *total).unwrap();
+                let total = {
+                    let state = handle.state::<Mutex<Total>>();
+                    let mut guard = state.lock().unwrap();
+                    guard.0 += request.amount;
+                    guard.0
+                };
+                handle.emit("total", total).unwrap();
             });
             Ok(())
         })
@@ -58,6 +63,7 @@ pub fn run() {
 - 函式要 `move` 進去，所以先複製一份 `AppHandle`。它不是 command，沒有人替它填 `State` 參數，要的狀態就用第 4 章第 5 集的 `handle.state()` 取。
 - 前端 `emit` 送來的事件，函式是在非同步執行環境的工作執行緒上呼叫的（第 3 章第 8 集），不是主執行緒。
 - 函式沒有回傳值，出錯不能用 `?` 丟出去，只能在函式裡自己處理。
+- 總和先複製到 `total`，大括號結束時鎖就放掉了，才 `emit`。`emit` 會去呼叫別人的程式，上鎖的時間越短越好（第 4 章第 2 集）。
 
 ### payload 是 JSON 文字
 
@@ -132,10 +138,6 @@ document.querySelector("#add10-btn")?.addEventListener("click", () => {
 
 依序按「加 1」「加 10」，畫面變成「合計：1」，再變「合計：11」。
 
-### 取消監聽與只聽一次
-
-Rust 這邊也有同樣的兩個功能：`app.listen` 回傳 `EventId`，之後用 `app.unlisten(id)` 取消；只聽一次就用 `app.once(...)`。
-
 ### 跟 Electron 比一比
 
 Electron 的 `ipcRenderer.send` 只會送到主行程，只有 `ipcMain.on` 收得到。Tauri 前端的 `emit` 是廣播，不是專門寄給 Rust 的信：Rust 的 `listen` 會收到，前端自己的 `listen("add", ...)` 也會收到。想限定接收者，下一集再說。
@@ -145,5 +147,4 @@ Electron 的 `ipcRenderer.send` 只會送到主行程，只有 `ipcMain.on` 收�
 - 前端用 `emit("名稱", payload)` 送，Rust 用 `app.listen("名稱", 函式)` 收，要 `use tauri::Listener`。
 - `event.payload()` 是 JSON 文字，要自己用 `serde_json::from_str` 解析；格式不對只能在函式裡處理。
 - 監聽函式不是 command：要狀態就用 `handle.state()`，沒有回傳值。
-- `listen` 回傳 `EventId`，`unlisten(id)` 取消，`once` 只聽一次。
 - 前端的 `emit` 是廣播，前端自己的監聽也會收到。
