@@ -87,7 +87,7 @@ document.querySelector("#stay-btn")?.addEventListener("click", () => {
      Running `target/debug/tauri-app`
 ```
 
-不打字直接按關閉鈕，視窗**沒有關**。打字之後按關閉鈕，確認列出現，按「不儲存，關閉」也關不掉。Console（第 1 章第 8 集的開發者工具）出現：
+不打字直接按關閉鈕，視窗**沒有關**。打字之後按關閉鈕，確認列出現，按「不儲存，關閉」也關不掉。Console（第 1 章第 8 集的開發者工具）出現一則錯誤，訊息內容是：
 
 ```text
 window.destroy not allowed. Permissions associated with this command: core:window:allow-destroy
@@ -139,4 +139,3 @@ window.destroy not allowed. Permissions associated with this command: core:windo
 - 有了這個監聽，關視窗由 `destroy()` 完成，要在 `capabilities/default.json` 放行 `core:window:allow-destroy`，否則視窗關不掉，Console 出現缺少 permission 的錯誤。
 - 確認之後用 `destroy()` 關，不要用 `close()`：`close()` 會再觸發一次要求關閉的事件。
 - macOS 的 `window.confirm()` 不會彈出對話框，立刻傳回 `false`；確認要自己畫在頁面上，或之後用 dialog plugin。
-- `onResized`、`onMoved`、`onFocusChanged` 等其他視窗事件，用法跟 `onCloseRequested` 一樣。

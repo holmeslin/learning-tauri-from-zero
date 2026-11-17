@@ -121,6 +121,6 @@ formEl?.addEventListener("submit", async (event) => {
 ## 重點整理
 
 - `getCurrentWindow()` 回傳目前視窗的 `Window` 物件，方法回傳 Promise，要 `await`。
-- 範本的 `core:default` 只放行查詢（`title()`、`isMaximized()` 等）；改動視窗的方法會被擋，錯誤訊息最後一段就是缺的 permission。
+- 範本的 `core:default` 對視窗的方法只放行查詢（`title()`、`isMaximized()` 等）；改動視窗的方法會被擋，錯誤訊息最後一段就是缺的 permission。
 - 到 `src-tauri/capabilities/default.json` 的 `permissions` 加上 `core:window:allow-set-title` 這類項目；改完會重新編譯。
 - permission 名稱規則：`core:window:allow-` 加上用連字號連起來的方法名。

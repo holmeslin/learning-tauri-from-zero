@@ -130,14 +130,9 @@
 
 視窗還是 600×400，但拖拉邊緣沒有反應，也不能最大化：在 macOS 上，標題列綠色的按鈕變成灰的。這時候 `minWidth`、`minHeight` 就用不到了，所以拿掉。
 
-### 欄位名稱寫錯會被擋下來
-
-設定檔不會默默忽略不認識的欄位。常見的拼錯是把 `resizable` 寫成 `resizeable`，`tauri dev` 一開始就停下來，訊息是 `Additional properties are not allowed ('resizeable' was unexpected)`，並指出錯在 `app > windows > 0`。看到這種訊息，先對照欄位的拼法。
-
 ## 重點整理
 
 - `app.windows` 的每個元素是一個視窗；沒寫的欄位用預設值（800×600，標題 `Tauri App`，label `main`）。
 - `title`、`width`、`height` 設定標題與開啟時的大小，單位是邏輯像素。
 - `minWidth`、`minHeight`（以及 `maxWidth`、`maxHeight`）限制使用者能縮放的範圍；`center` 開在螢幕中央，`x`、`y` 指定位置。
 - `resizable: false` 讓視窗不能縮放，也不能最大化。
-- 欄位名稱拼錯，`tauri dev` 會直接報錯。

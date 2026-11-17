@@ -8,7 +8,7 @@
 
 ### label 不能重複
 
-建視窗時，label 是你取的字串，只能用字母、數字與 `-`、`/`、`:`、`_`，違反的話 `build()` 回傳 `Err`。一個 App 裡每個 label 也只能有一個視窗：上一集的 `open_about` 再按一次，`build()` 回傳 `Err`，前端的 `catch` 拿到 ``a webview with label `about` already exists``。所以建視窗之前，先看看是不是已經開過了。
+建視窗時，label 是你取的字串，只能用字母、數字與 `-`、`/`、`:`、`_`，違反的話 `build()` 回傳 `Err`。一個 App 裡每個 label 也只能有一個視窗：上一集的 `open_about` 再按一次，`build()` 回傳 `Err`，前端的 Promise 被拒絕，錯誤訊息是 ``a webview with label `about` already exists``。所以建視窗之前，先看看是不是已經開過了。
 
 ### 用 label 找視窗
 
@@ -100,7 +100,7 @@ formEl?.addEventListener("submit", async (event) => {
 
 ### capability 只認得 `main`
 
-範本的 `capabilities/default.json` 寫著 `"windows": ["main"]`：這份 permission 只給 label 是 `main` 的視窗。訊息裡的 `allowed on: [windows: "main"…]` 就是在說這件事。`note-1` 不在清單裡，連 `core:default` 的 `title()` 都不能用。自己寫的 command 不受影響：`note-1` 裡一樣能呼叫 `open_window`。
+範本的 `capabilities/default.json` 寫著 `"windows": ["main"]`：這份 permission 只給 label 是 `main` 的視窗。訊息裡的 `allowed on: [windows: "main"…]` 就是在說這件事。`note-1` 不在清單裡，連 `core:default` 的 `title()` 都不能用。自己寫的 command 不受影響：`note-1` 裡一樣能呼叫 `open_window`。第 3 章第 9 集說過，command 參數裡的 `WebviewWindow` 是呼叫它的視窗：同一個 command，從 `note-1` 呼叫，拿到的就是 `note-1` 這個視窗，不再是 `main`。
 
 `windows` 可以寫 label，也可以用 `*` 當萬用字元。`note-*` 涵蓋所有 `note-` 開頭的視窗：
 
