@@ -126,7 +126,7 @@ error: cannot find macro `__cmd__say_hello` in this scope
 error: could not compile `tauri-app` (lib) due to 2 previous errors
 ```
 
-錯誤提到的 `__cmd__say_hello` 就是屬性巨集生出來的轉接程式，`generate_handler!` 要用它，找不到就編不過。看到這種 `cannot find macro `__cmd__…``，先檢查那個函式有沒有加 `#[tauri::command]`；編譯器建議的改法（`help` 那段）不對，別照著改。加回屬性就好了。
+錯誤提到的 `__cmd__say_hello` 就是屬性巨集生出來的轉接程式，`generate_handler!` 要用它，找不到就編不過。看到 `cannot find macro` 後面接著 `__cmd__` 開頭的名字，先檢查那個函式有沒有加 `#[tauri::command]`；編譯器建議的改法（`help` 那段）不對，別照著改。加回屬性就好了。
 
 反過來，寫了 `#[tauri::command]` 卻忘了放進 `generate_handler!`，編譯得過，只是那個函式沒人用，編譯器會警告它從未被使用（`never used`）。到了執行時，前端呼叫它會得到第 1 章第 8 集看過的 `Command … not found`。
 
