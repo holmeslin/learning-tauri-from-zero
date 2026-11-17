@@ -1,0 +1,93 @@
+name: deployment
+on:
+  push:
+    branches: [main]
+  # PR 只跑檢查與建置，不部署。
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+env:
+  # 刻意鎖版本；Rust 版本鎖在 rust-toolchain.toml，升級前先確認全書範例都通過。
+  MDBOOK_VERSION: "0.5.4"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      # Tauri 在 Linux 上編譯（連 cargo check 也是）需要的系統套件，見 https://v2.tauri.app/start/prerequisites/
+      - name: Install Tauri system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev build-essential curl wget file libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev
+
+      - name: Install Rust toolchain
+        run: rustup toolchain install
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 26
+          cache: npm
+          cache-dependency-path: tools/checkcode/template/package-lock.json
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          # 範本專案的 target 是所有範例共用的編譯快取。
+          workspaces: |
+            tools/checkcode
+            tools/checkcode/template/src-tauri
+
+      - name: Install mdBook
+        run: |
+          curl -sSL --fail "https://github.com/rust-lang/mdBook/releases/download/v${MDBOOK_VERSION}/mdbook-v${MDBOOK_VERSION}-x86_64-unknown-linux-gnu.tar.gz" | tar -xz -C /usr/local/bin
+
+      - name: Install template npm packages
+        run: npm ci --prefix tools/checkcode/template
+
+      - name: Test checkcode
+        run: |
+          cargo test --manifest-path tools/checkcode/Cargo.toml
+          cargo build --release --manifest-path tools/checkcode/Cargo.toml
+          checkcode=tools/checkcode/target/release/checkcode
+          $checkcode tools/checkcode/testdata/pass.md
+          for f in tools/checkcode/testdata/fail-*.md; do
+            if $checkcode "$f"; then echo "::error::$f 應該要失敗"; exit 1; fi
+          done
+
+      - name: Check examples
+        run: tools/checkcode/target/release/checkcode zh-TW/src
+
+      - name: Build book
+        working-directory: zh-TW
+        run: mdbook build
+
+      - name: Assemble site
+        run: |
+          mkdir -p public
+          cp index.html public/index.html
+          cp -r zh-TW/book public/zh-TW
+
+      - if: github.event_name == 'push'
+        uses: actions/configure-pages@v6
+
+      - if: github.event_name == 'push'
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: public
+
+  deploy:
+    if: github.event_name == 'push'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5
