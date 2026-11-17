@@ -72,16 +72,17 @@ h1 {
   gap: 8px;
 }
 
+/* .done 寫在 li 前面，但它比較具體，所以還是它贏 */
+.done {
+  color: #888;
+  text-decoration: line-through;
+}
+
 li {
   padding: 8px 12px;
   color: #222;
   background-color: white;
   border-radius: 8px;
-}
-
-.done {
-  color: #888;
-  text-decoration: line-through;
 }
 
 .row {
@@ -98,7 +99,7 @@ li {
 
 ### 一條規則的樣子
 
-拿 `h1` 那一條來看：`h1 { text-align: center; }`。CSS 由一條條這樣的規則組成。大括號前面是**選擇器**，說明規則套用在哪些元素；大括號裡是一行行宣告，格式是 `屬性: 值;`。這裡的屬性（property）是 CSS 的，跟上一集 HTML 元素的屬性（attribute）是兩回事。這條的意思是：所有 `h1` 的文字置中。
+拿 `h1` 那一條來看：`h1 { text-align: center; }`。CSS 由一條條這樣的規則組成。大括號前面是**選擇器**，說明規則套用在哪些元素；大括號裡是一行行宣告（declaration），格式是 `屬性: 值;`。這裡的屬性（property）是 CSS 的，跟上一集 HTML 元素的屬性（attribute）是兩回事。這條的意思是：所有 `h1` 的文字置中。
 
 ### 三種挑元素的方式
 
@@ -112,7 +113,7 @@ li {
 
 選擇器可以接起來。`.row input` 中間有空白，意思是「在 `.row` 裡面的 `input`」。
 
-兩條規則設了同一個屬性時，比較具體的贏：`id` 勝過 `class`，`class` 勝過元素名稱；一樣具體就看誰寫在後面。所以第二張卡片雖然也是 `li`，`li` 規則設了 `color: #222`，但 `.done` 的 `color: #888` 比較具體，字就是灰的。
+兩條規則設了同一個屬性時，比較具體的贏：`id` 勝過 `class`，`class` 勝過元素名稱；一樣具體才看誰寫在後面。這份 CSS 裡，第二張卡片同時符合 `.done` 和 `li`，兩條都設了 `color`，而 `li` 還寫在 `.done` 後面。如果只看順序，字會是 `#222`；但 `.done` 比 `li` 具體，所以字是灰的 `#888`。可以自己把這兩條規則的順序對調試試，字還是灰的。
 
 ### 排版：flex
 
@@ -122,18 +123,6 @@ li {
 - `flex-direction: column`：改成直的，由上往下排。`.container` 和 `#todo-list` 用它。
 - `gap`：子元素之間的空隙。
 - `flex: 1`：這個子元素把一列剩下的空間全部吃掉。`.row` 裡輸入框被拉長，按鈕只佔自己需要的寬度。
-
-還有兩個常用的設定，對齊用，這份 CSS 沒有用到：
-
-```css
-.row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-```
-
-`justify-content` 決定子元素沿著排列方向怎麼分配空間，`space-between` 是頭尾貼邊、中間平均分開。`align-items` 決定另一個方向上怎麼對齊，`center` 是置中。這兩個方向會隨 `flex-direction` 對調：橫排時 `justify-content` 管左右，直排時改管上下。
 
 ### 其他用到的屬性
 
@@ -145,4 +134,3 @@ li {
 - 選擇器用元素名稱（`li`）、`class`（`.done`）、`id`（`#todo-list`）挑元素，也可以接起來（`.row input`）。
 - 同一個屬性被兩條規則設定時，`id` 勝過 `class`，`class` 勝過元素名稱，一樣就看誰在後面。
 - `display: flex` 讓子元素沿著一條軸線排列，`flex-direction`、`gap`、`flex: 1` 控制方向、間距與伸縮。
-- `justify-content` 與 `align-items` 分別管排列方向與另一個方向上的對齊。

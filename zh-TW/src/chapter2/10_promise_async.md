@@ -8,7 +8,7 @@
 
 ### 有些事要等
 
-等使用者回應、讀檔案、問 Rust 一個問題，這些事不是立刻就有結果。JavaScript 的做法是：函式不傻傻等，而是馬上回傳一個 `Promise`，意思是「結果之後才會有」。`Promise<string>` 就是「將來會得到一個 `string`」，它最後會**成功**（resolve）拿到值，或是**失敗**（reject）。
+等使用者回應、讀檔案、問 Rust 一個問題，這些事不是立刻就有結果。這種不會立刻有結果、得等一下的作業，叫做非同步（asynchronous）。JavaScript 處理非同步的做法是：函式不傻傻等，而是馬上回傳一個 `Promise`，意思是「結果之後才會有」。`Promise<string>` 就是「將來會得到一個 `string`」，它最後會**成功**（resolve）拿到值，或是**失敗**（reject）。
 
 `async` 與 `await` 讓你用像一般程式的寫法處理 Promise：
 
@@ -60,11 +60,11 @@ async function loadTitle(ok: boolean): Promise<string> {
   return "第 10 集";
 }
 
-const okBtn: HTMLButtonElement | null = document.querySelector("#load-ok");
-const failBtn: HTMLButtonElement | null = document.querySelector("#load-fail");
+const okBtnEl: HTMLButtonElement | null = document.querySelector("#load-ok");
+const failBtnEl: HTMLButtonElement | null = document.querySelector("#load-fail");
 const statusEl: HTMLElement | null = document.querySelector("#status");
 
-async function run(ok: boolean) {
+async function run(ok: boolean): Promise<void> {
   if (!statusEl) {
     return;
   }
@@ -79,20 +79,21 @@ async function run(ok: boolean) {
   }
 }
 
-okBtn?.addEventListener("click", () => {
+okBtnEl?.addEventListener("click", () => {
   run(true);
   console.log("run 已經回來了，但還沒做完");
 });
-failBtn?.addEventListener("click", () => run(false));
+failBtnEl?.addEventListener("click", () => run(false));
 ```
 
 按「載入」：馬上顯示「載入中…」，一秒後變成「載入完成：第 10 集」。按「載入（會失敗）」：一秒後顯示「出錯了：載入失敗」。
 
 ### 這段程式怎麼跑
 
-- `sleep` 是我們自己包的小工具：`setTimeout(函式, 毫秒)` 是瀏覽器提供的，時間到了呼叫那個函式。這裡把 Promise 的 `resolve` 交給它，時間到就代表「成功了」。
+- `sleep` 是我們自己包的小工具：`setTimeout(函式, 毫秒)` 是瀏覽器提供的，時間到了呼叫那個函式。這裡把 Promise 的 `resolve` 交給它，時間到就代表「成功了」。成功時沒有值可以給，所以型別是 `Promise<void>`（`void` 見第 5 集）。
 - `loadTitle` 先 `await sleep(1000)` 等一秒，再回傳字串；`ok` 是 `false` 時用 `throw` 丟出錯誤，這個 Promise 就變成失敗。
-- `run` 用 `try`/`catch` 接住失敗，跟 Rust 用 `match` 或 `?` 處理 `Err` 的角色一樣。`catch (error)` 的 `error` 在 strict 模式下型別是 `unknown`，要先用 `error instanceof Error` 確認是 `Error` 才能讀 `message`。
+- `run` 用 `try`/`catch` 接住失敗，角色像 Rust 用 `match` 處理 `Err`：自己接下錯誤、決定怎麼辦，而不是像 `?` 那樣把錯誤往外丟給呼叫者。`catch (error)` 的 `error` 在 strict 模式下型別是 `unknown`，要先用 `error instanceof Error` 確認是 `Error` 才能讀 `message`。
+- `run` 不回傳值，但 `async` 函式回傳的一定是 Promise，所以它的回傳型別是 `Promise<void>`。
 
 `await` 只會暫停那一個函式，頁面不會卡住：按下「載入」，Console 立刻印出：
 
@@ -100,7 +101,7 @@ failBtn?.addEventListener("click", () => run(false));
 run 已經回來了，但還沒做完
 ```
 
-`run(true)` 一碰到 `await` 就回到呼叫它的地方，剩下的部分等一秒後再接著做。在等的這一秒，按鈕、輸入框都還是能操作。範例裡呼叫 `run(...)` 沒有加 `await`，因為不需要等它，範本呼叫 `greet()` 也是同一個寫法。
+`run(true)` 一碰到 `await` 就回到呼叫它的地方，剩下的部分等一秒後再接著做。在等的這一秒，按鈕都還是能按。範例裡呼叫 `run(...)` 沒有加 `await`，因為不需要等它，範本呼叫 `greet()` 也是同一個寫法。
 
 ### 跟 Rust 的 `Future` 比一比
 

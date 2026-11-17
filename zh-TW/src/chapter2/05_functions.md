@@ -15,9 +15,9 @@ total = total + limit;
 ```
 
 - `const`：名字綁定之後，不能再指向別的值。
-- `let`：之後可以重新賦值。
+- `let`：之後可以重新指定別的值。
 
-這跟 Rust 剛好相反：Rust 預設不可變，要改才加 `mut`；TypeScript 每個變數都得二選一，慣例是**優先用 `const`**，真的要重新賦值才改成 `let`。另外 `const` 只管名字不能換，不代表值本身不能改，第 6 集碰到物件時會再看到。還有一個更老的 `var`，它的規則比較亂，不用就好。
+這跟 Rust 剛好相反：Rust 預設不可變，要改才加 `mut`；TypeScript 每個變數都得二選一，慣例是**優先用 `const`**，真的要重新指定值才改成 `let`。還有一個更老的 `var`，它的規則比較亂，不用就好。
 
 ### 函式
 
@@ -27,7 +27,9 @@ function add(a: number, b: number): number {
 }
 ```
 
-跟 Rust 的 `fn add(a: i32, b: i32) -> i32` 對照：關鍵字是 `function`，參數型別寫在名字後面，回傳型別接在括號後面的冒號，**一定要寫 `return`**，沒有「最後一行就是回傳值」這回事。參數的型別一定要寫；回傳型別省略的話會被推論，本書的函式宣告都會寫出來。
+跟 Rust 的 `fn add(a: i32, b: i32) -> i32` 對照：關鍵字是 `function`，參數型別寫在名字後面，回傳型別接在括號後面的冒號，要回傳值就**一定要寫 `return`**，沒有「最後一行就是回傳值」這回事。參數的型別一定要寫；回傳型別省略的話會被推論，但本書自己寫的函式宣告（function declaration，不含下面的箭頭函式）都會把它寫出來。範本的 `greet` 是例外，它沒有寫。
+
+函式如果不回傳任何值，回傳型別就寫 `void`，意思是「沒有值」，對應 Rust 的 `()`，函式裡也不用 `return`。底下完整範例的最後有一個 `reset`。
 
 ### 箭頭函式
 
@@ -54,7 +56,7 @@ const add = (a: number, b: number) => {
 
 ### 先故意寫錯
 
-把 `src/main.ts` 換成這份，裡面有兩個錯：重新賦值給 `const`，以及傳錯型別的參數：
+把 `src/main.ts` 換成這份，裡面有兩個錯：對 `const` 重新指定值，以及傳錯型別的參數：
 
 `src/main.ts`（故意放錯值）：
 
@@ -112,8 +114,14 @@ function applyTwice(f: (n: number) => number, x: number): number {
 
 const sum = add(total, 1); // 4
 const twice = applyTwice(double, 5); // 20
-const hit = isLimit(total); // true
+const atLimit = isLimit(total); // true
 const message = `上限 ${limit}，目前 ${total}，加一是 ${sum}`; // 上限 3，目前 3，加一是 4
+
+function reset(): void {
+  total = 0;
+}
+
+reset(); // total 回到 0
 ```
 
 最後一行用反引號包住字串，裡面的 `${...}` 會換成運算式的值，這是範本字串（template literal），就像 Rust 的 `format!("{x}")`。註解寫的是各個變數的值。
@@ -121,7 +129,7 @@ const message = `上限 ${limit}，目前 ${total}，加一是 ${sum}`; // 上�
 ## 重點整理
 
 - `const` 的名字不能再指向別的值，`let` 可以；預設用 `const`。
-- 函式寫成 `function add(a: number, b: number): number { ... }`，要明確 `return`。
+- 函式寫成 `function add(a: number, b: number): number { ... }`，要回傳值就明確 `return`；不回傳值的函式，回傳型別是 `void`。
 - 箭頭函式 `(n: number) => n * 2` 是更短的寫法，運算式的值就是回傳值。
 - 函式是值，可以放進變數或當 callback 傳給別的函式，型別寫成 `(n: number) => number`。
 - 比較用 `===` 與 `!==`，字串內插用反引號加 `${...}`。

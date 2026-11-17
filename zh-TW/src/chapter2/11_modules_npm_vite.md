@@ -27,9 +27,9 @@ export function makeGreeting(who: string): string {
 ```ts
 import { makeGreeting } from "./greeting";
 
-const msg: HTMLElement | null = document.querySelector("#msg");
-if (msg) {
-  msg.textContent = makeGreeting("Tauri");
+const msgEl: HTMLElement | null = document.querySelector("#msg");
+if (msgEl) {
+  msgEl.textContent = makeGreeting("Tauri");
 }
 ```
 
@@ -67,10 +67,6 @@ if (msg) {
 
 對 Rust 讀者來說，`export` 像 `pub`，`import` 像 `use`。差別是不用寫 `mod`：每個檔案自動就是一個模組。
 
-### 模組有自己的範圍
-
-有 `import` 或 `export` 的檔案才算模組，名字只在這個檔案裡有效。前面幾集的 `main.ts` 都沒有，`tsc` 把它們當成全域腳本（script），最外層的名字全部共用同一個全域範圍。後果是：最外層寫 `let name = ...`，會因為跟瀏覽器本來就有的全域變數 `name` 撞名，被 `tsc` 回報 `TS2451`；而且最外層沒用到的變數也不會被 `noUnusedLocals` 抓出來。拆成模組後這兩件事就都不會發生了。
-
 ### npm 套件
 
 `import` 的路徑如果不是以 `./` 開頭，像範本的這一行：
@@ -96,7 +92,7 @@ import { invoke } from "@tauri-apps/api/core";
 
 第 1 章用過的 Vite，工作有兩件：
 
-- **開發時**（`tauri dev`）：它是一個伺服器，視窗要哪個檔案就送哪個。送出 `.ts` 之前先轉成 JavaScript，也把 `@tauri-apps/api/core` 這種套件路徑換成瀏覽器找得到的位置。這就是 `main.ts` 能直接 `import` 的原因。
+- **開發時**（`tauri dev`）：它是一個伺服器，視窗要哪個檔案就送哪個。送出 `.ts` 之前先轉成 JavaScript（第 4 集說過），也把 `@tauri-apps/api/core` 這種套件路徑換成瀏覽器找得到的位置。這就是 `main.ts` 能直接 `import` 的原因。
 - **打包時**（`npm run build`）：先用 `tsc` 檢查型別，再用 `vite build` 把所有模組合併、壓縮，放進 `dist/`。第 1 章第 6 集說過，正式版的 App 載入的就是 `dist/` 裡的檔案。
 
 在專案資料夾執行：
@@ -123,12 +119,11 @@ dist/assets/index-BODUox0R.js   0.82 kB │ gzip: 0.51 kB
 ✓ built in 177ms
 ```
 
-`main.ts` 和 `greeting.ts` 被合併成 `dist/assets/` 裡一個 `.js` 檔。檔名中間那串雜湊（`0Y_Rzos9` 這種）和大小每次都會不同，不用在意。
+`main.ts` 和 `greeting.ts` 被合併成 `dist/assets/` 裡一個 `.js` 檔。檔名中間那串雜湊（`0Y_Rzos9` 這種）是依檔案內容算出來的：程式碼和 Vite 版本沒變，重新打包出來的檔名和大小就一樣，只有最後一行的 `built in` 時間每次不同；內容一改，雜湊就跟著變。你的數字如果跟這裡不一樣，通常是程式碼或 Vite 版本不同。
 
 ## 重點整理
 
 - 一個檔案就是一個模組；加上 `export` 才能被別的檔案 `import`，用法像 Rust 的 `pub` 與 `use`。
 - `import { x } from "./file"` 引入自己的檔案，`from "套件名稱"` 引入 npm 套件。
 - npm 對應 Cargo：`package.json`、`package-lock.json`、`node_modules/` 分別像 `Cargo.toml`、`Cargo.lock` 與下載的 crate。
-- 沒有 `import`/`export` 的檔案是全域腳本，最外層的名字會跟瀏覽器的全域名字撞名。
 - Vite 開發時負責轉換並送出檔案，`npm run build` 先用 `tsc` 檢查，再用 Vite 打包進 `dist/`。

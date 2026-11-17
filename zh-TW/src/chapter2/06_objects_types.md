@@ -24,7 +24,9 @@ interface Note {
 }
 ```
 
-它像 Rust 的 `struct` 定義，但不用另外「建立 struct」：任何欄位和型別都對得上的物件，就是一個 `Note`。用 `.` 讀寫欄位：`note.title`、`note.done = true`。
+它像 Rust 的 `struct` 定義，但不用另外「建立 struct」：任何欄位和型別都對得上的物件，就是一個 `Note`。這叫結構型別（structural typing）：TypeScript 比的是形狀，也就是有哪些欄位、各是什麼型別，不看名字。Rust 是名義型別（nominal typing）：兩個欄位一模一樣、名字不同的 struct 是不同的型別，不能互相代替；TypeScript 裡，欄位相同的另一個 `interface Task` 就能當 `Note` 用。多出欄位的物件也能當 `Note` 用，只有直接寫在那個位置的新物件字面值，多寫的欄位會被當成打錯字而擋下來。
+
+用 `.` 讀寫欄位：`note.title`、`note.done = true`。
 
 ### 陣列
 
@@ -35,11 +37,11 @@ notes.push({ id: 1, title: "讀完第 2 章", done: false });
 
 `Note[]` 是「裝 `Note` 的陣列」，對應 Rust 的 `Vec<Note>`。`push` 在尾端加一個，`notes.length` 是長度，`for (const note of notes) { ... }` 逐一走過每個元素。
 
-上一集說過 `const` 只管名字不能換，不代表內容不能改：`const notes` 照樣可以 `push`，物件的欄位也照樣可以改。
+`const` 只管名字不能再指向別的值，不代表內容不能改：`const notes` 照樣可以 `push`，物件的欄位也照樣可以改。這跟 Rust 不同，Rust 的 `let notes` 沒加 `mut` 就不能 `push`。
 
 ### `type` 與聯集
 
-`type` 能替任何型別取別名，最常用在**聯集（union）**，也就是「這幾種型別之一」：
+`type` 能替任何型別取別名（alias），最常用在**聯集（union）**，也就是「這幾種型別之一」：
 
 ```ts,ignore
 type Filter = "all" | "todo" | "done";
@@ -64,8 +66,8 @@ interface Note {
 
 const notes: Note[] = [{ id: 1, title: "Read" }];
 
-const hit = notes.find((note) => note.id === 1);
-hit.done = true;
+const found = notes.find((note) => note.id === 1);
+found.done = true;
 ```
 
 `npx tsc --noEmit` 的輸出：
@@ -81,24 +83,24 @@ src/main.ts:7:24 - error TS2741: Property 'done' is missing in type '{ id: numbe
         ~~~~
     'done' is declared here.
 
-src/main.ts:10:1 - error TS18048: 'hit' is possibly 'undefined'.
+src/main.ts:10:1 - error TS18048: 'found' is possibly 'undefined'.
 
-10 hit.done = true;
-   ~~~
+10 found.done = true;
+   ~~~~~
 
 
 Found 2 errors in the same file, starting at: src/main.ts:7
 ```
 
-第一則：物件少了 `done` 欄位。第二則：`find` 的回傳型別是 `Note | undefined`，直接用 `hit.done` 不行。解法是先用 `if` 檢查：
+第一則：物件少了 `done` 欄位。第二則：`find` 的回傳型別是 `Note | undefined`，直接用 `found.done` 不行。解法是先用 `if` 檢查：
 
 ```ts,ignore
-if (hit) {
-  hit.done = true;
+if (found) {
+  found.done = true;
 }
 ```
 
-進了 `if (hit)` 的大括號，TypeScript 就知道 `hit` 不是 `undefined`，這叫型別縮窄（narrowing）。要同時檢查兩個值，可以用 `&&` 接起來：`if (a && b)`，範本的 `greet` 就是這樣寫的。
+進了 `if (found)` 的大括號，TypeScript 就知道 `found` 不是 `undefined`，這叫型別縮窄（narrowing）。要同時檢查兩個值，可以用 `&&` 接起來：`if (a && b)`，範本的 `greet` 就是這樣寫的。
 
 ### 完整的範例
 
@@ -113,8 +115,6 @@ interface Note {
   done: boolean;
 }
 
-type Filter = "all" | "todo" | "done";
-
 const notes: Note[] = [
   { id: 1, title: "讀完第 2 章", done: false },
   { id: 2, title: "安裝 Node.js", done: true },
@@ -128,12 +128,9 @@ for (const note of notes) {
   }
 }
 
-let filter: Filter = "all";
-filter = "done";
-
-const hit = notes.find((note) => note.id === 2);
-if (hit) {
-  hit.done = false;
+const found = notes.find((note) => note.id === 2);
+if (found) {
+  found.done = false;
 }
 ```
 

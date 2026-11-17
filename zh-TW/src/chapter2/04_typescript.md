@@ -84,7 +84,7 @@ Found 2 errors in the same file, starting at: src/main.ts:2
 
 ### 範本開了 strict
 
-範本的 `tsconfig.json` 有 `"strict": true`，也就是最嚴格的檢查，另外還開了 `noUnusedLocals`（函式裡沒用到的變數算錯）。本書的程式碼都是在這個設定下通過的。把錯的地方改對：
+範本的 `tsconfig.json` 有 `"strict": true`。它是一個總開關，一次打開一整組嚴格檢查（例如不准悄悄冒出 `any`、可能是 `null` 的值要先檢查），不是單一規則。另外還單獨開了 `noUnusedLocals`（函式裡沒用到的變數算錯）。本書的程式碼都是在這個設定下通過的。把錯的地方改對：
 
 `src/main.ts`：
 

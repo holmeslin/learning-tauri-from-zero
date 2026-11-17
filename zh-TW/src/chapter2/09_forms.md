@@ -2,7 +2,7 @@
 
 ## 本集目標
 
-學會監聽表單的 `submit` 事件、用 `preventDefault()` 擋掉預設的送出行為，並讀出輸入框裡的值。
+學會監聽表單的 `submit` 事件、用 `preventDefault()` 擋掉預設行為（default action），並讀出輸入框裡的值。
 
 ## 正文
 
@@ -39,19 +39,15 @@
 `src/main.ts`：
 
 ```ts
-const form: HTMLFormElement | null = document.querySelector("#greet-form");
-const input: HTMLInputElement | null = document.querySelector("#greet-input");
-const msg: HTMLElement | null = document.querySelector("#greet-msg");
+const formEl: HTMLFormElement | null = document.querySelector("#greet-form");
+const inputEl: HTMLInputElement | null = document.querySelector("#greet-input");
+const msgEl: HTMLElement | null = document.querySelector("#greet-msg");
 
-form?.addEventListener("submit", (event) => {
+formEl?.addEventListener("submit", (event) => {
   event.preventDefault();
-  if (input && msg) {
-    msg.textContent = `你好，${input.value}！`;
+  if (inputEl && msgEl) {
+    msgEl.textContent = `你好，${inputEl.value}！`;
   }
-});
-
-input?.addEventListener("input", () => {
-  console.log(`目前輸入：${input.value}`);
 });
 ```
 
@@ -63,30 +59,15 @@ input?.addEventListener("input", () => {
 
 ### `preventDefault()`
 
-瀏覽器對很多事件都有預設行為。表單送出的預設行為，是帶著輸入的內容重新載入頁面。對這種不離開頁面的 App 來說，重新載入就是畫面上的東西全部歸零，所以要在處理函式裡呼叫 `event.preventDefault()` 取消預設行為。這就是範本 `greet` 裡那一行 `e.preventDefault()` 的用途。可以試試把這一行拿掉再送出：頁面重新載入，問候語不會留在畫面上。
+瀏覽器對很多事件都有預設行為。表單送出的預設行為，是帶著輸入的內容重新載入頁面。對這種不離開頁面的 App 來說，重新載入就是畫面上的東西全部歸零，所以要在監聽函式裡呼叫 `event.preventDefault()` 取消預設行為。範本的 `submit` 監聽函式（不是 `greet()`）裡那一行 `e.preventDefault()`，用途就在這裡。可以試試把這一行拿掉再送出：頁面重新載入，問候語不會留在畫面上。
 
-這個函式的事件物件是 `SubmitEvent`，TypeScript 看事件名 `"submit"` 就推論出來了，跟上一集一樣。
+這個監聽函式的事件物件是 `SubmitEvent`，TypeScript 看事件名 `"submit"` 就推論出來了，跟上一集一樣。
 
 ### 輸入框的值
 
-`HTMLInputElement` 的 `value` 欄位，是輸入框**現在**的內容，可以讀也可以寫。要注意兩件事：
+`HTMLInputElement` 的 `value` 欄位，是輸入框**現在**的內容，型別是 `string`，可以讀也可以寫。它跟 HTML 裡寫的 `value="..."` 屬性不一樣：那個屬性只是初始值，使用者一打字，變的是 `inputEl.value`。
 
-- `value` 一定是字串。即使是 `<input type="number">`，拿到的也是 `"42"` 這種字串，要數字得用 `Number(input.value)` 轉。
-- 它跟 HTML 裡寫的 `value="..."` 屬性不一樣：那個屬性只是初始值，使用者一打字，變的是 `input.value`。
-
-範例裡 `if (input && msg)` 先確認兩個元素都找得到，才用它們。這是上一集的型別縮窄，範本也是這樣寫。
-
-### `input` 事件
-
-`submit` 在送出時才發生。想在使用者每打一個字就知道，監聽輸入框的 `input` 事件。範例每次輸入就把目前的內容印到 Console：打 `Tauri`，Console 會依序印出：
-
-```text
-目前輸入：T
-目前輸入：Ta
-目前輸入：Tau
-目前輸入：Taur
-目前輸入：Tauri
-```
+範例裡 `if (inputEl && msgEl)` 先確認兩個元素都找得到，才用它們。這是第 6 集的型別縮窄，範本也是這樣寫。
 
 回頭看範本的 `main.ts`：取出輸入框的值、擋掉預設行為、把結果寫回段落，這些你現在都看得懂。還沒教的有三樣：`async` 與 `await` 在下一集，`import` 在第 11 集，`invoke` 第 3 章會正式介紹。
 
@@ -94,5 +75,4 @@ input?.addEventListener("input", () => {
 
 - 監聽表單的 `submit` 事件，按送出鈕與在輸入框按 Enter 都接得到。
 - `event.preventDefault()` 取消預設行為；表單預設會重新載入頁面。
-- `input.value` 是輸入框現在的內容，永遠是字串，要數字得自己轉。
-- `input` 事件在每次輸入時發生，可以即時看到內容的變化。
+- `inputEl.value` 是輸入框現在的內容，型別是 `string`。

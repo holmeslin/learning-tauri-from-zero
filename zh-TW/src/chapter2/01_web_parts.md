@@ -29,9 +29,9 @@ HTML（HyperText Markup Language）是一份用文字描述的結構：這裡有
 <script type="module" src="/src/main.ts" defer></script>
 ```
 
-讀到 `<link>`，瀏覽器去抓 `src/styles.css` 當作外觀規則；讀到 `<script>`，去抓 `src/main.ts` 並執行。檔案怎麼從開發伺服器送到瀏覽器，第 11 集再說。
+讀到 `<link>`，瀏覽器去抓 `src/styles.css` 當作外觀規則；讀到 `<script>`，去抓 `src/main.ts`，等整份 HTML 讀完才執行，為什麼是這個順序，第 7 集再說。檔案怎麼從開發伺服器送到瀏覽器，第 11 集再說。
 
-瀏覽器只看得懂 JavaScript，看不懂 TypeScript，所以 `main.ts` 會先被轉成 JavaScript 才送過去。TypeScript 跟 JavaScript 的關係是第 4 集的主題。
+`main.ts` 是 TypeScript，瀏覽器不能直接執行，中間會先轉換，細節第 4 集再說。
 
 結構、外觀、行為分在三個檔案，改一層不會動到另外兩層：想換顏色只改 CSS，想多一個按鈕只改 HTML，想改按下去之後的反應只改 TypeScript。
 
@@ -57,5 +57,5 @@ HTML（HyperText Markup Language）是一份用文字描述的結構：這裡有
 
 - 網頁由三層組成：HTML 管結構與內容，CSS 管外觀，TypeScript 管行為。
 - HTML 與 CSS 只是描述，TypeScript 才是會執行的程式語言。
-- 瀏覽器讀 `index.html`，遇到 `<link>` 載入 CSS，遇到 `<script>` 載入並執行程式。
+- 瀏覽器讀 `index.html`，遇到 `<link>` 載入 CSS，遇到 `<script>` 載入程式，等 HTML 讀完再執行。
 - 三層各自獨立，拿掉任何一層，其他兩層還是在。
