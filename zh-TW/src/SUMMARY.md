@@ -55,3 +55,4 @@
     - [從 Rust 開新視窗：`WebviewWindowBuilder`](chapter6/03_webview_window_builder.md)
     - [多個視窗與 label](chapter6/04_labels.md)
     - [無邊框與自訂標題列](chapter6/05_decorations.md)
+    - [視窗事件：關閉前確認](chapter6/06_close_requested.md)
