@@ -72,7 +72,6 @@ h1 {
   gap: 8px;
 }
 
-/* .done 寫在 li 前面，但它比較具體，所以還是它贏 */
 .done {
   color: #888;
   text-decoration: line-through;

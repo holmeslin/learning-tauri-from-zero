@@ -83,7 +83,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
 ### 在哪個物件上註冊
 
-`addEventListener` 不只按鈕有，`document`、`window` 也有。事件發生在某個元素上之後，會從那個元素一路往外傳：先到它自己，再到包住它的外層元素，最後到 `document` 和 `window`，這叫冒泡（bubbling）。所以註冊在哪一層，決定的是你要聽多大的範圍：
+`addEventListener` 不只按鈕有，`document`、`window` 也有。大部分的事件發生在某個元素上之後，會從那個元素一路往外傳：先到它自己，再到包住它的外層元素，最後到 `document` 和 `window`，這叫冒泡（bubbling）。所以註冊在哪一層，決定的是你要聽多大的範圍：
 
 - 元素（如按鈕）：只聽那個元素，以及從它裡面冒泡上來的事件，像它的 `click`。
 - `document`：整份頁面冒泡上來的事件，像鍵盤的 `keydown`（按鍵發生在目前有焦點的元素上，再往外傳）。按鈕的 `click` 也會傳到這裡。
@@ -96,4 +96,4 @@ window.addEventListener("DOMContentLoaded", () => {
 - `元素.addEventListener("事件名", 函式)` 註冊函式，事件每發生一次就呼叫一次。
 - 傳的是函式本身（`increase`），不是呼叫結果（`increase()`）。
 - 監聽函式可以收一個事件物件，型別由事件名字決定（`"click"` 是 `PointerEvent`，`"keydown"` 是 `KeyboardEvent`）。
-- 元素、`document`、`window` 都能註冊事件；事件會從元素往外冒泡到 `document` 與 `window`。`DOMContentLoaded` 在頁面讀完時發出。
+- 元素、`document`、`window` 都能註冊事件；大部分的事件會從元素往外冒泡到 `document` 與 `window`。`DOMContentLoaded` 在頁面讀完時發出。
