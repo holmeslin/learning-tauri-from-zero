@@ -53,3 +53,5 @@
     - [視窗設定：大小、標題與縮放](chapter6/01_window_config.md)
     - [從前端操作視窗：`getCurrentWindow`](chapter6/02_get_current_window.md)
     - [從 Rust 開新視窗：`WebviewWindowBuilder`](chapter6/03_webview_window_builder.md)
+    - [多個視窗與 label](chapter6/04_labels.md)
+    - [無邊框與自訂標題列](chapter6/05_decorations.md)
