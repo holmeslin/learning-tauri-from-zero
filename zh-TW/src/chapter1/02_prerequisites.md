@@ -30,7 +30,7 @@ xcode-select --install
 xcode-select -p
 ```
 
-執行結果：
+`xcode-select -p` 的輸出：
 
 ```text
 /Library/Developer/CommandLineTools
@@ -80,7 +80,7 @@ node -v
 npm -v
 ```
 
-執行結果：
+`node -v` 與 `npm -v` 的輸出：
 
 ```text
 v26.5.0
@@ -96,7 +96,7 @@ rustc --version
 cargo --version
 ```
 
-執行結果：
+`rustc --version` 與 `cargo --version` 的輸出：
 
 ```text
 rustc 1.99.1 (58cf8f9c3 2026-10-13)

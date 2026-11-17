@@ -25,7 +25,7 @@ npm create tauri-app@latest
 | Choose your UI template | `Vanilla` |
 | Choose your UI flavor | `TypeScript` |
 
-Identifier 是 App 的唯一代號，預設值是依你的使用者名稱產生的，請改成 `tw.example.tauri-app`。它會寫進設定檔，第 6 集會看到。`Vanilla` 的意思是不用 Vue、React 這類前端框架，整本書都是這樣。
+Identifier 是 App 的唯一代號，格式是反向網域，只能有英文字母、數字、`-` 和 `.`。預設值是 `com.<你的使用者名稱>.tauri-app`，會因人而異，請改成 `tw.example.tauri-app`。它會寫進設定檔（configuration file），第 6 集會看到。`Vanilla` 的意思是不用 Vue、React 這類前端框架，整本書都是這樣。
 
 全部回答完，畫面上會留下這些：
 
@@ -77,7 +77,7 @@ added 20 packages, and audited 21 packages in 10s
 found 0 vulnerabilities
 ```
 
-`npm install` 會照 `package.json` 把前端用到的套件裝進 `node_modules/`：Tauri 的命令列工具（`@tauri-apps/cli`）、前端呼叫 Tauri 用的 `@tauri-apps/api`、opener plugin 的前端套件，還有 Vite 和 TypeScript。Rust 這一側的 crate 不在這一步，等第一次執行 `tauri dev` 時 cargo 才會下載、編譯。套件數量和耗時依你的網路而不同。
+`npm install` 會照 `package.json` 把前端用到的套件裝進 `node_modules/`：Tauri 的命令列工具（`@tauri-apps/cli`）、前端呼叫 Tauri 用的 `@tauri-apps/api`（第 3 章第 2 集會用到）、opener plugin 的前端套件（plugin 在第 7 章正式介紹），還有 Vite 和 TypeScript。Rust 這一側的 crate 不在這一步，等第一次執行 `tauri dev` 時 cargo 才會下載、編譯。套件數量和耗時依你的網路而不同。
 
 專案就建好了。範本附了一份 VS Code 的建議（`.vscode/extensions.json`）：安裝 Tauri 和 rust-analyzer 兩個擴充套件。用別的編輯器也可以。
 

@@ -71,7 +71,7 @@ fn main() {
 
 ### 自動產生的東西
 
-`npm install` 會產生 `node_modules/`，第一次編譯會產生 `src-tauri/target/` 和 `src-tauri/gen/`。這些都是機器產生的，範本附的 `.gitignore` 已經把它們排除了。不用管，也不要手動改。
+`npm install` 會產生 `node_modules/`，第一次編譯會產生 `src-tauri/target/`，還有 `src-tauri/gen/schemas/`（給編輯器替 `capabilities/` 裡的 JSON 自動補全用）。這些都是機器產生的，範本附的 `.gitignore` 已經排除了：根目錄的排除 `node_modules`，`src-tauri/.gitignore` 排除 `/target/` 和 `/gen/schemas`。不用管，也不要手動改。
 
 ## 重點整理
 

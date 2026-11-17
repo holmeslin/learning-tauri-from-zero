@@ -2,7 +2,7 @@
 
 [前言](foreword.md)
 
-# 第一部
+# 第一部 基礎
 
 - [第一個 Tauri App](chapter1/README.md)
     - [Tauri 是什麼](chapter1/01_what_is_tauri.md)

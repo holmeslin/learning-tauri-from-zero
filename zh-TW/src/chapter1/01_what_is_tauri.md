@@ -12,11 +12,11 @@ Tauri 讓你用網頁技術畫介面，其他事情都交給 Rust。跑起來的
 
 ```text
 你的 App
-├── 後端：一個 Rust 行程，管視窗、檔案、資料庫、系統功能
+├── 後端（backend）：一個 Rust 行程（process），管視窗（window）、檔案、資料庫、系統功能
 │       ▲
 │       │ IPC（互相傳訊息）
 │       ▼
-└── 前端：視窗裡的網頁（WebView），用 HTML、CSS、TypeScript 畫介面
+└── 前端（frontend）：視窗裡的網頁（WebView），用 HTML、CSS、TypeScript 畫介面
 ```
 
 - **後端**是一個 Rust 行程，官方文件叫它 Core 行程。App 從這裡啟動，視窗由它建立，也只有它能讀寫檔案、連資料庫、呼叫系統功能。這本書裡你寫的 Rust 都在這一側。
@@ -32,7 +32,7 @@ Tauri 讓你用網頁技術畫介面，其他事情都交給 Rust。跑起來的
 | Windows | WebView2（Edge 的 Chromium 引擎） |
 | Linux | WebKitGTK |
 
-Tauri 不替你帶一個瀏覽器，所以 App 的安裝檔很小。這也是它最常被拿來和 Electron 比的地方。
+Tauri 不替你帶一個瀏覽器，所以 App 的安裝檔很小。
 
 ### IPC：兩邊怎麼說話
 
@@ -42,9 +42,9 @@ Tauri 不替你帶一個瀏覽器，所以 App 的安裝檔很小。這也是它
 
 ### 跟 Electron 比一比
 
-Electron 的做法是把整套 Chromium 和 Node.js 打包進每個 App，後端用 JavaScript 寫。Tauri 有兩個地方不同，照 Electron 的直覺想會出錯：
+Electron 是另一個用網頁技術做桌面 App 的框架，做法是把整套 Chromium 和 Node.js 打包進每個 App，後端用 JavaScript 寫，所以安裝檔比 Tauri 大得多。除此之外 Tauri 還有兩個地方不同，照 Electron 的直覺想會出錯：
 
-- **瀏覽器引擎隨平台而異。** Electron 自帶 Chromium，三個平台畫面一致。Tauri 用系統的 WebView：macOS 和 Linux 是 WebKit，Windows 是 Chromium 系的 WebView2，同一段 CSS 或 JavaScript 偶爾會在不同平台表現不同。所以「我的電腦上正常」不代表每個平台都正常，要在各平台測過。
+- **瀏覽器引擎隨平台而異。** Electron 內建 Chromium，三個平台畫面一致。Tauri 用系統的 WebView：macOS 和 Linux 是 WebKit，Windows 是 Chromium 系的 WebView2，同一段 CSS 或 JavaScript 偶爾會在不同平台表現不同。所以「我的電腦上正常」不代表每個平台都正常，要在各平台測過。
 - **App 裡沒有 Node.js。** 後端是 Rust，前端是單純的網頁環境。Node.js 只在開發時用來跑 Vite 和 npm，不會被打包進 App。前端程式裡沒有 `require("fs")` 這類東西，想讀檔案就要請 Rust 去做。
 
 ## 重點整理

@@ -40,9 +40,7 @@ npm run tauri dev
      Running `target/debug/tauri-app`
 ```
 
-編譯完會跳出一個 800×600 的視窗，標題是 `tauri-app`，上面有 Welcome to Tauri、三個 logo、一個輸入框和 Greet 按鈕。在輸入框打 `Tauri` 再按 Greet，下方會出現 `Hello, Tauri! You've been greeted from Rust!`。這句話是 Rust 產生的，第 7 集會一路追它的來歷。
-
-如果你用 macOS，終端機後面可能還會多出 `TSM AdjustCapsLockLEDForKeyTransitionHandling ...` 和 `error messaging the mach port for IMKCFRunLoopWakeUpReliable` 這類訊息。它們是系統的輸入法元件印的，雖然有 `error` 字樣，跟你的程式無關，可以忽略。
+編譯完會跳出一個 800×600 的視窗，標題列寫著 `tauri-app`，裡面有大標題 Welcome to Tauri、三個 logo、一個輸入框和 Greet 按鈕。在輸入框打 `Tauri` 再按 Greet，下方會出現 `Hello, Tauri! You've been greeted from Rust!`。這句話是 Rust 產生的，第 7 集會一路追它的來歷。
 
 ### 同時跑了兩個東西
 
@@ -55,57 +53,13 @@ npm run tauri dev
 
 ### 改前端：存檔就更新
 
-讓 `tauri dev` 繼續開著，把 `index.html` 的標題改掉：
-
-`index.html`（標題改成中文）：
+讓 `tauri dev` 繼續開著，把 `index.html` 裡的大標題（`<h1>`）改成中文。找到 `<h1>Welcome to Tauri</h1>` 這一行，改成：
 
 ```html
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="stylesheet" href="/src/styles.css" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Tauri App</title>
-    <script type="module" src="/src/main.ts" defer></script>
-  </head>
-
-  <body>
-    <main class="container">
-      <h1>你好，Tauri！</h1>
-
-      <div class="row">
-        <a href="https://vite.dev" target="_blank">
-          <img src="/src/assets/vite.svg" class="logo vite" alt="Vite logo" />
-        </a>
-        <a href="https://tauri.app" target="_blank">
-          <img
-            src="/src/assets/tauri.svg"
-            class="logo tauri"
-            alt="Tauri logo"
-          />
-        </a>
-        <a href="https://www.typescriptlang.org/docs" target="_blank">
-          <img
-            src="/src/assets/typescript.svg"
-            class="logo typescript"
-            alt="typescript logo"
-          />
-        </a>
-      </div>
-      <p>Click on the Tauri logo to learn more about the framework</p>
-
-      <form class="row" id="greet-form">
-        <input id="greet-input" placeholder="Enter a name..." />
-        <button type="submit">Greet</button>
-      </form>
-      <p id="greet-msg"></p>
-    </main>
-  </body>
-</html>
+<h1>你好，Tauri！</h1>
 ```
 
-存檔，視窗馬上就換了，不必重開 App。終端機多了一行 Vite 的訊息：
+存檔，視窗裡的大標題馬上就換了，不必重開 App。這是頁面上的標題，跟視窗標題列的文字無關，那個要到第 6 集才會改。終端機多了一行 Vite 的訊息：
 
 ```text
 上午11:01:59 [vite] (client) page reload index.html

@@ -56,12 +56,11 @@
 - `$schema`：告訴編輯器這份 JSON 的格式，讓它能自動補全、檢查欄位。
 - `productName`：App 給使用者看的名字，安裝檔和應用程式的名稱都從這裡來。
 - `version`：App 的版本號。
-- `identifier`：App 的唯一代號，格式是反向網域，只能有英文字母、數字、`-` 和 `.`，不能跟別的 App 重複。第 3 集建專案時輸入的就是它。
+- `identifier`：App 的唯一代號，就是第 3 集建專案時輸入的那個。
 
 ### `build`：前端怎麼接上來
 
-- `beforeDevCommand`：`tauri dev` 啟動時先執行的指令，就是上一集輸出裡的 `BeforeDevCommand`，這裡用來啟動 Vite。
-- `devUrl`：開發時視窗載入的網址。
+- `beforeDevCommand` 與 `devUrl`：上一集看到的，開發時先啟動 Vite 的指令，以及視窗載入的網址。
 - `beforeBuildCommand`：`tauri build` 打包前先執行的指令。`npm run build` 會檢查 TypeScript，再用 Vite 把前端打包進專案根目錄的 `dist/`。
 - `frontendDist`：打包好的前端放在哪裡，路徑從 `src-tauri/` 算起，所以 `../dist` 就是剛剛的 `dist/`。
 
@@ -69,9 +68,9 @@
 
 ### `app`：視窗與安全
 
-- `windows`：視窗的清單，範本只有一個，標題 `tauri-app`，寬 800、高 600。沒有特別指定的話，視窗的 label 預設是 `main`，`capabilities/default.json` 裡的 `"windows": ["main"]` 指的就是它。視窗的完整設定在第 6 章。
+- `windows`：視窗的清單，範本只有一個，標題 `tauri-app`，寬 800、高 600。沒有特別指定的話，視窗的 label 預設是 `main`，`capabilities/default.json` 裡的 `"windows": ["main"]` 指的就是它（capability 第 14 章會正式介紹，plugin 的 permission 第 7 章就會先碰到）。視窗的完整設定在第 6 章。
 - `security.csp`：內容安全政策（CSP），範本設成 `null`，表示不限制。第 14 章會回來處理。
-- `withGlobalTauri`：打開的話，前端可以用全域變數 `window.__TAURI__` 呼叫 Tauri 的功能。本書的前端程式都用 `import`，所以不會用到它。
+- `withGlobalTauri`：打開的話，前端可以用全域變數 `window.__TAURI__` 呼叫 Tauri 的功能。本書的前端程式都用 `import`（第 2 章第 11 集會教），所以不會用到它。
 
 ### `bundle`：打包
 

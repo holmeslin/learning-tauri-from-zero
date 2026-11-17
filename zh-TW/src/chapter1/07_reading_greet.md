@@ -2,7 +2,7 @@
 
 ## 本集目標
 
-追一遍「按下 Greet，畫面出現一句話」經過的每個檔案，知道前端和 Rust 各做了哪一步。這集只讀、不寫：前端語法留到第 2 章，command 與 `invoke` 的寫法留到第 3 章。
+讀懂「按下 Greet，畫面出現一句話」經過的每個檔案，知道前端和 Rust 各做了哪一步。這集只讀、不寫，寫法留到第 2、3 章。
 
 ## 正文
 
@@ -90,7 +90,7 @@ pub fn run() {
 這段你幾乎都看得懂：
 
 - `greet` 是一個普通的 Rust 函式，收一個 `&str`，回傳 `String`。唯一多出來的是上面的 `#[tauri::command]`，它讓前端能夠呼叫這個函式。前端傳來的 `name` 就是參數，回傳值會送回前端。第 3 章第 1 集會正式介紹。
-- `run()` 把 App 組起來：`tauri::Builder::default()` 開始建構，`.plugin(tauri_plugin_opener::init())` 裝上 opener plugin（用系統預設的程式開網址或檔案，第 7 章），`.invoke_handler(tauri::generate_handler![greet])` 登記「前端可以呼叫哪些 command」，沒登記的函式前端叫不到。
+- `run()` 把 App 組起來：`tauri::Builder::default()` 開始建構，`.plugin(tauri_plugin_opener::init())` 裝上 opener plugin（用系統預設的程式開網址或檔案，第 7 章），`.invoke_handler(tauri::generate_handler![greet])` 是登記 command 的地方，第 3 章第 1 集會講。
 - `.run(tauri::generate_context!())` 把上一集看的 `tauri.conf.json` 讀進來，啟動 App。
 - `#[cfg_attr(mobile, tauri::mobile_entry_point)]` 是行動裝置的入口，第 18 章才用到。
 
@@ -101,7 +101,6 @@ pub fn run() {
 ## 重點整理
 
 - 一次 Greet 的路線：表單送出、`main.ts` 取值、`invoke` 呼叫、Rust 的 `greet` 回傳字串、`main.ts` 寫回頁面。
-- 前端用 `invoke("命令名稱", { 參數 })` 呼叫 Rust。
-- Rust 端是加了 `#[tauri::command]` 的函式，再用 `generate_handler!` 登記。
+- 前端用 `invoke` 呼叫 Rust，Rust 端是加了 `#[tauri::command]` 的函式。兩邊靠名稱對起來：`"greet"` 對函式名稱，`{ name }` 對參數。
 - `run()` 負責組裝 App：plugin、command、`tauri.conf.json`。
-- 看不懂的前端語法在第 2 章，command 的寫法在第 3 章。
+- 看不懂的前端語法在第 2 章，command 與 `invoke` 的寫法在第 3 章。
