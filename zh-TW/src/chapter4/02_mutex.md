@@ -48,7 +48,7 @@ error[E0594]: cannot assign to data in dereference of `tauri::State<'_, Counter>
   = help: trait `DerefMut` is required to modify through a dereference, but it is not implemented for `tauri::State<'_, Counter>`
 ```
 
-`State` 只能當 `&Counter` 用，沒有 `DerefMut`。這是故意的：所有 command 共用同一份狀態，它們可能同時在不同執行緒上跑，Tauri 不能把 `&mut` 發給每一個人。
+`State` 只能當 `&Counter` 用，沒有 `DerefMut`。這是故意的：同一份狀態會被很多地方同時拿著（async command 在工作執行緒上跑，你自己開的執行緒也拿得到），Tauri 不能把 `&mut` 發給每一個人。
 
 ### 包進 `Mutex`
 
@@ -137,10 +137,6 @@ incBtnEl?.addEventListener("click", async () => {
 ```
 
 每按一次「加一」，文字就變成「目前的計數：1」「目前的計數：2」……這個計數不在網頁裡，在 Rust 的行程裡：多按幾次之後，改一下 `src/main.ts` 存檔，頁面重新載入，文字回到「還沒按過」，再按一次卻是接著算，不是從 1 重來。整個 App 重啟（例如改了 Rust 程式，第 1 章第 5 集），`Mutex::new(Counter { count: 0 })` 才會重新執行，計數才歸零。
-
-### 跟 Electron 比一比
-
-Electron 的主行程跑 JavaScript，只有一條執行緒，在模組最上層寫一個 `let count = 0`，每個處理函式都能直接 `count += 1`。Tauri 的 command 可能同時在多條執行緒上跑，Rust 不讓你隨手共用可變的資料，要用 `Mutex` 明確上鎖。
 
 ## 重點整理
 

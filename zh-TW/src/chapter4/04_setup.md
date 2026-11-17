@@ -130,7 +130,7 @@ help: trait `Manager` which provides `manage` is implemented but not in scope; p
 
 ### `setup` 什麼時候跑、失敗了會怎樣
 
-- `setup` 在 App 啟動時執行一次，跑完才開始處理前端的呼叫，所以 command 一定看得到 `setup` 裡 `manage` 的狀態。反過來說，它佔著時間，不要在裡面做太久的事。
+- `setup` 在 App 啟動時、主執行緒上執行一次。前端的呼叫要由主執行緒收進來，它被 `setup` 佔著的時候，呼叫只能等，所以 command 看得到 `setup` 裡 `manage` 的狀態。反過來說，它會卡住主執行緒，不要在裡面做太久的事。
 - 閉包回傳 `Result<(), Box<dyn Error>>`，裡面可以用 `?`。在最前面加一行 `let _n: u32 = "abc".parse()?;` 故意讓它失敗，App 就不會開起來，終端機出現：
 
   ```text
@@ -138,11 +138,9 @@ help: trait `Manager` which provides `manage` is implemented but not in scope; p
   Failed to setup app: error encountered during setup hook: invalid digit found in string
   ```
 
-- `Builder::manage` 管理同一種型別第二次會 panic（第 1 集）；`app.manage(...)` 則是回傳 `bool`，已經有就回傳 `false`，不會取代原本的值。
-
 ## 重點整理
 
 - 要用 App 的資訊建立狀態，就在 `Builder::setup` 的閉包裡 `app.manage(...)`；閉包要回傳 `Ok(())`。
 - `manage` 等方法在 `Manager` trait 上，要 `use tauri::Manager`。
-- `setup` 啟動時跑一次，跑完才處理前端呼叫；裡面出錯用 `?` 回傳，App 會停止啟動。
+- `setup` 在啟動時於主執行緒跑一次，前端的呼叫會等它跑完；裡面出錯用 `?` 回傳，App 會停止啟動。
 - 前端與 command 取用狀態的方式不變，仍是 `State<T>`。

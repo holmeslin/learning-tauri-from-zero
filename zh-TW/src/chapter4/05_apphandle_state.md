@@ -8,11 +8,11 @@
 
 ### 不是每段程式都是 command
 
-`State` 參數只能寫在 command 上。可是 App 裡不是每段程式都是 command：`setup` 裡開出去的背景執行緒（這一集的範例）、之後的事件回呼（第 5 章）都不是，沒有人替它們填參數。這時只要手上有 `AppHandle`，就能向它要：`handle.state::<型別>()`，拿到的跟參數裡的 `State<T>` 是同一種東西。第 3 章第 9 集說過 `AppHandle` 可以 `clone()` 交給別處，正好用在這裡。`state()` 定義在 `Manager` trait 上，要 `use tauri::Manager`；`setup` 裡的 `app` 與第 3 章第 9 集的 `WebviewWindow` 也實作了它，同樣有 `state()`。
+`State` 參數只能寫在 command 上。可是 App 裡不是每段程式都是 command：`setup` 裡開出去的背景執行緒（這一集的範例）、事件回呼（第 5 章會正式介紹）都不是，沒有人替它們填參數。這時只要手上有 `AppHandle`，就能向它要：`handle.state::<型別>()`，拿到的跟參數裡的 `State<T>` 是同一種東西。第 3 章第 9 集說過 `AppHandle` 可以 `clone()` 交給別處，正好用在這裡。`state()` 定義在 `Manager` trait 上，要 `use tauri::Manager`；`setup` 裡的 `app` 與第 3 章第 9 集的 `WebviewWindow` 也實作了它，同樣有 `state()`。
 
 ### 範例：背景執行緒每秒加一
 
-`setup` 裡開一條執行緒，每秒替計數加一。command 這一側，`get_seconds` 用上一集的 `State`，`reset` 改用 `AppHandle`：
+`setup` 裡開一條執行緒，每秒替計數加一。command 這一側，`get_seconds` 與 `reset` 照上一集用 `State` 就好，只有背景執行緒需要 `AppHandle`：
 
 `src-tauri/src/lib.rs`：
 
@@ -20,7 +20,7 @@
 use std::sync::Mutex;
 use std::thread;
 use std::time::Duration;
-use tauri::{AppHandle, Manager, State};
+use tauri::{Manager, State};
 
 struct Ticker {
     seconds: u32,
@@ -32,8 +32,7 @@ fn get_seconds(state: State<Mutex<Ticker>>) -> u32 {
 }
 
 #[tauri::command]
-fn reset(app: AppHandle) {
-    let state = app.state::<Mutex<Ticker>>();
+fn reset(state: State<Mutex<Ticker>>) {
     state.lock().unwrap().seconds = 0;
 }
 
@@ -61,7 +60,7 @@ pub fn run() {
 
 - `.manage(...)` 仍然寫在 `Builder` 上，所以執行緒開始跑的時候，狀態已經在了；`app.handle()` 拿到 `AppHandle` 的參考，`.clone()` 之後 `move` 進執行緒。
 - `state::<Mutex<Ticker>>()` 的尖括號寫的是狀態的型別，狀態是依型別找的（第 1 集），不寫的話 Rust 不知道你要哪一個。
-- 背景執行緒、`get_seconds`、`reset` 走三條不同的路，拿到的是同一個 `Mutex`。
+- 背景執行緒走 `AppHandle`，`get_seconds` 與 `reset` 走 `State` 參數，兩條不同的路，拿到的是同一個 `Mutex`。
 
 前端兩個按鈕，一個讀取、一個歸零：
 

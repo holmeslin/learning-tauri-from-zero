@@ -46,7 +46,7 @@ pub fn run() {
 
 - `State<Settings>` 可以直接當 `&Settings` 用，所以寫 `settings.greeting`。
 - `State` 只借給你唯讀的參考，改不了裡面的值；怎麼改，下一集說。
-- 交給 Tauri 的值要是 `Send + Sync + 'static`：不同的 command 可能在不同執行緒同時讀它。
+- 交給 Tauri 的值一律要是 `Send + Sync + 'static`，因為狀態可能被好幾條執行緒同時讀到：async command 在工作執行緒上跑（第 3 章第 8 集），你自己開的執行緒也拿得到它（第 5 集會看到）。
 
 前端改用 `try`/`catch` 接住失敗（第 3 章第 6 集），下一節會用到：
 
