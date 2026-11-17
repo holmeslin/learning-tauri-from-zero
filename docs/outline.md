@@ -2,27 +2,27 @@
 
 Tauri 2.12 · Rust 1.99（edition 2024）· Node LTS + npm · 前端 vanilla TypeScript + Vite · 繁中 · 給讀完《從零開始學 Rust》的人 · 一集一個小概念
 
-讀者會 Rust（也會 Go），但沒寫過前端、沒用過 Tauri。Rust 語法不再教，要教的是前端基礎與 Tauri 本身。寫作規則見 `docs/style-guide.md`，名詞見 `GLOSSARY.md`。本檔只標註各章需要特別注意的進度邊界。
+讀者會 Rust（也會 Go），但沒寫過前端、沒用過 Tauri。Rust 語法不再教，要教的是前端基礎（第 2 章）與 Tauri 本身。寫作規則見 `docs/style-guide.md`，名詞見 `GLOSSARY.md`。本檔只標註各章需要特別注意的進度邊界。
 
 > 這是草案，章節與集數在 PR 審閱時調整。定案後每一章開一個 GitHub issue。
 
 # 第一部 基礎
 
-## 第 1 章 前端速成
-01 網頁由什麼組成（HTML 結構、CSS 外觀、JS/TS 行為）· 02 HTML 元素與屬性 · 03 CSS 選擇器與 flex 排版 · 04 TypeScript 是什麼（跟 JavaScript、跟 Rust 的型別比一比）· 05 `let`、`const` 與函式、箭頭函式 · 06 物件、陣列、`type` 與 `interface` · 07 DOM：`querySelector` 與修改內容 · 08 事件：`addEventListener` · 09 表單與輸入值 · 10 `Promise` 與 `async`/`await`（跟 Rust 的 `Future` 比一比）· 11 `import`/`export`、npm 與 Vite
-
-邊界：本章只在範本專案的 `index.html`、`src/main.ts`、`src/styles.css` 裡寫前端，完全不碰 `src-tauri`，也不呼叫 `invoke`。範例用瀏覽器 API 就能完成的事，不用框架。
-
-## 第 2 章 第一個 Tauri App
+## 第 1 章 第一個 Tauri App
 01 Tauri 是什麼（WebView + Rust 行程）· 02 安裝前置需求（macOS、Windows、Linux）· 03 用 `create-tauri-app` 建專案 · 04 專案結構導覽（`src/` 與 `src-tauri/`）· 05 `npm run tauri dev` 與熱重載 · 06 `tauri.conf.json` 初探 · 07 讀懂範本的 `greet` · 08 開發者工具與除錯
 
-邊界：第 7 集只「讀懂」範本，`#[tauri::command]` 與 `invoke` 的寫法第 3 章才正式教。
+邊界：第 7 集只「讀懂」範本：前端的語法第 2 章才教，`#[tauri::command]` 與 `invoke` 的寫法第 3 章才正式教。
+
+## 第 2 章 前端速成
+01 網頁由什麼組成（HTML 結構、CSS 外觀、JS/TS 行為）· 02 HTML 元素與屬性 · 03 CSS 選擇器與 flex 排版 · 04 TypeScript 是什麼（跟 JavaScript、跟 Rust 的型別比一比）· 05 `let`、`const` 與函式、箭頭函式 · 06 物件、陣列、`type` 與 `interface` · 07 DOM：`querySelector` 與修改內容 · 08 事件：`addEventListener` · 09 表單與輸入值 · 10 `Promise` 與 `async`/`await`（跟 Rust 的 `Future` 比一比）· 11 `import`/`export`、npm 與 Vite
+
+邊界：本章只在第 1 章建好的專案的 `index.html`、`src/main.ts`、`src/styles.css` 裡寫前端，完全不碰 `src-tauri`，也不呼叫 `invoke`。範例用瀏覽器 API 就能完成的事，不用框架。
 
 ## 第 3 章 Command：前端呼叫 Rust
 01 `#[tauri::command]` 與 `generate_handler!` · 02 前端的 `invoke` · 03 傳參數（snake_case 與 camelCase 的對應）· 04 回傳值與 serde · 05 struct 當參數與回傳值（`Serialize`、`Deserialize`）· 06 回傳 `Result` · 07 自訂錯誤型別（thiserror 加 `Serialize`）· 08 async command · 09 在 command 裡拿到 `AppHandle` 與 `WebviewWindow` · 10 把 command 拆到模組
 
 ## 第 4 章 狀態管理
-01 `manage` 與 `State` · 02 用 `Mutex` 包住可變狀態 · 03 async command 裡的狀態（`tokio::sync::Mutex`）· 04 在 `setup` 裡初始化 · 05 從 `AppHandle` 取得狀態
+01 `manage` 與 `State` · 02 用 `Mutex` 包住可變狀態 · 03 async command 裡的狀態（`tauri::async_runtime::Mutex`）· 04 在 `setup` 裡初始化 · 05 從 `AppHandle` 取得狀態
 
 ## 第 5 章 事件與 Channel
 01 Rust 送事件給前端：`emit` · 02 前端 `listen` 與取消監聽 · 03 前端送事件給 Rust · 04 只送給某個視窗 · 05 `Channel`：串流資料 · 06 長時間工作回報進度

@@ -232,7 +232,15 @@ impl Env {
             .args(["fmt", "--check"])
             .current_dir(&tauri))?;
         let (rust_ok, rust_text) = run(Command::new("cargo")
-            .args(["clippy", "--all-targets", "--", "-D", "warnings"])
+            // --locked：書中用到的 crate 都要先加進範本並鎖版本。
+            .args([
+                "clippy",
+                "--locked",
+                "--all-targets",
+                "--",
+                "-D",
+                "warnings",
+            ])
             .current_dir(&tauri)
             .env("CARGO_TARGET_DIR", &self.target)
             .env("CARGO_TERM_COLOR", "never"))?;
