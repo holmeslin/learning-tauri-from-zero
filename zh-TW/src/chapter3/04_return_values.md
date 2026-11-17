@@ -8,9 +8,7 @@
 
 ### serde 與 `Serialize`
 
-command 的回傳值要穿過 IPC，到前端變成 JavaScript 的值，中間需要一種大家都懂的格式：JSON。Rust 把值轉成某種格式叫序列化（serialize），反過來叫反序列化（deserialize）。做這件事的 crate 叫 serde，Tauri 用它搭配 `serde_json`。範本的 `Cargo.toml` 已經有這兩個相依套件，不用另外加。
-
-serde 的核心是 `Serialize` 這個 trait：型別有實作它，就知道自己該怎麼變成 JSON。**command 的回傳型別必須實作 `Serialize`**。`String`、數字、`Vec<T>` 這些標準函式庫的型別都已經實作好了，自己定義的型別要靠 `#[derive(Serialize)]`，第 5 集會用到。
+command 的回傳值要穿過 IPC，到前端變成 JavaScript 的值，中間需要一種大家都懂的格式：JSON。Rust 把值轉成某種格式叫序列化（serialize），反過來叫反序列化（deserialize）。做這件事的 crate 叫 serde，Tauri 用它搭配 `serde_json`。範本的 `Cargo.toml` 已經有這兩個相依套件，不用另外加。serde 的核心是 `Serialize` 這個 trait：型別有實作它，就知道自己該怎麼變成 JSON。**command 的回傳型別必須實作 `Serialize`**。`String`、數字、`Vec<T>` 這些標準函式庫的型別都已經實作好了，自己定義的型別要靠 `#[derive(Serialize)]`，第 5 集會用到。
 
 ### 四種常見的回傳型別
 
@@ -19,6 +17,8 @@ serde 的核心是 `Serialize` 這個 trait：型別有實作它，就知道自�
 `src-tauri/src/lib.rs`：
 
 ```rust
+use std::collections::BTreeMap;
+
 fn fruit_list() -> Vec<String> {
     vec!["apple".to_string(), "banana".to_string()]
 }
@@ -34,8 +34,8 @@ fn fruit_at(index: usize) -> Option<String> {
 }
 
 #[tauri::command]
-fn prices() -> std::collections::BTreeMap<String, u32> {
-    std::collections::BTreeMap::from([("apple".to_string(), 30), ("banana".to_string(), 20)])
+fn prices() -> BTreeMap<String, u32> {
+    BTreeMap::from([("apple".to_string(), 30), ("banana".to_string(), 20)])
 }
 
 #[tauri::command]
@@ -69,7 +69,9 @@ pub fn run() {
   <body>
     <main class="container">
       <h1>回傳值</h1>
-      <button id="run-btn" type="button">呼叫四個 command</button>
+      <div class="row">
+        <button id="run-btn" type="button">呼叫四個 command</button>
+      </div>
       <pre id="results"></pre>
     </main>
   </body>
@@ -128,15 +130,13 @@ null
 | Rust 型別 | JSON | `invoke<T>` 的 `T` |
 | --- | --- | --- |
 | `String` | 字串 | `string` |
-| 整數、浮點數 | 數字 | `number` |
+| 整數、浮點數 | 數字 | `number`（JavaScript 只能精確到 2 的 53 次方左右，`u64`、`i64` 超過會失真，這種值如資料庫 ID 要改用字串傳） |
 | `bool` | 布林 | `boolean` |
 | `Vec<T>`、陣列 | 陣列 | `T[]` |
 | `Option<T>` | `None` 是 `null`（不是 `undefined`），`Some(x)` 是 `x` | `T \| null`（第 2 章第 6 集），用之前先判斷 |
 | `(A, B)`（tuple） | 兩個元素的陣列 | `[A, B]`（恰好兩個元素的陣列） |
 | `BTreeMap<String, V>`、`HashMap<String, V>` | 物件 | 用 `interface` 寫出欄位，如 `Prices`；鍵不固定時寫 `Record<string, V>`，照抄即可 |
 | `()` | `null` | `null` |
-
-數字有一個限制：JavaScript 的 `number` 只能精確表示到 2 的 53 次方左右。Rust 的 `u64` 或 `i64` 超過這個範圍，前端會失去精確度，例如 Rust 回傳 `9007199254740993`，前端收到 `9007199254740992`。這種數字（像資料庫的 ID）要改用字串傳。
 
 ### 跟 Electron 比一比
 

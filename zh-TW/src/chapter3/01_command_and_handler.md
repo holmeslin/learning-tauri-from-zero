@@ -121,12 +121,12 @@ pub fn run() {
 ```text
 error: cannot find macro `__tauri_command_name_say_hello` in this scope
   --> src/lib.rs:15:25
-   |
+...
 15 |         .invoke_handler(tauri::generate_handler![greet, say_hello])
    |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
 help: a macro with a similar name exists
-15 -         .invoke_handler(tauri::generate_handler![greet, say_hello])
-15 +         .invoke_handler(__tauri_command_name_greet)
+...
 
 error: cannot find macro `__cmd__say_hello` in this scope
   --> src/lib.rs:15:57
