@@ -8,7 +8,13 @@
 
 ### 範例：複製與貼上
 
-兩個函式：`writeText(文字)` 把文字放進剪貼簿，`readText()` 讀出剪貼簿目前的文字。Rust 端用 `init()` 註冊。`capabilities/default.json` 先不動，看看會怎樣：
+兩個函式：`writeText(文字)` 把文字放進剪貼簿，`readText()` 讀出剪貼簿目前的文字。先照第 1 集的方式裝 plugin：
+
+```bash
+npm run tauri add clipboard-manager
+```
+
+它會在 `lib.rs` 用 `init()` 註冊 plugin，並在 `capabilities/default.json` 加上 `clipboard-manager:default`。但這個 `default` 是**空的**，一項都不放行。剪貼簿裡可能有密碼，所以要讀要寫，都由你明確決定。我們先不管它，看看會怎樣：
 
 `src-tauri/src/lib.rs`：
 
@@ -16,10 +22,26 @@
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
-        .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_clipboard_manager::init())
+        .plugin(tauri_plugin_opener::init())
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
+}
+```
+
+`src-tauri/capabilities/default.json`：
+
+```json
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Capability for the main window",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "opener:default",
+    "clipboard-manager:default"
+  ]
 }
 ```
 
@@ -57,11 +79,11 @@ import { readText, writeText } from "@tauri-apps/plugin-clipboard-manager";
 
 const inputEl: HTMLInputElement | null = document.querySelector("#text-input");
 const msgEl: HTMLElement | null = document.querySelector("#msg");
+if (!inputEl || !msgEl) {
+  throw new Error("找不到頁面上的元素");
+}
 
 document.querySelector("#copy-btn")?.addEventListener("click", async () => {
-  if (!inputEl || !msgEl) {
-    return;
-  }
   try {
     await writeText(inputEl.value);
     msgEl.textContent = "已複製";
@@ -71,9 +93,6 @@ document.querySelector("#copy-btn")?.addEventListener("click", async () => {
 });
 
 document.querySelector("#paste-btn")?.addEventListener("click", async () => {
-  if (!msgEl) {
-    return;
-  }
   try {
     msgEl.textContent = `剪貼簿裡是：${await readText()}`;
   } catch (error) {
@@ -82,25 +101,15 @@ document.querySelector("#paste-btn")?.addEventListener("click", async () => {
 });
 ```
 
-`npm run tauri dev` 的輸出（節錄）：
-
-```text
-   Compiling tauri-app v0.1.0 (~/tauri-app/src-tauri)
-    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2.39s
-     Running `target/debug/tauri-app`
-```
-
-按「複製」，段落出現：
+執行 `npm run tauri dev`，按「複製」，段落出現下面的錯誤（按「貼上」也一樣，只是缺的是 `clipboard-manager:allow-read-text`）：
 
 ```text
 出錯了：clipboard-manager.write_text not allowed. Permissions associated with this command: clipboard-manager:allow-write-text
 ```
 
-按「貼上」也一樣，缺的是 `clipboard-manager:allow-read-text`。
-
 ### 補上 permission
 
-錯誤訊息最後一段說得很清楚：要寫就加 `clipboard-manager:allow-write-text`，要讀就加 `clipboard-manager:allow-read-text`。兩個都加：
+錯誤訊息最後一段說得很清楚：要寫就加 `clipboard-manager:allow-write-text`，要讀就加 `clipboard-manager:allow-read-text`。把空的 `clipboard-manager:default` 換成這兩項：
 
 `src-tauri/capabilities/default.json`：
 
@@ -119,29 +128,19 @@ document.querySelector("#paste-btn")?.addEventListener("click", async () => {
 }
 ```
 
-`npm run tauri dev` 的輸出（改了 `capabilities/default.json` 之後）：
-
-```text
-        Info File src-tauri/capabilities/default.json changed. Rebuilding application...
-     Running DevCommand (`cargo  run --no-default-features --color always --`)
-   Compiling tauri-app v0.1.0 (~/tauri-app/src-tauri)
-    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.76s
-     Running `target/debug/tauri-app`
-```
-
-按「複製」，段落顯示「已複製」。到終端機驗證，內容真的進了系統的剪貼簿（`pbpaste` 是 macOS 印出剪貼簿文字的指令）：
+改完存檔，`tauri dev` 會自動重新編譯。按「複製」，段落顯示「已複製」。到終端機驗證，內容真的進了系統的剪貼簿（`pbpaste` 是 macOS 印出剪貼簿文字的指令）：
 
 ```bash
 pbpaste
 ```
 
-```text
-你好，剪貼簿
+終端機印出「你好，剪貼簿」。反過來，在終端機把文字放進剪貼簿（`pbcopy` 是 macOS 上做這件事的指令）：
+
+```bash
+echo "來自終端機" | pbcopy
 ```
 
-反過來，在終端機執行 `echo "來自終端機" | pbcopy`（`pbcopy` 把文字放進剪貼簿），再按 App 的「貼上」，段落顯示「剪貼簿裡是：來自終端機」。
-
-順帶一提，加 `clipboard-manager:default` 一次放行是沒有用的：clipboard-manager 的 `default` 是**空的**，一項都不放行。剪貼簿裡可能有密碼，要讀要寫，由你明確決定。
+再按 app 的「貼上」，段落顯示「剪貼簿裡是：來自終端機」。
 
 ## 重點整理
 

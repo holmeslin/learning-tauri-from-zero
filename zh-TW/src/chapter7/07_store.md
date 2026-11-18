@@ -2,17 +2,23 @@
 
 ## 本集目標
 
-學會用 store plugin 把設定存成一個檔案，下次開 App 還讀得到，並知道 `autoSave` 與 `save()` 的差別。
+學會用 store plugin 把設定存成一個檔案，下次開 app 還讀得到，並知道 `autoSave` 與 `save()` 的差別。
 
 ## 正文
 
 ### 一個會存檔的 key-value 表
 
-設定這類小資料（暱稱、主題、上次開的檔案），不需要資料庫。store plugin 給你一張 key-value 表：`set` 存、`get` 取，內容存成 JSON 檔，放在 App 的資料目錄（第 6 集）。
+設定這類小資料（暱稱、主題、上次開的檔案），不需要資料庫。store plugin 給你一張 key-value 表：`set` 存、`get` 取，內容存成 JSON 檔，放在 app 資料夾（第 6 集）。
 
 ### 範例：記住暱稱
 
-`.plugin(...)` 的寫法跟第 1 集一樣，只是 store 要用 `Builder::new().build()` 建出來，不是 `init()`。permission 是 `store:default`，它放行 store 全部的操作：
+先照第 1 集的方式裝 plugin：
+
+```bash
+npm run tauri add store
+```
+
+它會在 `lib.rs` 註冊 plugin，並在 `capabilities/default.json` 加上 `store:default`，它放行 store 全部的操作。少了它，`load()` 會被擋，範例會把 `store.load not allowed …` 顯示在段落上。store 的註冊寫法跟別的 plugin 不一樣，要用 `Builder::new().build()` 建出來，不是 `init()`：
 
 `src-tauri/src/lib.rs`：
 
@@ -20,8 +26,8 @@
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
-        .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_store::Builder::new().build())
+        .plugin(tauri_plugin_opener::init())
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
@@ -78,28 +84,35 @@ import { load } from "@tauri-apps/plugin-store";
 
 const inputEl: HTMLInputElement | null = document.querySelector("#name-input");
 const msgEl: HTMLElement | null = document.querySelector("#msg");
+if (!inputEl || !msgEl) {
+  throw new Error("找不到頁面上的元素");
+}
 
-async function main() {
-  if (!inputEl || !msgEl) {
-    return;
-  }
+const showSaved = async () => {
   try {
     const store = await load("settings.json");
     const saved = await store.get<string>("name");
-    msgEl.textContent = "還沒有暱稱";
     if (saved) {
       msgEl.textContent = `暱稱：${saved}`;
+    } else {
+      msgEl.textContent = "還沒有暱稱";
     }
-    document.querySelector("#save-btn")?.addEventListener("click", async () => {
-      await store.set("name", inputEl.value);
-      msgEl.textContent = `暱稱：${inputEl.value}`;
-    });
   } catch (error) {
     msgEl.textContent = `出錯了：${error}`;
   }
-}
+};
 
-main();
+document.querySelector("#save-btn")?.addEventListener("click", async () => {
+  try {
+    const store = await load("settings.json");
+    await store.set("name", inputEl.value);
+    msgEl.textContent = `暱稱：${inputEl.value}`;
+  } catch (error) {
+    msgEl.textContent = `出錯了：${error}`;
+  }
+});
+
+showSaved();
 ```
 
 `npm run tauri dev` 的輸出（節錄）：
@@ -110,17 +123,15 @@ main();
      Running `target/debug/tauri-app`
 ```
 
-段落一開始寫「還沒有暱稱」。輸入 `Ada` 按「儲存」，段落變成「暱稱：Ada」。到終端機執行 `cat "$HOME/Library/Application Support/tw.example.tauri-app/settings.json"`，看 macOS 上的檔案：
+段落一開始寫「還沒有暱稱」。輸入 `Ada` 按「儲存」，段落變成「暱稱：Ada」。到終端機看 macOS 上的檔案，裡面是一個 JSON 物件，`name` 的值是 `Ada`：
 
-```text
-{
-  "name": "Ada"
-}
+```bash
+cat "$HOME/Library/Application Support/tw.example.tauri-app/settings.json"
 ```
 
-按 `Ctrl+C` 結束 `npm run tauri dev`，再執行一次，段落一開始就寫「暱稱：Ada」：資料在檔案裡，App 重開也在。
+按 `Ctrl+C` 結束 `npm run tauri dev`，再執行一次，段落一開始就寫「暱稱：Ada」：資料在檔案裡，app 重開也在。
 
-`load("settings.json")` 的路徑從 App 的資料目錄（第 6 集）算起。檔案與資料夾在第一次 `set` 之後才出現，資料夾由 plugin 自己建，不用先 `mkdir`。`get<string>("name")` 的 `<string>` 是告訴 TypeScript 值的型別；找不到這個 key 會得到 `undefined`，所以範例先用 `if (saved)` 檢查。
+`load("settings.json")` 的路徑從 app 資料夾（第 6 集）算起。檔案與資料夾在第一次 `set` 之後才出現，資料夾由 plugin 自己建，不用先 `mkdir`。同一個檔名再 `load` 一次，拿到的是同一張表，所以範例在需要的地方各 `load` 一次。`get<string>("name")` 的 `<string>` 是告訴 TypeScript 值的型別；找不到這個 key 會得到 `undefined`，所以範例用 `if (saved)` 檢查。
 
 ### `autoSave` 與 `save()`
 
@@ -132,16 +143,8 @@ await store.set("name", "Ada");
 await store.save();
 ```
 
-### 沒有 permission 的時候
-
-少了 `store:default`，`load()` 會被擋。範例把錯誤顯示在段落上，格式跟第 2 集看到的一樣，最後一段列出放行它的 permission：
-
-```text
-出錯了：store.load not allowed. Permissions associated with this command: store:allow-load, store:default
-```
-
 ## 重點整理
 
-- store 是一張會存成 JSON 檔的 key-value 表，檔案放在 App 的資料目錄；Rust 端用 `tauri_plugin_store::Builder::new().build()` 註冊，permission 是 `store:default`。
+- store 是一張會存成 JSON 檔的 key-value 表，檔案放在 app 資料夾；Rust 端用 `tauri_plugin_store::Builder::new().build()` 註冊，permission 是 `store:default`。
 - `load("檔名")` 取得 store，`get<T>(key)` 讀（沒有就是 `undefined`），`set(key, value)` 寫。
-- 預設的 `autoSave` 在修改後 100 毫秒自動存檔；`load(檔名, { autoSave: false })` 關掉之後，要自己呼叫 `save()`。
+- 預設的 `autoSave` 在修改後 100 毫秒自動存檔；用 `{ autoSave: false }` 關掉之後，要自己呼叫 `save()`。

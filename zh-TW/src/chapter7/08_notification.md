@@ -16,7 +16,13 @@
 
 ### 範例：按一下，送一則通知
 
-Rust 端用 `init()` 註冊，permission 是 `notification:default`：
+先照第 1 集的方式裝 plugin：
+
+```bash
+npm run tauri add notification
+```
+
+它會在 `lib.rs` 用 `init()` 註冊 plugin，並在 `capabilities/default.json` 加上 `notification:default`：
 
 `src-tauri/src/lib.rs`：
 
@@ -24,8 +30,8 @@ Rust 端用 `init()` 註冊，permission 是 `notification:default`：
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
-        .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_notification::init())
+        .plugin(tauri_plugin_opener::init())
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
@@ -82,11 +88,11 @@ import {
 } from "@tauri-apps/plugin-notification";
 
 const msgEl: HTMLElement | null = document.querySelector("#msg");
+if (!msgEl) {
+  throw new Error("找不到 #msg");
+}
 
 document.querySelector("#notify-btn")?.addEventListener("click", async () => {
-  if (!msgEl) {
-    return;
-  }
   try {
     let granted = await isPermissionGranted();
     if (!granted) {
@@ -116,9 +122,9 @@ document.querySelector("#notify-btn")?.addEventListener("click", async () => {
 
 ### 開發模式在 macOS 上
 
-macOS 的通知要掛在某個 App 的名下，由系統決定顯不顯示。打包後的 App 用自己的 identifier；但 `npm run tauri dev` 跑的不是 `.app`，plugin 改用「終端機」（`com.apple.Terminal`）的名義送出。所以在開發模式，通知有沒有出現，看的是系統對「終端機」的通知設定。
+macOS 的通知要掛在某個 app 的名下，由系統決定顯不顯示。打包後的 app 用自己的 identifier；但 `npm run tauri dev` 跑的不是 `.app`，plugin 改用「終端機」（`com.apple.Terminal`）的名義送出。所以在開發模式，通知有沒有出現，看的是系統對「終端機」的通知設定。
 
-在 macOS 上實測：程式回報「已送出」，但螢幕上沒有橫幅。系統記錄顯示，`com.apple.Terminal` 的通知授權是 `Denied`，通知被丟棄，前端完全不會知道。所以開發模式看不到通知時，先別懷疑程式。系統允許之後的橫幅長什麼樣子、打包後的 App 的行為（第 15 章會正式介紹打包），這一集沒有驗證。
+在 macOS 上實測：程式回報「已送出」，但螢幕上沒有橫幅。系統記錄顯示，`com.apple.Terminal` 的通知授權是 `Denied`，通知被丟棄，前端完全不會知道。所以開發模式看不到通知時，先別懷疑程式。系統允許之後的橫幅長什麼樣子、打包後的 app 的行為（第 15 章會正式介紹打包），這一集沒有驗證。
 
 ### 沒有 permission 的時候
 
