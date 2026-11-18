@@ -10,13 +10,13 @@
 
 使用者選了一個自訂項目，Tauri 就發出一個選單事件。事件裡只有項目的 id（`MenuId`），所以上一集 `MenuItem::with_id` 的 id 要取得好認，而且不能重複。
 
-處理函式用 `tauri::Builder::on_menu_event` 註冊，它收 `&AppHandle` 和事件。`event.id().as_ref()` 把 id 轉成 `&str`，就能拿去 `match`。只處理一個 id 的時候，也可以寫 `if event.id() == "new_note"`。
+處理函式用 `tauri::Builder::on_menu_event` 註冊，它收 `&AppHandle` 和事件。`event.id().as_ref()` 把 id 轉成 `&str`，就能拿去 `match`。只處理一個 id 的時候，也可以寫 `if event.id() == "new-note"`。
 
 這個處理函式是全域的：不管選的是 App 的選單、視窗的選單，還是後面會學的右鍵選單與系統匣選單，都會進到同一個地方。預設項目（拷貝、貼上這類）的動作由作業系統或 Tauri 完成，不用在這裡寫。
 
 ### 範例：新增筆記與結束
 
-兩個自訂項目，示範兩種處理方式。`new_note` 交給前端：Rust 用 `emit`（第 5 章第 1 集）送出 `new-note` 事件，頁面收到就加一則筆記。`quit` 在 Rust 直接做完：`app.exit(0)` 結束整個 App，`0` 是代表正常結束的結束代碼。上一集說過 `quit` 預設項目在 Linux 不支援，自訂的項目每個平台都能用，所以這裡自己做結束。
+兩個自訂項目，示範兩種處理方式。id 是 `new-note` 的交給前端：Rust 用 `emit`（第 5 章第 1 集）送出 `new-note` 事件，頁面收到就加一則筆記。事件剛好跟 id 同名，兩者是不同的東西。`quit` 在 Rust 直接做完：`app.exit(0)` 結束整個 App，`0` 是代表正常結束的結束代碼。上一集說過 `quit` 預設項目在 Linux 不支援，自訂的項目每個平台都能用，所以這裡自己做結束。
 
 `src-tauri/src/lib.rs`：
 
@@ -33,7 +33,7 @@ pub fn run() {
             let app_menu = SubmenuBuilder::new(app, "tauri-app").item(&quit).build()?;
 
             let new_note =
-                MenuItem::with_id(app, "new_note", "新增筆記", true, Some("CmdOrCtrl+N"))?;
+                MenuItem::with_id(app, "new-note", "新增筆記", true, Some("CmdOrCtrl+N"))?;
             let file_menu = SubmenuBuilder::new(app, "檔案").item(&new_note).build()?;
 
             MenuBuilder::new(app)
@@ -41,7 +41,7 @@ pub fn run() {
                 .build()
         })
         .on_menu_event(|app, event| match event.id().as_ref() {
-            "new_note" => {
+            "new-note" => {
                 app.emit("new-note", ()).unwrap();
             }
             "quit" => app.exit(0),
@@ -109,7 +109,7 @@ listen("new-note", () => {
 
 ### id 對不上會怎樣
 
-`match` 的 id 是字串，寫錯了（例如把 `"new_note"` 寫成 `"newnote"`）編譯器不會報錯，選了就是沒有反應，因為落進 `_ => {}`。選單沒反應的時候，先檢查兩邊的 id 是不是同一個字。
+`match` 的 id 是字串，寫錯了（例如把 `"new-note"` 寫成 `"newnote"`）編譯器不會報錯，選了就是沒有反應，因為落進 `_ => {}`。選單沒反應的時候，先檢查兩邊的 id 是不是同一個字。
 
 ## 重點整理
 

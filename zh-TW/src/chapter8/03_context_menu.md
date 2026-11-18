@@ -17,7 +17,7 @@
 
 ### 範例：按右鍵新增筆記
 
-這個 command 的參數是 `WebviewWindow`（第 3 章第 9 集），也就是被按右鍵的那個視窗。它同時是建選單的 `manager`，所以 `MenuItem::with_id`、`MenuBuilder::new` 都傳 `&window`。
+這個 command 的參數是 `WebviewWindow`（第 3 章第 9 集），也就是被按右鍵的那個視窗。第 1 集說過建選單的函式吃任何 `Manager`，視窗也是，所以 `MenuItem::with_id`、`MenuBuilder::new` 都直接傳 `&window`。
 
 `src-tauri/src/lib.rs`：
 
@@ -27,7 +27,7 @@ use tauri::{Emitter, WebviewWindow};
 
 #[tauri::command]
 fn show_context_menu(window: WebviewWindow) -> tauri::Result<()> {
-    let new_note = MenuItem::with_id(&window, "new_note", "新增筆記", true, None::<&str>)?;
+    let new_note = MenuItem::with_id(&window, "new-note", "新增筆記", true, None::<&str>)?;
     let menu = MenuBuilder::new(&window)
         .item(&new_note)
         .separator()
@@ -43,7 +43,7 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![show_context_menu])
         .on_menu_event(|app, event| {
-            if event.id() == "new_note" {
+            if event.id() == "new-note" {
                 app.emit("new-note", ()).unwrap();
             }
         })
@@ -74,7 +74,7 @@ pub fn run() {
   <body>
     <main class="container">
       <h1>右鍵選單</h1>
-      <input id="note-input" placeholder="在頁面上按右鍵" />
+      <p>在頁面上按右鍵</p>
       <ul id="note-list"></ul>
     </main>
   </body>
@@ -121,13 +121,13 @@ document.addEventListener("contextmenu", (event) => {
 ### 幾個細節
 
 - 拿掉 `event.preventDefault()`，WebView 內建的右鍵選單照樣會出現，不是我們做的那份。
-- `popup_menu` 在選單關掉之前不會返回，所以 `invoke` 回傳的 Promise 要等到使用者選完或點到別處才完成。範例沒有 `await`，不受影響。
+- `popup_menu` 在選單關掉之前不會回傳，所以 `invoke` 回傳的 Promise 要等到使用者選完或點到別處才完成。範例沒有 `await`，不受影響。這是在 macOS 看到的；Windows 與 Linux 依 muda 的原始碼，也是等選單關掉才回傳。
 - 選單事件只有 id，不會告訴你右鍵點在頁面的哪個地方。要針對某個元素，就由前端把它的資訊傳給 command，編進 id（例如 `delete-3`），在 `on_menu_event` 拆開來用。
 - 這一集只在 macOS 實測。
 
 ## 重點整理
 
 - 右鍵選單分兩步：前端的 `contextmenu` 事件裡 `preventDefault()` 並 `invoke`，Rust 的 command 建 `Menu` 後呼叫 `window.popup_menu(&menu)`。
-- command 用 `WebviewWindow` 參數拿到被按右鍵的視窗，也拿它當 `manager` 建選單。
+- command 用 `WebviewWindow` 參數拿到被按右鍵的視窗，也直接拿它建選單（視窗也是 `Manager`）。
 - 選了項目進同一個 `on_menu_event`，用 id 辨識；預設項目（拷貝、貼上）不用處理。
-- `popup_menu` 等選單關閉才返回；選單事件不帶點擊位置，要的話把資訊編進 id。
+- `popup_menu` 等選單關閉才回傳；選單事件不帶點擊位置，要的話把資訊編進 id。

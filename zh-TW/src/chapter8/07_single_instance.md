@@ -30,14 +30,22 @@ npm run tauri add single-instance
 
 ### 範例：第二個行程來了，叫出視窗
 
-`init` 收一個函式。這個函式在**第一個**行程裡執行，時機是第二個行程啟動的時候。它的三個參數：`app` 是 `AppHandle`，`args` 是第二個行程的命令列參數（第一個元素是執行檔的路徑），`cwd` 是第二個行程的工作目錄。第二個行程把 `args` 與 `cwd` 交給第一個之後，自己就結束了，根本不會跑到 `run`。
+`init` 收一個函式。這個函式在**第一個**行程裡執行，時機是第二個行程啟動的時候。它的三個參數：`app` 是 `AppHandle`，`args` 是第二個行程的命令列參數（第一個元素是執行檔的路徑），`cwd` 是第二個行程的工作目錄。第二個行程把 `args` 與 `cwd` 交給第一個之後，在 plugin 初始化的時候就自己結束了，不會開出視窗。
 
-plugin 要**最先**註冊：plugin 照加入的順序啟動，第二個行程要在其他初始化開始之前就結束。為了讓它是第一個，又能用 `#[cfg(desktop)]` 只在桌面加（跟上一集一樣，第 18 章會正式介紹），範例先 `let mut builder`，再用 `builder = builder.plugin(...)` 接上去。
+plugin 要**最先**註冊：plugin 照加入的順序啟動，第二個行程要在其他初始化開始之前就結束。為了讓它排第一個，又只在桌面加，範例先 `let mut builder`，再用 `builder = builder.plugin(...)` 接上去。「只在桌面加」靠的是 `#[cfg(desktop)]`，跟上一集一樣，第 18 章會正式介紹。
 
 `src-tauri/src/lib.rs`：
 
 ```rust
-use tauri::Manager;
+use tauri::{AppHandle, Manager};
+
+fn show_main_window(app: &AppHandle) {
+    if let Some(window) = app.get_webview_window("main") {
+        window.show().unwrap();
+        window.unminimize().unwrap();
+        window.set_focus().unwrap();
+    }
+}
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -47,9 +55,7 @@ pub fn run() {
     {
         builder = builder.plugin(tauri_plugin_single_instance::init(|app, args, cwd| {
             println!("第二個行程來過：參數 {args:?}，工作目錄 {cwd}");
-            if let Some(window) = app.get_webview_window("main") {
-                window.set_focus().unwrap();
-            }
+            show_main_window(app);
         }));
     }
 
@@ -60,7 +66,7 @@ pub fn run() {
 }
 ```
 
-頁面沒有改，維持範本的樣子。
+頁面維持範本的樣子，不過 `lib.rs` 沒有 `greet` command，Greet 按鈕這集不會有結果。`show_main_window` 跟第 4 集一樣：`show()`、`unminimize()`、`set_focus()` 三個都要。
 
 `npm run tauri dev` 的輸出（節錄）：
 
@@ -76,7 +82,7 @@ App 開著的時候，另開一個終端機，在專案根目錄直接執行同�
 ./src-tauri/target/debug/tauri-app hello --flag
 ```
 
-這個指令一下子就回來了，沒有開出新視窗。原本跑 `npm run tauri dev` 的終端機多了一行，視窗也回到最前面：
+這個指令一下子就回來了，沒有開出新視窗。原本跑 `npm run tauri dev` 的終端機多了一行，視窗也回到最前面（最小化的話會還原）：
 
 ```text
 第二個行程來過：參數 ["./src-tauri/target/debug/tauri-app", "hello", "--flag"]，工作目錄 ~/tauri-app

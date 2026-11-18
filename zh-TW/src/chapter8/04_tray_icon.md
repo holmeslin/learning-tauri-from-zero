@@ -8,13 +8,13 @@
 
 ### 系統匣與 `tray-icon`
 
-系統匣是螢幕角落放小圖示的地方：macOS 在選單列右側，Windows 在工作列右下角，Linux 在面板上。有了圖示，使用者不用開著視窗，也能找到這個 App。它的 API 在 `tauri::tray` 底下，但這個模組是 `tauri` crate 的選用功能，預設沒開。把 `src-tauri/Cargo.toml` 的 `[dependencies]` 裡，`tauri` 那一行改成：
+系統匣是螢幕角落放小圖示的地方：macOS 在選單列右側，Windows 在工作列右下角，Linux 在面板上。有了圖示，使用者不用開著視窗，也能找到這個 App。它的 API 在 `tauri::tray` 底下，但這個模組是 `tauri` crate 的選用功能，預設沒開。打開 `src-tauri/Cargo.toml`，把 `[dependencies]` 裡 `tauri` 那一行改成：
 
 ```toml,ignore
 tauri = { version = "2", features = ["tray-icon"] }
 ```
 
-沒開的話，`use tauri::tray::...` 會編譯失敗：`error[E0432]: unresolved import tauri::tray`，編譯器還會指出它被 `tray-icon` feature 擋住了。
+沒開的話，`use tauri::tray::...` 編譯不過。我們另外拿掉這個 feature 實際編譯過，錯誤是 ``error[E0432]: unresolved import `tauri::tray` ``，編譯器還會指出 `tray` 模組被 `tray-icon` feature 擋住了。
 
 ### 範例：點左鍵叫出視窗
 
@@ -24,7 +24,15 @@ tauri = { version = "2", features = ["tray-icon"] }
 
 ```rust
 use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
-use tauri::{Emitter, Manager};
+use tauri::{AppHandle, Emitter, Manager};
+
+fn show_main_window(app: &AppHandle) {
+    if let Some(window) = app.get_webview_window("main") {
+        window.show().unwrap();
+        window.unminimize().unwrap();
+        window.set_focus().unwrap();
+    }
+}
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -45,9 +53,7 @@ pub fn run() {
                         if button == MouseButton::Left && button_state == MouseButtonState::Up {
                             let app = tray.app_handle();
                             app.emit("tray-click", ()).unwrap();
-                            if let Some(window) = app.get_webview_window("main") {
-                                window.set_focus().unwrap();
-                            }
+                            show_main_window(app);
                         }
                     }
                 })
@@ -61,7 +67,8 @@ pub fn run() {
 
 - `.icon(...)` 要一張圖。`app.default_window_icon()` 是視窗的預設圖示，來自 `tauri.conf.json` 的 `bundle.icon`，所以不用另外準備。它回傳 `Option<&Image>`，`clone()` 拿一份自己的。
 - `.tooltip(...)` 是滑鼠停在圖示上時顯示的提示文字。
-- `tray.app_handle()` 從圖示取回 `AppHandle`，後面的 `emit` 和 `get_webview_window` 跟前面章節一樣用。
+- `tray.app_handle()` 從圖示取回 `AppHandle`，後面的 `emit` 跟前面章節一樣用。
+- `show_main_window` 把視窗叫回來：`show()` 顯示被藏起來的視窗（第 13 章會正式介紹），`unminimize()` 還原最小化的視窗，最後 `set_focus()` 拉到最前面。三個都要，是因為 `set_focus()` 碰到隱藏或最小化的視窗什麼都不做。後面幾集都用這個函式。
 - `build(app)?` 回傳的 `TrayIcon` 不用存起來。圖示屬於 App，不會因為變數被丟掉就消失。
 - `println!` 是為了看事件，確認之後可以刪掉。
 
@@ -114,7 +121,7 @@ listen("tray-click", () => {
      Running `target/debug/tauri-app`
 ```
 
-macOS 的選單列右側出現圖示，滑鼠停上去會顯示 `tauri-app`。用別的視窗蓋住 App，再點一下左鍵，App 回到最前面，頁面顯示「左鍵點了 1 次」。
+macOS 的選單列右側出現圖示，滑鼠停上去會顯示 `tauri-app`。用別的視窗蓋住 App，再點一下左鍵，App 回到最前面，頁面顯示「左鍵點了 1 次」。先把視窗最小化再點，視窗會還原。
 
 ### 一次點擊，兩個事件
 
@@ -138,4 +145,5 @@ Left Up
 - 系統匣在 `tauri::tray`，要先在 `Cargo.toml` 開 `tauri` 的 `tray-icon` feature。
 - 在 `setup` 裡用 `TrayIconBuilder::new().icon(...).tooltip(...).build(app)?` 建圖示；`app.default_window_icon()` 可以拿視窗圖示來用，建好的 `TrayIcon` 不用存。
 - `on_tray_icon_event` 收 `TrayIconEvent`；`Click` 帶 `button` 與 `button_state`，一次點擊會有 `Down`、`Up` 兩次，只處理其中一個。
+- 叫回視窗要 `show()`、`unminimize()`、`set_focus()` 三個一起用，因為 `set_focus()` 對隱藏或最小化的視窗什麼都不做。
 - Linux 沒有點擊事件，雙擊事件只有 Windows 有。

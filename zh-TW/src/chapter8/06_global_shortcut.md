@@ -29,7 +29,7 @@ npm run tauri add global-shortcut
         Info Running `cargo fmt`...
 ```
 
-跟一般 plugin 不一樣的地方：
+`tauri add` 做的事跟第 7 章第 1 集一樣，要留意三個地方：
 
 - 手機沒有全域快捷鍵，所以 crate 被放在 `Cargo.toml` 桌面專用的區塊：
 
@@ -38,14 +38,25 @@ npm run tauri add global-shortcut
   tauri-plugin-global-shortcut = "2"
   ```
 
-- 它多建了一個 `capabilities/desktop.json`，裡面只有 `global-shortcut:default`。這集全部在 Rust 這一側做，npm 套件（前端版）與這份 permission 都用不到，留著不影響。
+- `lib.rs` 的 `Builder` 鏈上多了一行 `.plugin(tauri_plugin_global_shortcut::Builder::new().build())`。下面的範例改在 `setup` 裡註冊，所以直接用範例的整份 `lib.rs` 取代，不要兩邊都留。
+- 它多建了 `capabilities/desktop.json`，用 `platforms` 限定桌面，裡面只有 `global-shortcut:default`。這個 permission 是空的（plugin 的 `default.toml` 寫 `permissions = []`），因為快捷鍵由 App 自己決定要註冊哪些。
+  - 這集從 Rust 註冊，不經過前端，用不到它，所以這個檔案和 npm 套件留著或刪掉都行。
+  - 前端要用的話，得自己加 `global-shortcut:allow-register` 這類 permission（第 7 章第 2 集）。
 
 ### 範例：按 Cmd+Shift+K 叫出 App
 
 `src-tauri/src/lib.rs`：
 
 ```rust
-use tauri::Manager;
+use tauri::{AppHandle, Manager};
+
+fn show_main_window(app: &AppHandle) {
+    if let Some(window) = app.get_webview_window("main") {
+        window.show().unwrap();
+        window.unminimize().unwrap();
+        window.set_focus().unwrap();
+    }
+}
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -65,9 +76,7 @@ pub fn run() {
                         if event.state != ShortcutState::Pressed {
                             return;
                         }
-                        if let Some(window) = app.get_webview_window("main") {
-                            window.set_focus().unwrap();
-                        }
+                        show_main_window(app);
                     },
                 )?;
             }
@@ -81,8 +90,9 @@ pub fn run() {
 - `#[cfg(desktop)]` 讓這個區塊只在桌面編譯，因為手機上沒有這個 crate。`cfg(desktop)` 和範本裡的 `cfg_attr(mobile, ...)` 是同一類，第 18 章會正式介紹。
 - plugin 在 `setup` 裡用 `app.handle().plugin(...)` 註冊，意思跟 `Builder::plugin` 一樣。
 - `use ...GlobalShortcutExt` 之後，`app.global_shortcut()` 才拿得到 plugin。`on_shortcut(字串, 函式)` 註冊快捷鍵，並指定按下時呼叫的函式。
-- 函式收到 `app`、`shortcut`、`event`；範例用不到 `shortcut`，所以加底線。
-- 頁面沒有改，維持範本的樣子。
+- 函式收到 `app`、`shortcut`、`event`；範例用不到 `shortcut`，所以加底線。`println!` 是為了看事件，確認之後可以刪掉。
+- `show_main_window` 跟第 4 集一樣：`show()`、`unminimize()`、`set_focus()` 三個都要。
+- 頁面維持範本的樣子，不過 `lib.rs` 沒有 `greet` command，Greet 按鈕這集不會有結果。
 
 `npm run tauri dev` 的輸出（節錄）：
 
@@ -92,7 +102,7 @@ pub fn run() {
      Running `target/debug/tauri-app`
 ```
 
-切到別的 App，按 Cmd+Shift+K（其他平台是 Ctrl+Shift+K），終端機多出兩行，App 回到最前面：
+切到別的 App，按 Cmd+Shift+K（其他平台是 Ctrl+Shift+K），終端機多出兩行，App 回到最前面（視窗最小化時也一樣）：
 
 ```text
 快捷鍵：Pressed

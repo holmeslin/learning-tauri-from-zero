@@ -16,7 +16,7 @@
 
 ### 範例：一份三個子選單的選單
 
-建選單的函式都要 `&AppHandle`（第 3 章第 9 集），所以選單寫在 `Builder::menu` 收的函式裡，函式的參數就是它。
+建選單的函式（`SubmenuBuilder::new`、`MenuItem::with_id` 這些）第一個參數吃任何 `Manager`（第 4 章第 4 集）：`App`、`AppHandle`、視窗都行。`Builder::menu` 收的函式會拿到 `&AppHandle`，範例就把它傳進去。
 
 `src-tauri/src/lib.rs`：
 
@@ -33,8 +33,8 @@ pub fn run() {
                 .build()?;
 
             let new_note =
-                MenuItem::with_id(app, "new_note", "新增筆記", true, Some("CmdOrCtrl+N"))?;
-            let open_note = MenuItem::with_id(app, "open_note", "開啟筆記", false, None::<&str>)?;
+                MenuItem::with_id(app, "new-note", "新增筆記", true, Some("CmdOrCtrl+N"))?;
+            let open_note = MenuItem::with_id(app, "open-note", "開啟筆記", false, None::<&str>)?;
             let file_menu = SubmenuBuilder::new(app, "檔案")
                 .item(&new_note)
                 .item(&open_note)
@@ -60,7 +60,10 @@ pub fn run() {
 
 - `Builder::menu` 收的函式在 App 建好時呼叫一次，回傳整份選單。`?` 的用法跟前面一樣。
 - `SubmenuBuilder::new(app, 標題)` 開始一個子選單，`.item(&項目)` 放自訂項目，`.separator()` 畫分隔線，`.build()?` 完成。
-- `MenuItem::with_id(app, id, 文字, 可不可用, 快捷鍵)`：id 是這個項目的名字，下一集用它辨識使用者選了誰。第四個參數是 `false` 的項目會變灰，不能選。快捷鍵 `"CmdOrCtrl+N"` 在 macOS 是 Cmd+N，在其他平台是 Ctrl+N。不要快捷鍵就寫 `None::<&str>`，要標型別是因為光寫 `None` 看不出它是哪種字串。
+- `MenuItem::with_id(app, id, 文字, 可不可用, 快捷鍵)`：id 是這個項目的名字，下一集用它辨識使用者選了誰。
+  - 第四個參數是 `false` 的項目會變灰，不能選。
+  - 快捷鍵 `"CmdOrCtrl+N"` 在 macOS 是 Cmd+N，在其他平台是 Ctrl+N。
+  - 不要快捷鍵就寫 `None::<&str>`，要標型別是因為光寫 `None` 看不出它是哪種字串。
 - `.cut()`、`.copy()`、`.quit()` 這類方法放進預設項目。預設的文字是英文，加上 `_with_text` 的版本才能換成中文。
 - `MenuBuilder::new(app).items(&[...]).build()` 把子選單組成整份選單。
 
@@ -107,7 +110,11 @@ pub fn run() {
 
 沒呼叫 `Builder::menu` 的時候，macOS 有 Tauri 準備好的預設選單（app、File、Edit、View、Window、Help），Windows 與 Linux 沒有選單。一呼叫 `.menu(...)`，預設的就整份被取代。
 
-預設項目也不是每個平台都有：`quit`、`close_window` 在 Linux 不支援，`undo`、`redo` 在 Windows 與 Linux 不支援。所以範例的「編輯」只放四個各平台都有的。Windows 與 Linux 的部分依 Tauri 文件整理，沒有實測。
+預設項目也不是每個平台都有：`quit`、`close_window` 在 Linux 不支援，`undo`、`redo` 在 Windows 與 Linux 不支援。
+
+範例的「編輯」沒有用 `undo`、`redo`，但「結束 tauri-app」是 `quit_with_text`，「關閉視窗」是 `close_window_with_text`。在 Linux 上這兩項會顯示成灰色，不能選。Tauri 底下建選單的 crate 叫 muda，它的原始碼是這樣處理不支援的項目。下一集會自己做一個每個平台都能用的「結束」。
+
+Linux 上「編輯」的四項也要開 `tauri` 的 `linux-libxdo` feature 才會動。Windows 與 Linux 的部分依 Tauri 文件與原始碼整理，沒有實測。
 
 ### 少了「編輯」選單會怎樣
 
