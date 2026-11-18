@@ -83,23 +83,23 @@ async function main() {
   if (!inputEl || !msgEl) {
     return;
   }
-  const store = await load("settings.json");
-  const saved = await store.get<string>("name");
-  msgEl.textContent = "還沒有暱稱";
-  if (saved) {
-    msgEl.textContent = `暱稱：${saved}`;
-  }
-  document.querySelector("#save-btn")?.addEventListener("click", async () => {
-    await store.set("name", inputEl.value);
-    msgEl.textContent = `暱稱：${inputEl.value}`;
-  });
-}
-
-main().catch((error) => {
-  if (msgEl) {
+  try {
+    const store = await load("settings.json");
+    const saved = await store.get<string>("name");
+    msgEl.textContent = "還沒有暱稱";
+    if (saved) {
+      msgEl.textContent = `暱稱：${saved}`;
+    }
+    document.querySelector("#save-btn")?.addEventListener("click", async () => {
+      await store.set("name", inputEl.value);
+      msgEl.textContent = `暱稱：${inputEl.value}`;
+    });
+  } catch (error) {
     msgEl.textContent = `出錯了：${error}`;
   }
-});
+}
+
+main();
 ```
 
 `npm run tauri dev` 的輸出（節錄）：

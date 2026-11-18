@@ -95,15 +95,13 @@ document.querySelector("#show-btn")?.addEventListener("click", async () => {
     return;
   }
   const dataDir = await appDataDir();
-  pathsEl.textContent = [
-    `appDataDir: ${dataDir}`,
-    `appLocalDataDir: ${await appLocalDataDir()}`,
-    `appConfigDir: ${await appConfigDir()}`,
-    `appCacheDir: ${await appCacheDir()}`,
-    `appLogDir: ${await appLogDir()}`,
-    `前端 join: ${await join(dataDir, "hello.txt")}`,
-    `Rust 寫入: ${await invoke("save_hello")}`,
-  ].join("\n");
+  pathsEl.textContent = `appDataDir: ${dataDir}\n`;
+  pathsEl.textContent += `appLocalDataDir: ${await appLocalDataDir()}\n`;
+  pathsEl.textContent += `appConfigDir: ${await appConfigDir()}\n`;
+  pathsEl.textContent += `appCacheDir: ${await appCacheDir()}\n`;
+  pathsEl.textContent += `appLogDir: ${await appLogDir()}\n`;
+  pathsEl.textContent += `前端 join: ${await join(dataDir, "hello.txt")}\n`;
+  pathsEl.textContent += `Rust 寫入: ${await invoke("save_hello")}`;
 });
 ```
 
