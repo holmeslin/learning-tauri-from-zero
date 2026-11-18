@@ -79,3 +79,4 @@
     - [把邏輯從 command 抽出來測](chapter9/01_extract_logic.md)
     - [`tauri::test` 的 mock runtime](chapter9/02_mock_runtime.md)
     - [前端 mock IPC：`@tauri-apps/api/mocks`](chapter9/03_mock_ipc.md)
+    - [看 log 與常見錯誤](chapter9/04_logs_and_errors.md)

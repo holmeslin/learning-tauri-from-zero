@@ -136,11 +136,11 @@ AssertionError: expected { item_text: '牛奶' } to deeply equal { itemText: '�
 
 ### mock 回什麼就是什麼
 
-`mockIPC` 回 `3`，不代表 Rust 真的會回 3：就算 Rust 這一側根本沒有 `add_item`，這些測試照樣通過。所以兩邊要各測一次同一份約定：Rust 端用上一集的 mock runtime，前端用這一集的 mock IPC，command 的名字與參數的鍵兩邊各驗一次。最後仍要開 App 按一次，確認兩邊真的接得起來。
+`mockIPC` 回 `3`，不代表 Rust 真的會回 3：就算 Rust 這一側根本沒有 `add_item`，這些測試照樣通過。所以兩邊要各測一次同一份約定：Rust 端用上一集的 mock runtime，前端用這一集的 mock IPC，兩邊都要驗證 command 的名字，以及參數的鍵。最後仍要開 App 按一次，確認兩邊真的接得起來。
 
 ## 重點整理
 
 - 前端測試用 vitest 加 jsdom；`mockIPC` 替 `invoke` 裝一個假的回答函式，`throw` 等於 Rust 的 `Err`。
-- 呼叫 command 的程式獨立成不碰 DOM 的檔案，才好用 `mockIPC` 測；用 `let` 存下收到的參數，就能檢查前端傳的鍵。
+- 把呼叫 command 的程式獨立成一個檔案，不碰 DOM，才好用 `mockIPC` 測；用 `let` 存下收到的參數，就能檢查前端傳的鍵。
 - 用到 `getCurrentWindow()` 的程式要先 `mockWindows("main")`；它只模擬視窗存在，視窗的方法仍靠 `mockIPC`。
 - 每個測試之後呼叫 `clearMocks()` 清掉 mock；`npx vitest run` 跑一次測試就結束。

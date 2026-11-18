@@ -118,7 +118,7 @@ mod tests {
 
 - `mock_window` 用 `mock_builder()` 與 `configure` 組出 App，`mock_context(noop_assets())` 是空的設定與空的前端資源，再用 `WebviewWindowBuilder`（第 6 章第 3 集）開一個 label 叫 `main` 的假視窗。
 - `request` 組出前端 `invoke` 會送的請求：`cmd` 是 command 的名字，`body` 是參數的 JSON。`callback` 與 `error` 是回呼編號，測試用不到。`url` 要是 App 自己的位址，Windows 與 Android 是 `http://tauri.localhost`，其他平台是 `tauri://localhost`。`invoke_key` 要用 `INVOKE_KEY`。
-- 第一個測試對同一個視窗呼叫兩次，第二次接著第一次數：狀態活在 App 裡。`assert_ipc_response` 比較回應跟期待值，`Ok` 是成功的回傳值，`Err` 是前端 Promise 被拒絕時收到的值；兩邊要同一種型別，所以用 `json!` 包成 `Value`。
+- 第一個測試對同一個視窗呼叫兩次，第二次接著第一次數：狀態活在 App 裡。`assert_ipc_response` 比較回應跟期待值，`Ok` 是成功的回傳值，`Err` 是前端 Promise 被拒絕時收到的值；兩邊要同一種型別，所以用 `serde_json` 的 `json!` 巨集寫成 `Value`（JSON 值）。`body` 也是這樣寫。
 - 第二個測試把鍵寫成 `item_text`。`get_ipc_response` 回傳 `Result`，`Err` 裡就是第 3 章第 3 集看過的 `invalid args` 訊息，測試檢查它有沒有 `missing required key itemText`。
 
 ### 跑測試
