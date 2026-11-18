@@ -85,7 +85,7 @@ export async function saveNotes(notes: Note[]): Promise<void> {
 ```
 
 - `exists` 是 fs plugin 的另一個函式，回傳檔案在不在。第一次執行時 `notes.json` 還不存在，這時回傳空陣列，不是錯誤。`fs:default` 已經放行它。
-- `JSON.parse(文字)` 把 JSON 文字轉回 JavaScript 的值，`JSON.stringify(值, null, 2)` 反過來，把值轉成 JSON 文字；後面兩個參數照抄，意思是用 2 個空格縮排，檔案打開來才好讀。`JSON.parse` 不檢查形狀，回傳的型別是 `any`，所以直接當 `Note[]` 回傳也能通過型別檢查。檔案內容對不對，第 6 集再檢查。
+- `JSON.parse(文字)` 把 JSON 文字轉回 JavaScript 的值，`JSON.stringify(值, null, 2)` 反過來，把值轉成 JSON 文字；後面兩個參數照抄，意思是用 2 個空格縮排，用編輯器開啟檔案時才好讀。`JSON.parse` 不檢查形狀，回傳的型別是 `any`，所以直接當 `Note[]` 回傳也能通過型別檢查。檔案內容對不對，第 6 集再檢查。
 - 寫檔前的 `mkdir` 跟第 7 章第 5 集一樣不能省：app 資料夾第一次寫入時還不存在。
 
 ### 載入與存檔
@@ -222,7 +222,7 @@ start();
      Running `target/debug/tauri-app`
 ```
 
-第一次執行，清單裡只有一則空白的「新筆記」。把標題改成「購物清單」，內容打「牛奶」，然後關掉 App，再執行一次：清單裡還是「購物清單」。到終端機看檔案（macOS 的路徑，Windows 與 Linux 的位置用 `appDataDir()` 查，第 7 章第 6 集）：
+第一次執行，清單裡只有一則空白的「新筆記」。把標題改成「購物清單」，內容打「牛奶」，然後關掉視窗，再執行一次 `npm run tauri dev`：清單裡還是「購物清單」。到終端機看檔案（macOS 的路徑，Windows 與 Linux 的位置用 `appDataDir()` 查，第 7 章第 6 集）：
 
 ```bash
 cat "$HOME/Library/Application Support/tw.example.tauri-app/notes.json"

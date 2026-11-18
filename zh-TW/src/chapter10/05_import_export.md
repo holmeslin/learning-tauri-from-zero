@@ -114,7 +114,7 @@ export async function exportNote(note: Note): Promise<string | null> {
 }
 ```
 
-這兩個函式讀寫的是使用者挑的檔案，不在 app 資料夾裡，但沒有另外設定 scope。`writeTextFile` 這個函式已經被 `fs:allow-appdata-write-recursive` 放行了；至於路徑，經由 `open()`、`save()` 選出來的，plugin 會自動加進 fs 的 scope（第 7 章第 5 集）。`readTextFile` 的 permission 在 `fs:default` 裡。
+這兩個函式碰的檔案是使用者自己挑的，不在 app 資料夾裡，卻沒有另外設定 scope。`writeTextFile` 這個函式已經被 `fs:allow-appdata-write-recursive` 放行了；至於路徑，經由 `open()`、`save()` 選出來的，plugin 會自動加進 fs 的 scope（第 7 章第 5 集）。`readTextFile` 的 permission 在 `fs:default` 裡。
 
 ### 接上按鈕與狀態列
 
@@ -281,7 +281,7 @@ start();
 已匯出到 /Users/ada/Downloads/購物清單.md
 ```
 
-打開那個檔案，只有內容那兩行字，沒有標題。再按「匯入」，選剛剛存的檔案，清單最下面多了一則「購物清單」，內容跟檔案一樣。在對話框按「Cancel」，什麼都不會發生，這是回傳 `null` 的路徑。
+用編輯器開啟匯出的檔案，裡面只有內容那兩行字，沒有標題。再按「匯入」，選剛剛存的檔案，清單最下面多了一則「購物清單」，內容跟檔案一樣。在對話框按「Cancel」，什麼都不會發生，這就是回傳 `null` 的情況。
 
 ## 重點整理
 

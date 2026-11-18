@@ -122,7 +122,7 @@ select(current);
 - `current` 記著目前選到哪一則。它存的是那個物件本身，不是編號，所以 `note === current` 就能判斷清單上的哪一列要加底色。
 - `render` 先用 `listEl.textContent = ""` 清空清單，再為每則筆記建一個 `li`。每次都整份重畫：筆記不多的時候，這比「只改有變的那幾列」簡單得多，也不容易出錯。
 - `itemEl.className = "selected"` 設定元素的 `class` 屬性（第 2 章第 2 集）。`.selected` 那條 CSS 規則就會套上去。
-- 每個 `li` 的點擊函式 `() => select(note)`，用到的是迴圈裡那一圈的 `note`（箭頭函式可以用外面的變數，第 2 章第 5 集），所以點哪一列，選到的就是哪一則。
+- 每個 `li` 的點擊函式 `() => select(note)`，用到的是迴圈裡那一輪的 `note`（箭頭函式可以用外面的變數，第 2 章第 5 集），所以點哪一列，選到的就是哪一則。
 - `select` 把 `current` 換掉，把標題與內容填進輸入框，再 `render` 一次，讓藍底移過去。最後一行 `select(current)` 讓一開始就有選到第一則。
 
 ### 為什麼 `render` 不寫成 `function`
@@ -134,4 +134,4 @@ select(current);
 - 資料放在陣列，畫面由資料畫出來；資料變了，就清空清單、整份重畫。
 - 用 `textContent = ""` 清空清單，`createElement`、`append` 加上每一列，`className` 設定 `class`。
 - 用 `current` 存目前選到的筆記物件，`note === current` 判斷哪一列要標示。
-- 要靠前面的 `null` 檢查，函式要寫成 `const f = () => { ... }`，不能用 `function` 宣告。
+- 函式要用到前面做過的 `null` 檢查，就寫成 `const f = () => { ... }`，不要用 `function` 宣告。

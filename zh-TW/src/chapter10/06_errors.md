@@ -8,7 +8,7 @@
 
 ### 哪些地方會出錯
 
-目前所有呼叫 plugin 的地方，失敗時都只會在 Console 留下一行沒人看的錯誤：
+目前所有呼叫 plugin 的地方，失敗時都只會在 Console 留下一行錯誤，畫面上完全看不出來：
 
 - 讀檔：`notes.json` 被改壞了，`JSON.parse` 丟出錯誤，或內容是合法的 JSON，卻不是筆記陣列。
 - 存檔：磁碟滿了、檔案被設成唯讀，`writeTextFile` 被拒絕。
@@ -20,7 +20,7 @@ plugin 的函式失敗時，Promise 會被拒絕，`await` 會把它當成錯誤
 
 ### 壞掉的檔案不能被蓋掉
 
-讀檔失敗最危險的是接下來的存檔。讀不出來時，`notes` 還是空的；要是這時照常存檔，壞掉的 `notes.json` 就被一份空陣列蓋掉，使用者連手動搶救的機會都沒了。所以讀檔失敗時，記下「這次不要存檔」，並在狀態列說明。
+讀檔失敗之後，最危險的是存檔。讀不出來時，`notes` 還是空的；要是這時照常存檔，壞掉的 `notes.json` 就被一份空陣列蓋掉，使用者連手動搶救的機會都沒了。所以讀檔失敗時，記下「這次不要存檔」，並在狀態列說明。
 
 `loadNotes` 順便多檢查一步：`JSON.parse` 成功不代表是筆記，`Array.isArray(值)` 回答值是不是陣列，不是就丟錯。
 
@@ -92,7 +92,7 @@ export async function exportNote(note: Note): Promise<string | null> {
 
 - 新增 `persist`：所有 `saveNotes(notes)` 都改呼叫它。它先看 `canSave`，再 `try` 存檔，成功顯示「已儲存」，失敗顯示原因。
 - `start` 讀檔失敗時，把 `canSave` 設成 `false`，並說明原因。
-- 匯入、匯出各包一層 `try`/`catch`。
+- 匯入、匯出各包一層 `try`/`catch`。匯入成功後不再顯示「已匯入」：`persist` 的「已儲存」馬上會蓋過它，而且新筆記已經出現在清單上了。
 - 刪除前用 dialog 的 `ask()`（第 7 章第 4 集）確認，回傳 `false` 就什麼都不做。`dialog:default` 已經放行 `ask`，permission 不用改。
 
 `src-tauri/src/lib.rs`、`src-tauri/capabilities/default.json`、`index.html`、`src/styles.css` 都跟上一集一樣，再貼一次：
@@ -310,11 +310,9 @@ start();
      Running `target/debug/tauri-app`
 ```
 
-匯入成功時，`persist` 的「已儲存」會蓋過「已匯入」那句：筆記已經出現在清單上，所以匯入不另外說明。
-
 ### 故意弄壞看看
 
-下面的指令都是 macOS 的路徑與寫法，錯誤訊息的文字依平台而不同。
+下面的指令與路徑是 macOS 的（`ada` 是範例的使用者名稱），錯誤訊息的文字依平台與 WebView 而不同。
 
 **寫不進去。** 把檔案改成唯讀，再打幾個字：
 
