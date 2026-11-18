@@ -62,3 +62,8 @@
     - [opener：開網址與檔案](chapter7/03_opener.md)
     - [dialog：開檔對話框與訊息框](chapter7/04_dialog.md)
     - [fs：讀寫檔案與 scope](chapter7/05_fs.md)
+    - [路徑：app 的資料目錄](chapter7/06_paths.md)
+    - [store：儲存設定](chapter7/07_store.md)
+    - [notification：系統通知](chapter7/08_notification.md)
+    - [clipboard-manager：剪貼簿](chapter7/09_clipboard.md)
+    - [log：記錄日誌](chapter7/10_log.md)
