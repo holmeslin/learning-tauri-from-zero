@@ -75,3 +75,5 @@
     - [系統匣選單](chapter8/05_tray_menu.md)
     - [global-shortcut：全域快捷鍵](chapter8/06_global_shortcut.md)
     - [single-instance：只允許開一個](chapter8/07_single_instance.md)
+- [測試與除錯](chapter9/README.md)
+    - [把邏輯從 command 抽出來測](chapter9/01_extract_logic.md)
