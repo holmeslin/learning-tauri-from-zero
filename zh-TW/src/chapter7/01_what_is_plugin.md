@@ -38,7 +38,9 @@ npm run tauri add dialog
         Info Running `cargo fmt`...
 ```
 
-依序做了四件事：`src-tauri/Cargo.toml` 多一行 `tauri-plugin-dialog = "2"`；`package.json` 多一行 `"@tauri-apps/plugin-dialog": "^2.8.4"`；`lib.rs` 多一行 `.plugin(tauri_plugin_dialog::init())`；`capabilities/default.json` 多一項 `dialog:default`。後兩個檔案現在是這樣（`lib.rs` 沿用前幾章的寫法，沒有 `greet`）：
+它做了四件事。`src-tauri/Cargo.toml` 多一行 `tauri-plugin-dialog = "2"`，`package.json` 多一行 `"@tauri-apps/plugin-dialog": "^2.8.4"`。`lib.rs` 多一行 `.plugin(tauri_plugin_dialog::init())`，`capabilities/default.json` 多一項 `dialog:default`。
+
+後兩個檔案現在是這樣。`lib.rs` 沿用前幾章的寫法，沒有 `greet`。CLI 會把 `default.json` 的 `"windows"` 展開成多行，內容沒變，本書一律寫成範本原本的一行：
 
 `src-tauri/src/lib.rs`：
 
@@ -60,9 +62,7 @@ pub fn run() {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
   "description": "Capability for the main window",
-  "windows": [
-    "main"
-  ],
+  "windows": ["main"],
   "permissions": [
     "core:default",
     "opener:default",
@@ -106,11 +106,11 @@ pub fn run() {
 import { message } from "@tauri-apps/plugin-dialog";
 
 const msgEl: HTMLElement | null = document.querySelector("#msg");
+if (!msgEl) {
+  throw new Error("找不到 #msg");
+}
 
 document.querySelector("#hello-btn")?.addEventListener("click", async () => {
-  if (!msgEl) {
-    return;
-  }
   try {
     await message("dialog plugin 裝好了", { title: "plugin" });
     msgEl.textContent = "對話框關掉了";

@@ -8,7 +8,7 @@
 
 ### 前端要先被放行
 
-第 5、6 章已經遇過：前端想改視窗標題、關視窗，沒被放行就會被擋下。plugin 也一樣。plugin 裝好了，前端呼叫它的功能時，Tauri 還要檢查 `src-tauri/capabilities/default.json` 的 `permissions` 清單，沒列在裡面就拒絕。
+第 6 章已經遇過：前端想改視窗標題、關視窗，沒被放行就會被擋下。plugin 也一樣。plugin 裝好了，前端呼叫它的功能時，Tauri 還要檢查 `src-tauri/capabilities/default.json` 的 `permissions` 清單，沒列在裡面就拒絕。
 
 ### 範例：漏掉 permission
 
@@ -58,11 +58,11 @@ pub fn run() {
 import { message } from "@tauri-apps/plugin-dialog";
 
 const msgEl: HTMLElement | null = document.querySelector("#msg");
+if (!msgEl) {
+  throw new Error("找不到 #msg");
+}
 
 document.querySelector("#hello-btn")?.addEventListener("click", async () => {
-  if (!msgEl) {
-    return;
-  }
   try {
     await message("permission 放行了", { title: "permission" });
     msgEl.textContent = "對話框關掉了";
@@ -134,7 +134,7 @@ permission 的名稱是 `<plugin>:<名稱>`，常見的有兩種：
 
 ### 只放行用得到的
 
-這個範例只用了 `message`，其實只放行 `dialog:allow-message` 就夠了，對話框一樣能彈。`dialog:default` 還多放行了選檔、存檔的對話框（下一集會用）。原則是用到什麼放行什麼：放行得越少，前端出狀況時能做的事越少。另外還有 `deny-` 開頭的 permission，用來明確禁止，第 14 章會正式介紹。
+這個範例只用了 `message`，其實只放行 `dialog:allow-message` 就夠了，對話框一樣能彈。`dialog:default` 還多放行了選檔、存檔的對話框（第 4 集會用）。原則是用到什麼放行什麼：放行得越少，前端出狀況時能做的事越少。
 
 ### 怎麼知道該加哪一項
 
