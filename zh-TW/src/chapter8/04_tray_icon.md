@@ -109,7 +109,6 @@ listen("tray-click", () => {
 `npm run tauri dev` 的輸出（節錄）：
 
 ```text
-   Compiling tauri v2.12.6
    Compiling tauri-app v0.1.0 (~/tauri-app/src-tauri)
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 5.58s
      Running `target/debug/tauri-app`

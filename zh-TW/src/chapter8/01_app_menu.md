@@ -111,11 +111,11 @@ pub fn run() {
 
 ### 少了「編輯」選單會怎樣
 
-在 macOS，輸入框的 Cmd+C、Cmd+V、Cmd+A 要靠選單裡的「拷貝」「貼上」「全選」。把範例最後的 `.items(&[&app_menu, &file_menu, &edit_menu])` 拿掉 `&edit_menu` 再執行，在輸入框打字後按 Cmd+A，沒有任何反應；放回去，才會全選。自己做選單的時候，別忘了放「編輯」。這是在 macOS 上看到的，其他平台沒有驗證。
+在 macOS，輸入框的 Cmd+A、Cmd+V 這類快捷鍵，要靠選單裡的「全選」「貼上」項目。把範例最後的 `.items(&[&app_menu, &file_menu, &edit_menu])` 拿掉 `&edit_menu` 再執行，在輸入框打字後按 Cmd+A 不會全選，Cmd+V 也貼不上；放回去，兩個都正常。「剪下」「拷貝」放在同一個選單裡，沒有逐一測試。自己做選單的時候，別忘了放「編輯」。這是在 macOS 上看到的，其他平台沒有驗證。
 
 ## 重點整理
 
 - 選單由 `Menu`、`Submenu`、項目三層組成；用 `tauri::Builder::menu(|app| ...)` 在 App 建好時給出整份選單。
 - 自訂項目用 `MenuItem::with_id(app, id, 文字, 可不可用, 快捷鍵)`，id 留給下一集辨識；預設項目（`.copy()`、`.quit()` 等）預設是英文，要中文用 `_with_text`。
 - macOS 的選單屬於整個 App，第一個子選單是 app 選單；Windows、Linux 的選單屬於視窗。沒設選單時只有 macOS 有預設選單。
-- `.menu(...)` 會整份取代預設選單；在 macOS，沒有「編輯」選單，輸入框就不能用 Cmd+C、Cmd+V、Cmd+A。
+- `.menu(...)` 會整份取代預設選單；在 macOS，沒有「編輯」選單，輸入框就不能用 Cmd+A、Cmd+V 這類快捷鍵。

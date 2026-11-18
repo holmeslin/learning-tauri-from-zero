@@ -13,7 +13,7 @@
 1. 前端在 `contextmenu` 事件裡呼叫 `event.preventDefault()`（第 2 章第 9 集），擋下內建的選單，再用 `invoke` 叫 Rust。
 2. Rust 建一份 `Menu`，對視窗呼叫 `popup_menu`，選單就出現在滑鼠的位置。
 
-使用者選了項目，事件會進到上一集的 `on_menu_event`。前端的 `@tauri-apps/api/menu` 也能建選單，這本書統一在 Rust 這一側做，跟前兩集一致。
+使用者選了項目，事件會進到上一集的 `on_menu_event`。
 
 ### 範例：按右鍵新增筆記
 
