@@ -46,7 +46,7 @@ pub fn run() {
 
 - `app.package_info()` 是 App 的名稱與版本，來源是 `tauri.conf.json` 的 `productName` 與 `version`，沒寫的話退回 `Cargo.toml` 的套件名稱與版本。
 - `app.config()` 是整份 `tauri.conf.json` 讀進來的設定，這裡取 `identifier`（第 1 章第 6 集）。
-- `window.label()` 是視窗的 label，第 1 章第 6 集說過，範本的視窗沒有指定，預設是 `main`。視窗還能做哪些事，第 6 章會正式介紹。
+- `window.label()` 是視窗的 label，第 1 章第 6 集說過，範本的視窗沒有指定，預設是 `main`。視窗怎麼操作（前端的 `getCurrentWindow()`、Rust 的 `WebviewWindow` 方法），第 6 章會正式介紹。
 
 前端用範本現成的 Greet 表單，`index.html` 不用動，`src/main.ts` 只要把 `invoke` 的 command 名字從 `"greet"` 換成 `"app_info"`：
 
