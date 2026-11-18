@@ -42,13 +42,45 @@
 `src/styles.css`：
 
 ```css
-body { display: flex; height: 100vh; margin: 0; font-family: sans-serif; }
-.sidebar { width: 200px; padding: 8px; overflow-y: auto; background-color: #eee; }
-main { flex: 1; display: flex; flex-direction: column; gap: 8px; padding: 8px; }
-#note-list { padding: 0; list-style: none; }
-#note-list li { padding: 6px 8px; cursor: pointer; }
-#note-list .selected { background-color: #cde; }
-#body-input { flex: 1; }
+body {
+  display: flex;
+  height: 100vh;
+  margin: 0;
+  font-family: sans-serif;
+}
+
+.sidebar {
+  width: 200px;
+  padding: 8px;
+  overflow-y: auto;
+  background-color: #eee;
+}
+
+main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+}
+
+#note-list {
+  padding: 0;
+  list-style: none;
+}
+
+#note-list li {
+  padding: 6px 8px;
+  cursor: pointer;
+}
+
+#note-list .selected {
+  background-color: #cde;
+}
+
+#body-input {
+  flex: 1;
+}
 ```
 
 `src/notes.ts`：
@@ -127,7 +159,7 @@ select(current);
 
 ### 為什麼 `render` 不寫成 `function`
 
-前面的程式檢查過 `listEl`、`titleEl`、`bodyEl` 不是 `null`，後面才用。但 `function render() { ... }` 這種宣告會被提到檔案最前面，TypeScript 不敢假設那時候檢查已經做完，會說 `'listEl' is possibly 'null'`。`const render = () => { ... }` 是檢查之後才建立的箭頭函式，TypeScript 看得出此時 `listEl` 一定有東西，所以這個專案的函式都寫成這種形式。
+前面的程式檢查過 `listEl`、`titleEl`、`bodyEl` 不是 `null`，後面才用。但 `function render() { ... }` 這種宣告會被提到檔案最前面，TypeScript 不敢假設那時候檢查已經做完，會說 `'listEl' is possibly 'null'`。`const render = () => { ... }` 是檢查之後才建立的箭頭函式，TypeScript 看得出此時 `listEl` 一定有東西，所以 `main.ts` 裡會用到這些檢查結果的函式，都寫成這種形式。
 
 ## 重點整理
 

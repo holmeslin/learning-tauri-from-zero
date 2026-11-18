@@ -52,13 +52,45 @@
 `src/styles.css`：
 
 ```css
-body { display: flex; height: 100vh; margin: 0; font-family: sans-serif; }
-.sidebar { width: 200px; padding: 8px; overflow-y: auto; background-color: #eee; }
-main { flex: 1; display: flex; flex-direction: column; gap: 8px; padding: 8px; }
-#note-list { padding: 0; list-style: none; }
-#note-list li { padding: 6px 8px; cursor: pointer; }
-#note-list .selected { background-color: #cde; }
-#body-input { flex: 1; }
+body {
+  display: flex;
+  height: 100vh;
+  margin: 0;
+  font-family: sans-serif;
+}
+
+.sidebar {
+  width: 200px;
+  padding: 8px;
+  overflow-y: auto;
+  background-color: #eee;
+}
+
+main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+}
+
+#note-list {
+  padding: 0;
+  list-style: none;
+}
+
+#note-list li {
+  padding: 6px 8px;
+  cursor: pointer;
+}
+
+#note-list .selected {
+  background-color: #cde;
+}
+
+#body-input {
+  flex: 1;
+}
 ```
 
 `src/notes.ts`：

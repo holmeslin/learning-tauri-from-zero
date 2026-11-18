@@ -8,7 +8,7 @@
 
 ### 視窗設定
 
-視窗標題現在還是 `tauri-app`。第 6 章第 1 集說過，標題與大小寫在 `app.windows`。預設的 800×600 剛好夠用，所以大小不動；筆記 App 的版面是左右兩欄，視窗再小就擠了，所以加上最小尺寸。`identifier` 不要動：它決定 app 資料夾的名字（第 7 章第 6 集），改了就找不到已經存好的筆記。
+視窗標題現在還是 `tauri-app`。第 6 章第 1 集說過，標題與大小在 `app.windows`。預設的 800×600 剛好夠用，所以大小不動；筆記 App 的版面是左右兩欄，視窗再小就擠了，所以加上最小尺寸。`identifier` 不要動：它決定 app 資料夾的名字（第 7 章第 6 集），改了就找不到已經存好的筆記。
 
 `src-tauri/tauri.conf.json`：
 
@@ -124,13 +124,45 @@ pub fn run() {
 `src/styles.css`：
 
 ```css
-body { display: flex; height: 100vh; margin: 0; font-family: sans-serif; }
-.sidebar { width: 200px; padding: 8px; overflow-y: auto; background-color: #eee; }
-main { flex: 1; display: flex; flex-direction: column; gap: 8px; padding: 8px; }
-#note-list { padding: 0; list-style: none; }
-#note-list li { padding: 6px 8px; cursor: pointer; }
-#note-list .selected { background-color: #cde; }
-#body-input { flex: 1; }
+body {
+  display: flex;
+  height: 100vh;
+  margin: 0;
+  font-family: sans-serif;
+}
+
+.sidebar {
+  width: 200px;
+  padding: 8px;
+  overflow-y: auto;
+  background-color: #eee;
+}
+
+main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+}
+
+#note-list {
+  padding: 0;
+  list-style: none;
+}
+
+#note-list li {
+  padding: 6px 8px;
+  cursor: pointer;
+}
+
+#note-list .selected {
+  background-color: #cde;
+}
+
+#body-input {
+  flex: 1;
+}
 ```
 
 `src/notes.ts`：
@@ -161,7 +193,13 @@ export async function loadNotes(): Promise<Note[]> {
   }
   const text = await readTextFile(FILE, { baseDir: dir });
   const data = JSON.parse(text);
-  if (!Array.isArray(data)) {
+  if (
+    !Array.isArray(data) ||
+    !data.every(
+      (note) =>
+        typeof note?.title === "string" && typeof note?.body === "string",
+    )
+  ) {
     throw new Error(`${FILE} 的內容不是筆記陣列`);
   }
   return data;
@@ -184,7 +222,7 @@ export async function importNote(): Promise<Note | null> {
 
 export async function exportNote(note: Note): Promise<string | null> {
   const path = await save({
-    defaultPath: `${note.title}.md`,
+    defaultPath: `${note.title || "未命名"}.md`,
     filters: markdown,
   });
   if (path === null) {
@@ -212,6 +250,7 @@ if (!listEl || !titleEl || !bodyEl || !statusEl) {
 let notes: Note[] = [];
 let current: Note = { title: "", body: "" };
 let canSave = false;
+let noSaveMessage = "還在讀取筆記，先不存檔";
 
 const show = (message: string) => {
   statusEl.textContent = message;
@@ -249,13 +288,16 @@ const showFirst = () => {
 
 const persist = async () => {
   if (!canSave) {
-    return;
+    show(noSaveMessage);
+    return false;
   }
   try {
     await saveNotes(notes);
     show("已儲存");
+    return true;
   } catch (error) {
     show(`儲存失敗：${error}`);
+    return false;
   }
 };
 
@@ -277,11 +319,17 @@ document.querySelector("#new-btn")?.addEventListener("click", () => {
 });
 
 document.querySelector("#delete-btn")?.addEventListener("click", async () => {
-  const yes = await ask(`要刪除「${current.title}」嗎？`, { kind: "warning" });
-  if (yes) {
-    notes = notes.filter((note) => note !== current);
-    showFirst();
-    persist();
+  try {
+    const yes = await ask(`要刪除「${current.title || "未命名"}」嗎？`, {
+      kind: "warning",
+    });
+    if (yes) {
+      notes = notes.filter((note) => note !== current);
+      showFirst();
+      persist();
+    }
+  } catch (error) {
+    show(`刪除失敗：${error}`);
   }
 });
 
@@ -291,7 +339,9 @@ document.querySelector("#import-btn")?.addEventListener("click", async () => {
     if (note) {
       notes.push(note);
       select(note);
-      persist();
+      if (await persist()) {
+        show(`已匯入「${note.title}」`);
+      }
     }
   } catch (error) {
     show(`匯入失敗：${error}`);
@@ -314,7 +364,8 @@ const start = async () => {
     notes = await loadNotes();
     canSave = true;
   } catch (error) {
-    show(`讀取失敗，這次不會存檔：${error}`);
+    noSaveMessage = `讀取失敗，這次不會存檔：${error}`;
+    show(noSaveMessage);
   }
   showFirst();
 };
@@ -334,7 +385,7 @@ start();
 
 ### 清掉範本留下的檔案
 
-範本的 `src/assets/` 放著三個 logo（Vite、Tauri、TypeScript），這個專案從頭到尾沒用到。刪掉它們，再用 `npm run build` 確認沒有任何地方還需要它：
+範本的 `src/assets/` 放著三個 logo（Vite、Tauri、TypeScript），這個專案從頭到尾沒用到。刪掉它們（下面的 `rm -r` 是 macOS、Linux 的指令；Windows 直接在檔案總管刪掉 `src/assets` 資料夾），再用 `npm run build` 確認沒有任何地方還需要它：
 
 ```bash
 rm -r src/assets
@@ -363,7 +414,7 @@ dist/assets/index-BXqH5t-R.js   5.35 kB │ gzip: 2.23 kB
 
 ### 回頭看
 
-筆記 App 的每一塊，都是前面學過的東西接起來的：
+筆記 App 的每一塊，主要靠這些東西做成：
 
 - 畫面：HTML、CSS 的 flex 與 DOM（第 2 章）。
 - 存檔：fs plugin、`BaseDirectory.AppData` 與 permission（第 7 章）。
@@ -376,7 +427,7 @@ dist/assets/index-BXqH5t-R.js   5.35 kB │ gzip: 2.23 kB
 
 - 每打一個字就寫一次整個檔案。連續輸入時，上一次的寫入還沒結束，下一次就開始了，兩次寫入可能互相重疊。比較穩的做法是停手一小段時間才存。
 - 筆記一多，整份讀進來、整份寫回去就太慢了，也沒辦法搜尋。第 11 章會正式介紹用 SQLite 存資料。
-- `notes.ts` 可以像第 9 章第 3 集那樣，用 mock 假裝 plugin 的回答來測試。
+- `notes.ts` 不碰畫面，適合拿來寫測試。第 9 章第 3 集示範過用 mock 假裝 Rust 的回覆，plugin 的呼叫要怎麼假裝，本書沒有展開。
 - 匯出的 `.md` 只是文字。第 12 章會正式介紹怎麼預覽 Markdown。
 - `fs:allow-appdata-write-recursive` 對這個 App 來說放得比較寬，更細的 permission 與 scope 設定，第 14 章會正式介紹。
 - 做成安裝檔給別人用，第 15 章會正式介紹。
@@ -385,5 +436,5 @@ dist/assets/index-BXqH5t-R.js   5.35 kB │ gzip: 2.23 kB
 
 - 視窗的標題與最小尺寸寫在 `tauri.conf.json` 的 `app.windows`；`identifier` 決定資料夾，不要隨便改。
 - 把範本沒用到的檔案刪掉，再跑 `npm run build`，確認沒有東西還需要它。
-- 整個筆記 App 只用了前面學過的 DOM、fs 與 dialog，沒有自己的 command。
+- 整個筆記 App 沒有自己的 command：畫面用 DOM，存檔用 fs plugin，匯入、匯出用 dialog plugin。
 - 做完先想想哪裡還能更穩：連續存檔、檔案變大、更窄的 permission。

@@ -23,16 +23,7 @@
 
 ### 資料：一則筆記
 
-一則筆記只有標題和內容：
-
-```ts,ignore
-interface Note {
-  title: string;
-  body: string;
-}
-```
-
-整份資料是 `Note[]`，存成 app 資料夾裡的一個 JSON 檔 `notes.json`：整份讀進來、整份寫回去，最單純。檔案會長這樣：
+一則筆記只有標題 `title` 和內容 `body` 兩個字串欄位，型別 `Note` 寫在後面的 `src/notes.ts`。整份資料是 `Note[]`，存成 app 資料夾裡的一個 JSON 檔 `notes.json`：整份讀進來、整份寫回去，最單純。檔案會長這樣：
 
 ```json,ignore
 [
@@ -43,7 +34,7 @@ interface Note {
 ]
 ```
 
-這裡刻意不替筆記編號。物件用 `===`（第 2 章第 5 集）比的是「是不是同一個物件」，不是欄位的值一不一樣，像 Rust 比較兩個指標。所以程式只要記住「選到的那個物件」，用 `===` 就能找出它，兩則內容一模一樣的筆記也不會搞混。筆記只有這個 App 自己用，不需要 `id`。
+這裡刻意不替筆記編號。`===` 用在兩個物件上，比的是「是不是同一個物件」，不是欄位的值一不一樣。所以程式只要記住「選到的那個物件」，用 `===` 就能找出它，兩則內容一模一樣的筆記也不會搞混。筆記只有這個 App 自己用，不需要 `id`。
 
 ### 程式放在哪
 
@@ -95,16 +86,48 @@ interface Note {
 `src/styles.css`：
 
 ```css
-body { display: flex; height: 100vh; margin: 0; font-family: sans-serif; }
-.sidebar { width: 200px; padding: 8px; overflow-y: auto; background-color: #eee; }
-main { flex: 1; display: flex; flex-direction: column; gap: 8px; padding: 8px; }
-#note-list { padding: 0; list-style: none; }
-#note-list li { padding: 6px 8px; cursor: pointer; }
-#note-list .selected { background-color: #cde; }
-#body-input { flex: 1; }
+body {
+  display: flex;
+  height: 100vh;
+  margin: 0;
+  font-family: sans-serif;
+}
+
+.sidebar {
+  width: 200px;
+  padding: 8px;
+  overflow-y: auto;
+  background-color: #eee;
+}
+
+main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+}
+
+#note-list {
+  padding: 0;
+  list-style: none;
+}
+
+#note-list li {
+  padding: 6px 8px;
+  cursor: pointer;
+}
+
+#note-list .selected {
+  background-color: #cde;
+}
+
+#body-input {
+  flex: 1;
+}
 ```
 
-排版用的是第 2 章第 3 集的 flex。規則都很短，每條寫成一行：
+排版用的是第 2 章第 3 集的 flex：
 
 - `body` 設成 `display: flex`，左欄、右欄並排。`height: 100vh` 的 `vh` 是視窗高度的百分之一，所以 `100vh` 是整個視窗的高度；`margin: 0` 去掉 `body` 預設的邊距。
 - `.sidebar` 固定 200px 寬，清單太長時 `overflow-y: auto` 會出現捲軸。

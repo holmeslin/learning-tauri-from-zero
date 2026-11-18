@@ -50,7 +50,7 @@ pub fn run() {
 
 ### 匯出與匯入
 
-匯出：`save()` 讓使用者決定檔名與位置，只回傳路徑，不寫檔案（第 7 章第 4 集），所以拿到路徑之後，自己用 `writeTextFile` 把內容寫進去。使用者按取消就是 `null`，什麼都不做。預設檔名用標題加 `.md`，內容只寫 `body`。
+匯出：`save()` 讓使用者決定檔名與位置，只回傳路徑，不寫檔案（第 7 章第 4 集），所以拿到路徑之後，自己用 `writeTextFile` 把內容寫進去。使用者按取消就是 `null`，什麼都不做。預設檔名用標題加 `.md`，標題是空的就用「未命名」：`標題 || "未命名"` 在標題是空字串時，結果是「未命名」。內容只寫 `body`。標題裡若有 `/` 這類不能放進檔名的字元，匯出可能會失敗，這個 App 不特別處理，第 6 集起失敗時至少會顯示原因。
 
 匯入：`open()` 挑檔案，拿到路徑就 `readTextFile`。標題用檔名去掉 `.md`。取檔名要用 `@tauri-apps/api/path` 的 `basename(路徑, ".md")`，它跟第 7 章第 6 集的 `join` 一樣是核心函式，會處理各平台的路徑分隔符號。
 
@@ -103,7 +103,7 @@ export async function importNote(): Promise<Note | null> {
 
 export async function exportNote(note: Note): Promise<string | null> {
   const path = await save({
-    defaultPath: `${note.title}.md`,
+    defaultPath: `${note.title || "未命名"}.md`,
     filters: markdown,
   });
   if (path === null) {
@@ -157,13 +157,45 @@ export async function exportNote(note: Note): Promise<string | null> {
 `src/styles.css`：
 
 ```css
-body { display: flex; height: 100vh; margin: 0; font-family: sans-serif; }
-.sidebar { width: 200px; padding: 8px; overflow-y: auto; background-color: #eee; }
-main { flex: 1; display: flex; flex-direction: column; gap: 8px; padding: 8px; }
-#note-list { padding: 0; list-style: none; }
-#note-list li { padding: 6px 8px; cursor: pointer; }
-#note-list .selected { background-color: #cde; }
-#body-input { flex: 1; }
+body {
+  display: flex;
+  height: 100vh;
+  margin: 0;
+  font-family: sans-serif;
+}
+
+.sidebar {
+  width: 200px;
+  padding: 8px;
+  overflow-y: auto;
+  background-color: #eee;
+}
+
+main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+}
+
+#note-list {
+  padding: 0;
+  list-style: none;
+}
+
+#note-list li {
+  padding: 6px 8px;
+  cursor: pointer;
+}
+
+#note-list .selected {
+  background-color: #cde;
+}
+
+#body-input {
+  flex: 1;
+}
 ```
 
 匯入的筆記跟「新增」一樣：放進陣列、選起來、存檔。`show` 把訊息寫進狀態列：
@@ -275,13 +307,13 @@ start();
      Running `target/debug/tauri-app`
 ```
 
-先在標題打「購物清單」、內容打兩行字，按「匯出」。彈出系統的存檔對話框，預設檔名是 `購物清單.md`。選好位置按「Save」，狀態列顯示（macOS 上，`ada` 是範例的使用者名稱）：
+先在標題打「購物清單」、內容打兩行字，按「匯出」。彈出系統的存檔對話框，預設檔名是 `購物清單.md`。選好位置按確認（macOS 英文介面上是「Save」，按鈕文字依作業系統與語言而不同），狀態列顯示（macOS 上，`ada` 是範例的使用者名稱）：
 
 ```text
 已匯出到 /Users/ada/Downloads/購物清單.md
 ```
 
-用編輯器開啟匯出的檔案，裡面只有內容那兩行字，沒有標題。再按「匯入」，選剛剛存的檔案，清單最下面多了一則「購物清單」，內容跟檔案一樣。在對話框按「Cancel」，什麼都不會發生，這就是回傳 `null` 的情況。
+用編輯器開啟匯出的檔案，裡面只有內容那兩行字，沒有標題。再按「匯入」，選剛剛存的檔案，清單最下面多了一則「購物清單」，內容跟檔案一樣。在對話框按取消（macOS 英文介面上是「Cancel」），什麼都不會發生，這就是回傳 `null` 的情況。
 
 ## 重點整理
 

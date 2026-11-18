@@ -14,7 +14,7 @@
 npm run tauri add fs
 ```
 
-`lib.rs` 多一行註冊，`capabilities/default.json` 多一項 `fs:default`。它只放行讀取與建立 app 資料夾，存檔要寫入，所以再加上第 7 章第 5 集挑的 `fs:allow-appdata-write-recursive`：
+`lib.rs` 多一行註冊；這個專案不寫自己的 command，所以範本的 `greet` 與 `invoke_handler` 也一併拿掉。`capabilities/default.json` 多一項 `fs:default`。它只放行讀取與建立 app 資料夾，存檔要寫入，所以再加上第 7 章第 5 集挑的 `fs:allow-appdata-write-recursive`：
 
 `src-tauri/src/lib.rs`：
 
@@ -126,13 +126,45 @@ export async function saveNotes(notes: Note[]): Promise<void> {
 `src/styles.css`：
 
 ```css
-body { display: flex; height: 100vh; margin: 0; font-family: sans-serif; }
-.sidebar { width: 200px; padding: 8px; overflow-y: auto; background-color: #eee; }
-main { flex: 1; display: flex; flex-direction: column; gap: 8px; padding: 8px; }
-#note-list { padding: 0; list-style: none; }
-#note-list li { padding: 6px 8px; cursor: pointer; }
-#note-list .selected { background-color: #cde; }
-#body-input { flex: 1; }
+body {
+  display: flex;
+  height: 100vh;
+  margin: 0;
+  font-family: sans-serif;
+}
+
+.sidebar {
+  width: 200px;
+  padding: 8px;
+  overflow-y: auto;
+  background-color: #eee;
+}
+
+main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+}
+
+#note-list {
+  padding: 0;
+  list-style: none;
+}
+
+#note-list li {
+  padding: 6px 8px;
+  cursor: pointer;
+}
+
+#note-list .selected {
+  background-color: #cde;
+}
+
+#body-input {
+  flex: 1;
+}
 ```
 
 `main.ts` 的改動有兩處。一是假資料不要了：`notes` 一開始是空的，`start` 讀完檔案才換成真的。讀檔完成之前，`current` 先放一則空白的，讀完再換掉。二是每次資料變了，就呼叫 `saveNotes(notes)`：打字、新增、刪除都一樣。呼叫 `saveNotes` 沒有 `await`，因為畫面不用等它寫完，跟範本呼叫 `greet()` 同一個寫法。

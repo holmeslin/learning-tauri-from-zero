@@ -16,13 +16,13 @@
 
 使用者按取消不算出錯，那是 `open()`、`save()` 回傳 `null`，上一集已經處理了。
 
-plugin 的函式失敗時，Promise 會被拒絕，`await` 會把它當成錯誤丟出來（第 2 章第 10 集），所以用 `try`/`catch` 接住，再把原因放進狀態列。
+plugin 的函式失敗時，Promise 會被拒絕，`await` 會把它當成錯誤丟出來（第 2 章第 10 集），所以用 `try`/`catch` 接住，再把原因放進狀態列。plugin 的錯誤到前端是字串，所以直接用 `${error}` 放進訊息就能顯示，不用像第 2 章第 10 集那樣先檢查 `error` 的型別；`JSON.parse` 丟的是 `Error` 物件，放進 `${}` 會變成「名稱: 訊息」的文字，一樣看得懂。
 
 ### 壞掉的檔案不能被蓋掉
 
-讀檔失敗之後，最危險的是存檔。讀不出來時，`notes` 還是空的；要是這時照常存檔，壞掉的 `notes.json` 就被一份空陣列蓋掉，使用者連手動搶救的機會都沒了。所以讀檔失敗時，記下「這次不要存檔」，並在狀態列說明。
+讀檔失敗之後，最危險的是存檔。讀不出來時，`notes` 還是空的；要是這時照常存檔，壞掉的 `notes.json` 就被一份空陣列蓋掉，使用者連手動搶救的機會都沒了。所以讀檔失敗時，記下「這次不要存檔」，並在狀態列說明；之後每次想存檔，狀態列都會再說明一次，不會默默什麼都沒發生。
 
-`loadNotes` 順便多檢查一步：`JSON.parse` 成功不代表是筆記，`Array.isArray(值)` 回答值是不是陣列，不是就丟錯。
+`loadNotes` 順便多檢查一步：`JSON.parse` 成功不代表是筆記。`Array.isArray(值)` 回答值是不是陣列；`typeof 值 === "string"` 回答值是不是字串；陣列的 `every(函式)` 跟 `filter` 一樣收一個函式，所有元素都讓函式回答 `true`，結果才是 `true`。`note?.title` 的 `?.` 讓 `note` 是 `null` 時不會出錯。所以「是陣列，而且每一則都有字串的 `title` 與 `body`」才算筆記，否則丟錯。
 
 `src/notes.ts`：
 
@@ -52,7 +52,13 @@ export async function loadNotes(): Promise<Note[]> {
   }
   const text = await readTextFile(FILE, { baseDir: dir });
   const data = JSON.parse(text);
-  if (!Array.isArray(data)) {
+  if (
+    !Array.isArray(data) ||
+    !data.every(
+      (note) =>
+        typeof note?.title === "string" && typeof note?.body === "string",
+    )
+  ) {
     throw new Error(`${FILE} 的內容不是筆記陣列`);
   }
   return data;
@@ -75,7 +81,7 @@ export async function importNote(): Promise<Note | null> {
 
 export async function exportNote(note: Note): Promise<string | null> {
   const path = await save({
-    defaultPath: `${note.title}.md`,
+    defaultPath: `${note.title || "未命名"}.md`,
     filters: markdown,
   });
   if (path === null) {
@@ -90,10 +96,10 @@ export async function exportNote(note: Note): Promise<string | null> {
 
 `main.ts` 的改動：
 
-- 新增 `persist`：所有 `saveNotes(notes)` 都改呼叫它。它先看 `canSave`，再 `try` 存檔，成功顯示「已儲存」，失敗顯示原因。
-- `canSave` 一開始是 `false`，`start` 讀檔成功才改成 `true`；讀檔失敗就維持 `false`，並說明原因。這樣連讀檔還沒完成的那一小段時間，也不會存檔。
-- 匯入、匯出各包一層 `try`/`catch`。匯入成功後不再顯示「已匯入」：`persist` 的「已儲存」馬上會蓋過它，而且新筆記已經出現在清單上了。
-- 刪除前用 dialog 的 `ask()`（第 7 章第 4 集）確認，回傳 `false` 就什麼都不做。`dialog:default` 已經放行 `ask`，permission 不用改。
+- 新增 `persist`：所有 `saveNotes(notes)` 都改呼叫它。`canSave` 是 `false` 時不存檔，改成把 `noSaveMessage`（不存檔的原因）再顯示一次；否則 `try` 存檔，成功顯示「已儲存」，失敗顯示原因。存好回傳 `true`，其他情況回傳 `false`。
+- `canSave` 一開始是 `false`，`start` 讀檔成功才改成 `true`；讀檔失敗就維持 `false`，並把原因記進 `noSaveMessage`。這樣連讀檔還沒完成的那一小段時間，也不會存檔。
+- 匯入、匯出各包一層 `try`/`catch`。匯入成功後，等 `persist` 回傳 `true` 才顯示「已匯入」，這樣不會被「已儲存」蓋掉；存檔失敗時，狀態列留著「儲存失敗」。
+- 刪除前用 dialog 的 `ask()`（第 7 章第 4 集）確認，回傳 `false` 就什麼都不做，`ask()` 本身出錯也用 `try`/`catch` 接住。標題是空的，提示就寫「未命名」。`dialog:default` 已經放行 `ask`，permission 不用改。
 
 `src-tauri/src/lib.rs`、`src-tauri/capabilities/default.json`、`index.html`、`src/styles.css` 都跟上一集一樣，再貼一次：
 
@@ -166,13 +172,45 @@ pub fn run() {
 `src/styles.css`：
 
 ```css
-body { display: flex; height: 100vh; margin: 0; font-family: sans-serif; }
-.sidebar { width: 200px; padding: 8px; overflow-y: auto; background-color: #eee; }
-main { flex: 1; display: flex; flex-direction: column; gap: 8px; padding: 8px; }
-#note-list { padding: 0; list-style: none; }
-#note-list li { padding: 6px 8px; cursor: pointer; }
-#note-list .selected { background-color: #cde; }
-#body-input { flex: 1; }
+body {
+  display: flex;
+  height: 100vh;
+  margin: 0;
+  font-family: sans-serif;
+}
+
+.sidebar {
+  width: 200px;
+  padding: 8px;
+  overflow-y: auto;
+  background-color: #eee;
+}
+
+main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+}
+
+#note-list {
+  padding: 0;
+  list-style: none;
+}
+
+#note-list li {
+  padding: 6px 8px;
+  cursor: pointer;
+}
+
+#note-list .selected {
+  background-color: #cde;
+}
+
+#body-input {
+  flex: 1;
+}
 ```
 
 `src/main.ts`：
@@ -192,6 +230,7 @@ if (!listEl || !titleEl || !bodyEl || !statusEl) {
 let notes: Note[] = [];
 let current: Note = { title: "", body: "" };
 let canSave = false;
+let noSaveMessage = "還在讀取筆記，先不存檔";
 
 const show = (message: string) => {
   statusEl.textContent = message;
@@ -229,13 +268,16 @@ const showFirst = () => {
 
 const persist = async () => {
   if (!canSave) {
-    return;
+    show(noSaveMessage);
+    return false;
   }
   try {
     await saveNotes(notes);
     show("已儲存");
+    return true;
   } catch (error) {
     show(`儲存失敗：${error}`);
+    return false;
   }
 };
 
@@ -257,11 +299,17 @@ document.querySelector("#new-btn")?.addEventListener("click", () => {
 });
 
 document.querySelector("#delete-btn")?.addEventListener("click", async () => {
-  const yes = await ask(`要刪除「${current.title}」嗎？`, { kind: "warning" });
-  if (yes) {
-    notes = notes.filter((note) => note !== current);
-    showFirst();
-    persist();
+  try {
+    const yes = await ask(`要刪除「${current.title || "未命名"}」嗎？`, {
+      kind: "warning",
+    });
+    if (yes) {
+      notes = notes.filter((note) => note !== current);
+      showFirst();
+      persist();
+    }
+  } catch (error) {
+    show(`刪除失敗：${error}`);
   }
 });
 
@@ -271,7 +319,9 @@ document.querySelector("#import-btn")?.addEventListener("click", async () => {
     if (note) {
       notes.push(note);
       select(note);
-      persist();
+      if (await persist()) {
+        show(`已匯入「${note.title}」`);
+      }
     }
   } catch (error) {
     show(`匯入失敗：${error}`);
@@ -294,7 +344,8 @@ const start = async () => {
     notes = await loadNotes();
     canSave = true;
   } catch (error) {
-    show(`讀取失敗，這次不會存檔：${error}`);
+    noSaveMessage = `讀取失敗，這次不會存檔：${error}`;
+    show(noSaveMessage);
   }
   showFirst();
 };
@@ -344,7 +395,7 @@ echo '[{"title":' > "$HOME/Library/Application Support/tw.example.tauri-app/note
 讀取失敗，這次不會存檔：SyntaxError: JSON Parse error: Unexpected EOF
 ```
 
-清單裡是一則空白的「新筆記」，可以打字，但不會存檔。看看檔案：
+清單裡是一則空白的「新筆記」，可以打字，但不會存檔，每打一個字，狀態列就再顯示一次這則訊息。看看檔案：
 
 ```bash
 cat "$HOME/Library/Application Support/tw.example.tauri-app/notes.json"
@@ -368,7 +419,7 @@ echo '{"title": "hi"}' > "$HOME/Library/Application Support/tw.example.tauri-app
 讀取失敗，這次不會存檔：Error: notes.json 的內容不是筆記陣列
 ```
 
-這個檢查只看是不是陣列，不看裡面每一則筆記有沒有 `title` 與 `body`。
+裡面的筆記缺欄位，例如 `[{"title": "hi"}]`（少了 `body`），也會被擋下來，訊息相同。
 
 ### 刪除前確認
 
@@ -378,6 +429,6 @@ echo '{"title": "hi"}' > "$HOME/Library/Application Support/tw.example.tauri-app
 
 - plugin 函式失敗時，`await` 會丟出錯誤；用 `try`/`catch` 接住，把 `${error}` 放進狀態列，使用者才看得到原因。
 - 使用者取消對話框是 `null`，不是錯誤。
-- 讀檔成功之前不要存檔（`canSave`），否則壞掉的檔案會被空資料蓋掉。
-- `JSON.parse` 成功不代表形狀對，至少用 `Array.isArray` 確認是陣列。
+- 讀檔成功之前不要存檔（`canSave`），否則壞掉的檔案會被空資料蓋掉；不存檔的原因要留在狀態列，不要默默略過。
+- `JSON.parse` 成功不代表形狀對，用 `Array.isArray` 確認是陣列，再用 `every` 與 `typeof` 確認每一則都有字串的 `title` 與 `body`。
 - 刪除這種救不回來的操作，先用 `ask()` 確認。
