@@ -139,7 +139,7 @@ permission 的名稱是 `<plugin>:<名稱>`，常見的有兩種：
 ### 怎麼知道該加哪一項
 
 - 看錯誤訊息，最後一段就是答案。
-- `default.json` 第一行 `$schema` 指向的 `src-tauri/gen/schemas/desktop-schema.json` 是編譯時自動產生的，裡面有所有 permission 的名稱和說明。支援 JSON Schema 的編輯器會在你輸入時列出來。
+- `default.json` 裡的 `$schema` 指向的 `src-tauri/gen/schemas/desktop-schema.json` 是編譯時自動產生的，裡面有所有 permission 的名稱和說明。支援 JSON Schema 的編輯器會在你輸入時列出來。
 
 ## 重點整理
 

@@ -25,7 +25,7 @@ dialog plugin 的前端套件是 `@tauri-apps/plugin-dialog`，這一集用到�
 npm run tauri add dialog
 ```
 
-它會在 `lib.rs` 登記 plugin，並在 `capabilities/default.json` 加上 `dialog:default`。我們再多加一項 `core:window:allow-destroy`，最後一個範例要用，第 6 章第 6 集說過：
+它會在 `lib.rs` 註冊 plugin，並在 `capabilities/default.json` 加上 `dialog:default`。我們再多加一項 `core:window:allow-destroy`，最後一個範例要用，第 6 章第 6 集說過：
 
 `src-tauri/capabilities/default.json`：
 

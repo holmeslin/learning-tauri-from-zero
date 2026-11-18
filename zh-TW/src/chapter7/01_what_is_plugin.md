@@ -8,13 +8,13 @@
 
 ### plugin 是什麼
 
-Tauri 的核心只管視窗、事件與 command。要跟作業系統打交道的功能，像是對話框、讀寫檔案、系統通知、剪貼簿，都拆成一個個 plugin，用到哪個才裝哪個。範本已經裝了一個：opener。第 1 章第 7 集讀 `lib.rs` 時看到的 `.plugin(tauri_plugin_opener::init())`，就是在登記它。
+Tauri 的核心只管視窗、事件與 command。要跟作業系統打交道的功能，像是對話框、讀寫檔案、系統通知、剪貼簿，都拆成一個個 plugin，用到哪個才裝哪個。範本已經裝了一個：opener。第 1 章第 7 集讀 `lib.rs` 時看到的 `.plugin(tauri_plugin_opener::init())`，就是在註冊它。
 
 ### 一個 plugin 有三個部分
 
 以 opener 為例：
 
-- Rust crate `tauri-plugin-opener`：功能真正執行的地方。列在 `src-tauri/Cargo.toml`，並在 `src-tauri/src/lib.rs` 用 `.plugin(...)` 登記。
+- Rust crate `tauri-plugin-opener`：功能真正執行的地方。列在 `src-tauri/Cargo.toml`，並在 `src-tauri/src/lib.rs` 用 `.plugin(...)` 註冊。
 - npm 套件 `@tauri-apps/plugin-opener`：前端呼叫它用的函式，列在 `package.json`。背後做的事跟第 3 章的 `invoke` 一樣，只是替你包好了。
 - permission `opener:default`：寫在 `src-tauri/capabilities/default.json`，放行前端呼叫這個 plugin。
 
@@ -38,7 +38,7 @@ npm run tauri add dialog
         Info Running `cargo fmt`...
 ```
 
-依序做了四件事：`src-tauri/Cargo.toml` 多一行 `tauri-plugin-dialog = "2"`；`package.json` 多一行 `"@tauri-apps/plugin-dialog": "^2.8.4"`；`lib.rs` 多一行 `.plugin(tauri_plugin_dialog::init())`；`capabilities/default.json` 多一項 `dialog:default`。後兩個檔案現在是這樣：
+依序做了四件事：`src-tauri/Cargo.toml` 多一行 `tauri-plugin-dialog = "2"`；`package.json` 多一行 `"@tauri-apps/plugin-dialog": "^2.8.4"`；`lib.rs` 多一行 `.plugin(tauri_plugin_dialog::init())`；`capabilities/default.json` 多一項 `dialog:default`。後兩個檔案現在是這樣（`lib.rs` 沿用前幾章的寫法，沒有 `greet`）：
 
 `src-tauri/src/lib.rs`：
 
@@ -131,11 +131,11 @@ document.querySelector("#hello-btn")?.addEventListener("click", async () => {
 
 按下按鈕，彈出標題為 `plugin` 的系統對話框，按「OK」之後畫面出現「對話框關掉了」。
 
-漏掉 `lib.rs` 的 `.plugin(tauri_plugin_dialog::init())` 的話，編譯照樣成功，但按下按鈕會得到 `出錯了：plugin dialog not found`：Rust 這一側沒有登記叫 `dialog` 的 plugin。漏掉 permission 的情況，下一集再說。
+漏掉 `lib.rs` 的 `.plugin(tauri_plugin_dialog::init())` 的話，編譯照樣成功，但按下按鈕會得到 `出錯了：plugin dialog not found`：Rust 這一側沒有註冊叫 `dialog` 的 plugin。漏掉 permission 的情況，下一集再說。
 
 ### 跟 Electron 比一比
 
-Electron 的主行程跑在 Node.js 上，要讀檔、彈對話框，直接呼叫 Node.js 與 Electron 的 API 就好。Tauri 的前端只是一般網頁，沒有 Node.js API，碰不到系統。想做這些事，只能呼叫 Rust 這一側的 plugin（或自己寫的 command），而且 plugin 要先裝、先登記，還要有 permission 放行。前端能做的事，因此只限於你放行的那些。
+Electron 的主行程跑在 Node.js 上，要讀檔、彈對話框，直接呼叫 Node.js 與 Electron 的 API 就好。Tauri 的前端只是一般網頁，沒有 Node.js API，碰不到系統。想做這些事，只能呼叫 Rust 這一側的 plugin（或自己寫的 command），而且 plugin 要先裝、先註冊，還要有 permission 放行。前端能做的事，因此只限於你放行的那些。
 
 ## 重點整理
 
