@@ -129,7 +129,7 @@ Rust 寫入: /Users/ada/Library/Application Support/tw.example.tauri-app/hello.t
 
 最後兩行一模一樣：前端與 Rust 說的是同一個資料夾。到終端機執行 `cat "$HOME/Library/Application Support/tw.example.tauri-app/hello.txt"`，會印出「你好，資料目錄」。
 
-macOS 上 `AppData`、`AppLocalData`、`AppConfig` 剛好是同一個資料夾，Windows 與 Linux 的規則不同，三者會分開。這一集只在 macOS 實測，其他平台的實際路徑沒有驗證，所以要用函式問，不要自己拼路徑。
+macOS 上 `AppData`、`AppLocalData`、`AppConfig` 剛好是同一個資料夾，Windows 與 Linux 的規則不同，三者不一定是同一個資料夾。這一集只在 macOS 實測，其他平台的實際路徑沒有驗證，所以要用函式問，不要自己拼路徑。
 
 ### 第 5 集的 `baseDir`
 
