@@ -24,7 +24,7 @@ Tauri App 有兩條輸出，看錯地方就什麼都看不到：
 
 | 訊息的關鍵字 | 出現在 | 原因與先檢查什麼 |
 | --- | --- | --- |
-| `Command … not found` | 前端 | 名字拼錯（含底線），或沒放進 `generate_handler!`、沒加 `#[tauri::command]`（第 3 章第 1 集） |
+| `Command … not found` | 前端 | 名字拼錯（含底線），或沒放進 `generate_handler!`（第 3 章第 1 集） |
 | `missing required key familyName` | 前端 | 參數的鍵要用 `camelCase`；`invalid type …` 是型別不對（第 3 章第 3 集） |
 | `state not managed for field` | 前端 | 忘了 `.manage()`，或 `State<T>` 的 `T` 跟 `manage` 的型別不同（第 4 章第 1 集） |
 | `… not allowed. Permissions associated with this command` | 前端 | 缺 permission，把冒號後面列的其中一項加進 `capabilities/default.json`（第 7 章第 2 集） |
@@ -76,13 +76,13 @@ note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 fatal runtime error: failed to initiate panic, error 5, aborting
 ```
 
-前三行是主要的線索：哪條執行緒、哪個檔案的哪一行（`src/lib.rs:3:25`）、為什麼（`unwrap()` 碰到 `Err`）。照著位置去改。
+`thread` 與 `called` 開頭的兩行是主要的線索：哪條執行緒、哪個檔案的哪一行（`src/lib.rs:3:25`）、為什麼（`unwrap()` 碰到 `Err`）。照著位置去改。
 
 最後一行是 macOS 上看到的結果：App 直接結束，視窗消失，`tauri dev` 也跟著結束，前端什麼錯誤都沒收到。其他平台沒有驗證。要避免，就別在 command 裡對使用者的輸入 `unwrap()`，改回傳 `Result`（第 3 章第 6 集）：失敗會變成前端 Promise 的拒絕，App 不會倒。
 
 ### 看呼叫的路徑：`RUST_BACKTRACE=1`
 
-panic 訊息只指出出事的那一行。如果是在函式庫深處出事，加上環境變數 `RUST_BACKTRACE=1`，讓它印出完整的呼叫路徑（macOS、Linux 的寫法；Windows 的 PowerShell 要先設 `$env:RUST_BACKTRACE = 1`）：
+panic 訊息只指出出事的那一行。如果是在函式庫深處出事，加上環境變數 `RUST_BACKTRACE=1`，讓它印出完整的呼叫路徑（這是 macOS 上跑的寫法）：
 
 ```bash
 RUST_BACKTRACE=1 npm run tauri dev
@@ -106,5 +106,5 @@ stack backtrace:
 
 - Rust 的輸出、編譯錯誤與 `panic` 在終端機；前端的輸出與錯誤在 Console；log plugin 的日誌兩邊都能去。
 - 被拒絕的 `invoke` 與 Rust 的錯誤長得不一樣：對照表找關鍵字，先判斷是前端、編譯還是執行時的 panic。
-- command 裡對輸入 `unwrap()`，失敗就 panic；macOS 上整個 App 會直接結束。要失敗的地方改回傳 `Result`。
-- panic 訊息看最前面三行；要看呼叫路徑就加 `RUST_BACKTRACE=1`。
+- command 裡對輸入 `unwrap()`，失敗就 panic；macOS 上整個 App 會直接結束。會失敗的地方改回傳 `Result`。
+- panic 訊息看 `thread` 與 `called` 開頭的兩行；要看呼叫路徑就加 `RUST_BACKTRACE=1`。
