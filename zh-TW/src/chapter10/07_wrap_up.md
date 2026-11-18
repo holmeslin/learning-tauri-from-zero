@@ -2,13 +2,13 @@
 
 ## 本集目標
 
-替筆記 App 換上自己的視窗標題與大小，清掉範本留下的檔案，確認能打包前端，並回頭看做了什麼、還能怎麼改。
+替筆記 App 換上自己的視窗標題，並限制視窗最小能縮到多小；清掉範本留下的檔案，確認能打包前端，最後回頭看做了什麼、還能怎麼改。
 
 ## 正文
 
 ### 視窗設定
 
-視窗標題現在還是 `tauri-app`。第 6 章第 1 集說過，標題與大小寫在 `app.windows`。筆記 App 的版面是左右兩欄，視窗再小就擠了，所以設定最小尺寸。`identifier` 不要動：它決定 app 資料夾的名字（第 7 章第 6 集），改了就找不到已經存好的筆記。
+視窗標題現在還是 `tauri-app`。第 6 章第 1 集說過，標題與大小寫在 `app.windows`。預設的 800×600 剛好夠用，所以大小不動；筆記 App 的版面是左右兩欄，視窗再小就擠了，所以加上最小尺寸。`identifier` 不要動：它決定 app 資料夾的名字（第 7 章第 6 集），改了就找不到已經存好的筆記。
 
 `src-tauri/tauri.conf.json`：
 
@@ -211,13 +211,13 @@ if (!listEl || !titleEl || !bodyEl || !statusEl) {
 
 let notes: Note[] = [];
 let current: Note = { title: "", body: "" };
-let canSave = true;
+let canSave = false;
 
-const show = (message: string): void => {
+const show = (message: string) => {
   statusEl.textContent = message;
 };
 
-const render = (): void => {
+const render = () => {
   listEl.textContent = "";
   for (const note of notes) {
     const itemEl = document.createElement("li");
@@ -233,21 +233,21 @@ const render = (): void => {
   }
 };
 
-const select = (note: Note): void => {
+const select = (note: Note) => {
   current = note;
   titleEl.value = note.title;
   bodyEl.value = note.body;
   render();
 };
 
-const showFirst = (): void => {
+const showFirst = () => {
   if (notes.length === 0) {
     notes.push({ title: "新筆記", body: "" });
   }
   select(notes[0]);
 };
 
-const persist = async (): Promise<void> => {
+const persist = async () => {
   if (!canSave) {
     return;
   }
@@ -259,7 +259,7 @@ const persist = async (): Promise<void> => {
   }
 };
 
-const edit = (): void => {
+const edit = () => {
   current.title = titleEl.value;
   current.body = bodyEl.value;
   render();
@@ -309,11 +309,11 @@ document.querySelector("#export-btn")?.addEventListener("click", async () => {
   }
 });
 
-const start = async (): Promise<void> => {
+const start = async () => {
   try {
     notes = await loadNotes();
+    canSave = true;
   } catch (error) {
-    canSave = false;
     show(`讀取失敗，這次不會存檔：${error}`);
   }
   showFirst();
@@ -383,7 +383,7 @@ dist/assets/index-BXqH5t-R.js   5.35 kB │ gzip: 2.23 kB
 
 ## 重點整理
 
-- 視窗的標題、大小與最小尺寸寫在 `tauri.conf.json` 的 `app.windows`；`identifier` 決定資料夾，不要隨便改。
+- 視窗的標題與最小尺寸寫在 `tauri.conf.json` 的 `app.windows`；`identifier` 決定資料夾，不要隨便改。
 - 把範本沒用到的檔案刪掉，再跑 `npm run build`，確認沒有東西還需要它。
 - 整個筆記 App 只用了前面學過的 DOM、fs 與 dialog，沒有自己的 command。
 - 做完先想想哪裡還能更穩：連續存檔、檔案變大、更窄的 permission。

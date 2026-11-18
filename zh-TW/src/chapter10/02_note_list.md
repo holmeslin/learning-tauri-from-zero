@@ -81,7 +81,7 @@ const notes: Note[] = [
 ];
 let current: Note = notes[0];
 
-const render = (): void => {
+const render = () => {
   listEl.textContent = "";
   for (const note of notes) {
     const itemEl = document.createElement("li");
@@ -97,7 +97,7 @@ const render = (): void => {
   }
 };
 
-const select = (note: Note): void => {
+const select = (note: Note) => {
   current = note;
   titleEl.value = note.title;
   bodyEl.value = note.body;
@@ -119,7 +119,7 @@ select(current);
 
 ### 這段程式怎麼跑
 
-- `current` 記著目前選到哪一則。它存的是那個物件本身，不是編號，所以 `note === current` 就能判斷清單上的哪一列要加底色。
+- `current` 記著目前選到哪一則，一開始是 `notes[0]`，也就是第一則（陣列的編號從 0 算起，跟 Rust 一樣）。它存的是那個物件本身，不是編號，所以 `note === current` 就能判斷清單上的哪一列要加底色。
 - `render` 先用 `listEl.textContent = ""` 清空清單，再為每則筆記建一個 `li`。每次都整份重畫：筆記不多的時候，這比「只改有變的那幾列」簡單得多，也不容易出錯。
 - `itemEl.className = "selected"` 設定元素的 `class` 屬性（第 2 章第 2 集）。`.selected` 那條 CSS 規則就會套上去。
 - 每個 `li` 的點擊函式 `() => select(note)`，用到的是迴圈裡那一輪的 `note`（箭頭函式可以用外面的變數，第 2 章第 5 集），所以點哪一列，選到的就是哪一則。

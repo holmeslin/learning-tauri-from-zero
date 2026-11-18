@@ -184,11 +184,11 @@ if (!listEl || !titleEl || !bodyEl || !statusEl) {
 let notes: Note[] = [];
 let current: Note = { title: "", body: "" };
 
-const show = (message: string): void => {
+const show = (message: string) => {
   statusEl.textContent = message;
 };
 
-const render = (): void => {
+const render = () => {
   listEl.textContent = "";
   for (const note of notes) {
     const itemEl = document.createElement("li");
@@ -204,21 +204,21 @@ const render = (): void => {
   }
 };
 
-const select = (note: Note): void => {
+const select = (note: Note) => {
   current = note;
   titleEl.value = note.title;
   bodyEl.value = note.body;
   render();
 };
 
-const showFirst = (): void => {
+const showFirst = () => {
   if (notes.length === 0) {
     notes.push({ title: "新筆記", body: "" });
   }
   select(notes[0]);
 };
 
-const edit = (): void => {
+const edit = () => {
   current.title = titleEl.value;
   current.body = bodyEl.value;
   render();
@@ -258,7 +258,7 @@ document.querySelector("#export-btn")?.addEventListener("click", async () => {
   }
 });
 
-const start = async (): Promise<void> => {
+const start = async () => {
   notes = await loadNotes();
   showFirst();
 };

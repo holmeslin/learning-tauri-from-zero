@@ -91,7 +91,7 @@ export async function exportNote(note: Note): Promise<string | null> {
 `main.ts` 的改動：
 
 - 新增 `persist`：所有 `saveNotes(notes)` 都改呼叫它。它先看 `canSave`，再 `try` 存檔，成功顯示「已儲存」，失敗顯示原因。
-- `start` 讀檔失敗時，把 `canSave` 設成 `false`，並說明原因。
+- `canSave` 一開始是 `false`，`start` 讀檔成功才改成 `true`；讀檔失敗就維持 `false`，並說明原因。這樣連讀檔還沒完成的那一小段時間，也不會存檔。
 - 匯入、匯出各包一層 `try`/`catch`。匯入成功後不再顯示「已匯入」：`persist` 的「已儲存」馬上會蓋過它，而且新筆記已經出現在清單上了。
 - 刪除前用 dialog 的 `ask()`（第 7 章第 4 集）確認，回傳 `false` 就什麼都不做。`dialog:default` 已經放行 `ask`，permission 不用改。
 
@@ -191,13 +191,13 @@ if (!listEl || !titleEl || !bodyEl || !statusEl) {
 
 let notes: Note[] = [];
 let current: Note = { title: "", body: "" };
-let canSave = true;
+let canSave = false;
 
-const show = (message: string): void => {
+const show = (message: string) => {
   statusEl.textContent = message;
 };
 
-const render = (): void => {
+const render = () => {
   listEl.textContent = "";
   for (const note of notes) {
     const itemEl = document.createElement("li");
@@ -213,21 +213,21 @@ const render = (): void => {
   }
 };
 
-const select = (note: Note): void => {
+const select = (note: Note) => {
   current = note;
   titleEl.value = note.title;
   bodyEl.value = note.body;
   render();
 };
 
-const showFirst = (): void => {
+const showFirst = () => {
   if (notes.length === 0) {
     notes.push({ title: "新筆記", body: "" });
   }
   select(notes[0]);
 };
 
-const persist = async (): Promise<void> => {
+const persist = async () => {
   if (!canSave) {
     return;
   }
@@ -239,7 +239,7 @@ const persist = async (): Promise<void> => {
   }
 };
 
-const edit = (): void => {
+const edit = () => {
   current.title = titleEl.value;
   current.body = bodyEl.value;
   render();
@@ -289,11 +289,11 @@ document.querySelector("#export-btn")?.addEventListener("click", async () => {
   }
 });
 
-const start = async (): Promise<void> => {
+const start = async () => {
   try {
     notes = await loadNotes();
+    canSave = true;
   } catch (error) {
-    canSave = false;
     show(`讀取失敗，這次不會存檔：${error}`);
   }
   showFirst();
@@ -378,6 +378,6 @@ echo '{"title": "hi"}' > "$HOME/Library/Application Support/tw.example.tauri-app
 
 - plugin 函式失敗時，`await` 會丟出錯誤；用 `try`/`catch` 接住，把 `${error}` 放進狀態列，使用者才看得到原因。
 - 使用者取消對話框是 `null`，不是錯誤。
-- 讀檔失敗時要停止存檔（`canSave`），否則壞掉的檔案會被空資料蓋掉。
+- 讀檔成功之前不要存檔（`canSave`），否則壞掉的檔案會被空資料蓋掉。
 - `JSON.parse` 成功不代表形狀對，至少用 `Array.isArray` 確認是陣列。
 - 刪除這種救不回來的操作，先用 `ask()` 確認。

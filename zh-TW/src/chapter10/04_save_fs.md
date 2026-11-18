@@ -152,7 +152,7 @@ if (!listEl || !titleEl || !bodyEl) {
 let notes: Note[] = [];
 let current: Note = { title: "", body: "" };
 
-const render = (): void => {
+const render = () => {
   listEl.textContent = "";
   for (const note of notes) {
     const itemEl = document.createElement("li");
@@ -168,21 +168,21 @@ const render = (): void => {
   }
 };
 
-const select = (note: Note): void => {
+const select = (note: Note) => {
   current = note;
   titleEl.value = note.title;
   bodyEl.value = note.body;
   render();
 };
 
-const showFirst = (): void => {
+const showFirst = () => {
   if (notes.length === 0) {
     notes.push({ title: "新筆記", body: "" });
   }
   select(notes[0]);
 };
 
-const edit = (): void => {
+const edit = () => {
   current.title = titleEl.value;
   current.body = bodyEl.value;
   render();
@@ -205,7 +205,7 @@ document.querySelector("#delete-btn")?.addEventListener("click", () => {
   saveNotes(notes);
 });
 
-const start = async (): Promise<void> => {
+const start = async () => {
   notes = await loadNotes();
   showFirst();
 };

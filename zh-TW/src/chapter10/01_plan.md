@@ -47,7 +47,7 @@ interface Note {
 
 ### 程式放在哪
 
-這個專案不寫自己的 command。讀寫檔案有 fs plugin，選檔案有 dialog plugin，前端直接呼叫就行（第 7 章）；筆記的邏輯只是在整理一個陣列，放在前端最省事。Rust 這邊只要註冊 plugin、放行 permission。第 11 章的待辦清單會換成 Rust 端存取資料庫。
+這個專案不寫自己的 command。讀寫檔案有 fs plugin，選檔案有 dialog plugin，前端直接呼叫就行（第 7 章）；筆記的邏輯只是在整理一個陣列，放在前端最省事。Rust 這邊只要註冊 plugin、放行 permission。資料多到整份讀寫太慢時，要改用資料庫，第 11 章會正式介紹。
 
 前端分成幾個檔案：
 
