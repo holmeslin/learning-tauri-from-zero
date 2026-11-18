@@ -77,3 +77,4 @@
     - [single-instance：只允許開一個](chapter8/07_single_instance.md)
 - [測試與除錯](chapter9/README.md)
     - [把邏輯從 command 抽出來測](chapter9/01_extract_logic.md)
+    - [`tauri::test` 的 mock runtime](chapter9/02_mock_runtime.md)

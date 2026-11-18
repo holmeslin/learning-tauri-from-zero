@@ -14,7 +14,7 @@
 
 ### 範例：新增清單項目
 
-這一章用一個小清單當例子。`add_item` 把文字加進清單，並檢查兩件事：不能是空的，也不能重複。清單放在狀態裡（第 4 章），所以 command 有一個 `State` 參數。判斷寫在 `add`，它只認得 `Vec<String>` 與 `&str`：
+這一章用一個小清單當例子。`add_item` 把文字加進清單，加之前先去掉頭尾的空白，空字串不收。清單放在狀態裡（第 4 章），所以 command 有一個 `State` 參數。判斷寫在 `add`，它只認得 `Vec<String>` 與 `&str`：
 
 `src-tauri/src/lib.rs`：
 
@@ -26,9 +26,6 @@ fn add(items: &mut Vec<String>, text: &str) -> Result<usize, String> {
     let text = text.trim();
     if text.is_empty() {
         return Err("項目不能是空的".to_string());
-    }
-    if items.iter().any(|item| item == text) {
-        return Err(format!("「{text}」已經在清單裡了"));
     }
     items.push(text.to_string());
     Ok(items.len())
@@ -67,21 +64,14 @@ mod tests {
         assert_eq!(add(&mut items, "   "), Err("項目不能是空的".to_string()));
         assert!(items.is_empty());
     }
-
-    #[test]
-    fn rejects_duplicate() {
-        let mut items = vec!["牛奶".to_string()];
-        assert!(add(&mut items, "牛奶").is_err());
-        assert_eq!(items.len(), 1);
-    }
 }
 ```
 
-- `add` 先 `trim()` 去掉頭尾空白，再依序檢查空字串與重複，成功就回傳目前的項目數。它沒有任何 Tauri 的型別。
+- `add` 先 `trim()` 去掉頭尾空白，空字串就回傳錯誤，否則加進清單，回傳目前的項目數。它沒有任何 Tauri 的型別。
 - `add_item` 只剩一行：鎖住狀態，把裡面的 `Vec` 交給 `add`。`&mut state.lock().unwrap()` 是 `&mut MutexGuard<Vec<String>>`，會自動轉成 `&mut Vec<String>`。
 - 參數 `item_text` 在前端要寫成 `itemText`（第 3 章第 3 集）。
 
-測試放在同一個檔案的 `#[cfg(test)] mod tests`，寫法跟平常一樣。三個測試各管一條規則，直接呼叫 `add`，不需要 App，也不需要視窗。
+測試放在同一個檔案的 `#[cfg(test)] mod tests`，寫法跟平常一樣。兩個測試各管一條規則，直接呼叫 `add`，不需要 App，也不需要視窗。
 
 ### 跑測試
 
@@ -92,12 +82,11 @@ cargo test --manifest-path src-tauri/Cargo.toml
 `cargo test --manifest-path src-tauri/Cargo.toml` 的輸出（節錄）：
 
 ```text
-running 3 tests
+running 2 tests
 test tests::trims_and_counts ... ok
-test tests::rejects_duplicate ... ok
 test tests::rejects_empty ... ok
 
-test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 ```
 
 第一次跑要先編譯相依套件，會等一會兒。`cargo test` 不會開視窗，`npm run tauri dev` 也不會跑測試；`#[cfg(test)]` 裡的程式不會被編進 App。
@@ -109,27 +98,26 @@ test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
 `cargo test --manifest-path src-tauri/Cargo.toml` 的輸出（刪掉 `trim` 之後，節錄）：
 
 ```text
-running 3 tests
-test tests::rejects_duplicate ... ok
+running 2 tests
 test tests::rejects_empty ... FAILED
 test tests::trims_and_counts ... FAILED
 
 ---- tests::rejects_empty stdout ----
-thread 'tests::rejects_empty' (123456) panicked at src/lib.rs:45:9:
+thread 'tests::rejects_empty' (123456) panicked at src/lib.rs:42:9:
 assertion `left == right` failed
   left: Ok(1)
  right: Err("項目不能是空的")
 
 ---- tests::trims_and_counts stdout ----
-thread 'tests::trims_and_counts' (123456) panicked at src/lib.rs:39:9:
+thread 'tests::trims_and_counts' (123456) panicked at src/lib.rs:36:9:
 assertion `left == right` failed
   left: ["  牛奶 ", "雞蛋"]
  right: ["牛奶", "雞蛋"]
 
-test result: FAILED. 1 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+test result: FAILED. 0 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 ```
 
-兩條跟空白有關的規則都被抓到了，`rejects_duplicate` 沒受影響。把那一行加回去，三個測試就會再次通過。
+兩條跟空白有關的規則都被抓到了。把那一行加回去，測試就會再次通過。
 
 ### 測得到，也有測不到
 
