@@ -80,3 +80,14 @@
     - [`tauri::test` 的 mock runtime](chapter9/02_mock_runtime.md)
     - [前端 mock IPC：`@tauri-apps/api/mocks`](chapter9/03_mock_ipc.md)
     - [看 log 與常見錯誤](chapter9/04_logs_and_errors.md)
+
+# 第二部 實戰
+
+- [實戰：筆記 App](chapter10/README.md)
+    - [規劃畫面與資料](chapter10/01_plan.md)
+    - [筆記清單](chapter10/02_note_list.md)
+    - [新增與編輯](chapter10/03_edit_notes.md)
+    - [存到 app 資料目錄（fs）](chapter10/04_save_fs.md)
+    - [匯入、匯出（dialog）](chapter10/05_import_export.md)
+    - [錯誤處理與提示](chapter10/06_errors.md)
+    - [收尾](chapter10/07_wrap_up.md)
