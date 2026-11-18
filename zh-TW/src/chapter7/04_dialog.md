@@ -8,7 +8,7 @@
 
 ### 五個函式
 
-dialog plugin 的前端套件是 `@tauri-apps/plugin-dialog`，這一集用到五個函式，都回傳 Promise：
+dialog plugin 的前端套件是 `@tauri-apps/plugin-dialog`，這一集介紹五個函式，都回傳 Promise：
 
 - `open(選項)`：選檔對話框。使用者選了檔案，回傳路徑（字串）；按「Cancel」回傳 `null`。選項的 `title` 是標題，`filters` 限制可以選的副檔名。加上 `multiple: true` 可以多選，回傳的就變成路徑陣列。
 - `save(選項)`：存檔對話框，讓使用者決定檔名與位置。一樣回傳路徑，按「Cancel」回傳 `null`。選項的 `defaultPath` 可以給預設檔名。它只回傳路徑，不會寫檔案，寫檔是下一集 fs 的事。
