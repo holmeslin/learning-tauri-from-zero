@@ -122,3 +122,6 @@
 - [安全性](chapter14/README.md)
     - [Tauri 的安全模型](chapter14/01_security_model.md)
     - [capabilities 深入](chapter14/02_capabilities.md)
+    - [permission 與 scope](chapter14/03_permission_scope.md)
+    - [替自己的 command 定義 permission](chapter14/04_own_command_permission.md)
+    - [CSP](chapter14/05_csp.md)
