@@ -113,3 +113,5 @@
     - [沒有主視窗的 app](chapter13/02_no_main_window.md)
     - [系統匣選單](chapter13/03_tray_menu.md)
     - [全域快捷鍵叫出視窗](chapter13/04_global_shortcut.md)
+    - [設定視窗（store）](chapter13/05_settings_window.md)
+    - [開機自動啟動（autostart）](chapter13/06_autostart.md)
