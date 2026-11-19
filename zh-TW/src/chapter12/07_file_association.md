@@ -12,11 +12,11 @@
 
 - `ext`：副檔名的陣列，這裡是 `md` 與 `markdown`。
 - `name`：這種檔案的名稱。
-- `description`：說明文字，只有 Windows 會顯示。
-- `role`：App 對這種檔案的角色，`Editor` 是會修改它，`Viewer` 是只看。
-- `mimeType`：MIME 類型，Markdown 是 `text/markdown`。
+- `description`：說明文字，只有 Windows 會顯示（檔案總管「類型」那一欄）。
+- `role`：App 對這種檔案的角色，`Editor` 是會修改它，`Viewer` 是只看。只有 macOS 會用，寫進 `Info.plist`。
+- `mimeType`：MIME 類型，Markdown 是 `text/markdown`。Linux 會把它寫進 `.desktop` 檔的 `MimeType=`，macOS 寫進 `Info.plist`，Windows 用不到。
 
-這份設定是打包工具讀的，所以 `tauri dev` 跑的執行檔不會被登記進系統，雙擊 `.md` 檔不會找到它。打包是第 15 章的事，所以這一集分兩半：設定與程式現在就寫好，dev 模式用命令列測；等第 15 章打包出安裝檔，才能真的用 Finder 或檔案總管雙擊。
+同一份設定，各平台只讀自己用得到的欄位，其餘的會被忽略（`tauri.conf.json` 的 schema 在每個欄位的說明裡都標了適用的平台）。這份設定是打包工具讀的，所以 `tauri dev` 跑的執行檔不會被登記進系統，雙擊 `.md` 檔不會找到它。打包是第 15 章的事，所以這一集分兩半：設定與程式現在就寫好，dev 模式用命令列測；等第 15 章打包出安裝檔，才能真的用 Finder 或檔案總管雙擊。
 
 ### 檔案怎麼交到 App 手上
 
