@@ -606,7 +606,6 @@ dist/assets/index-TxbkJYEi.js   3.17 kB │ gzip: 1.46 kB
 
 ### 還能怎麼改
 
-- 沒有 `async` 的 command 跑在主執行緒（第 3 章第 8 集）。待辦這麼少的資料，查詢快到感覺不出來；資料多了、查詢變慢，畫面就會卡住。那時要把 command 改成 `async`，用 `tauri::async_runtime::spawn_blocking` 把資料庫的工作交給另一條執行緒。
 - 標題建立之後不能編輯，也不能排序或篩選。這些都是 SQL 的事：`UPDATE` 改標題，`ORDER BY`、`WHERE` 排序與篩選。
 - 刪除沒有確認，也不能復原。可以多加一個欄位標記「已刪除」，不真的刪掉資料列。
 - 範本附的 opener plugin 這個專案沒用到，可以從 `lib.rs` 與 `capabilities/default.json` 拿掉；permission 與 capability 第 14 章會正式介紹。
@@ -617,4 +616,3 @@ dist/assets/index-TxbkJYEi.js   3.17 kB │ gzip: 1.46 kB
 - 視窗標題與大小寫在 `tauri.conf.json` 的 `app.windows`；`identifier` 決定資料夾，不能隨便改，否則找不到 `todos.db`。
 - 資料庫函式只收 `&Connection`，就能用 `Connection::open_in_memory()` 在記憶體裡測，不用開 App；migration 也能這樣測：先做出舊結構、放資料，再升級。
 - 把範本沒用到的檔案刪掉，再跑 `npm run build`，確認沒有東西還需要它。
-- 同步的 command 跑在主執行緒，資料庫的工作變慢時，要改成 `async` command 加 `spawn_blocking`。
