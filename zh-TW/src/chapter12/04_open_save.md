@@ -408,7 +408,7 @@ main {
      Running `target/debug/tauri-app`
 ```
 
-視窗標題是「未命名 — Markdown 編輯器」。左邊打幾行 Markdown，按「另存新檔」，彈出系統的存檔對話框，檔名欄預設是 `未命名.md`（這是 `save()` 的 `defaultPath`），資料夾預設是 Downloads（這是 macOS 的預設，其他平台不一樣）。按「Save」（macOS 英文介面上的按鈕文字，依作業系統與語言而不同），狀態列顯示（`ada` 是範例的使用者名稱）：
+視窗標題是「未命名 — Markdown 編輯器」。左邊打幾行 Markdown，按「另存新檔」，彈出系統的存檔對話框，檔名欄預設是 `未命名.md`（這是 `save()` 的 `defaultPath`），資料夾預設是 Downloads（這是在 macOS 上看到的，各平台與系統設定不一樣）。按「Save」（macOS 英文介面上的按鈕文字，依作業系統與語言而不同），狀態列顯示（`ada` 是範例的使用者名稱）：
 
 ```text
 已儲存 /Users/ada/Downloads/未命名.md

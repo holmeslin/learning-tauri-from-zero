@@ -650,13 +650,13 @@ npm run tauri dev -- -- -- "$PWD/hello.md"
 
 這個指令一下子就回來了，沒有開出新視窗。原本的視窗換成「other.md — Markdown 編輯器」，內容是 `other.md` 的，狀態列顯示「已開啟 /Users/ada/tauri-app/other.md」。相對路徑 `other.md` 之所以找得到，是因為 Rust 用 single-instance 給的 `cwd` 把它接成了完整路徑。在檔名前面多放一個 `--flag` 也沒有影響，`file_arg` 會跳過 `-` 開頭的參數。
 
-再試兩個情況。先在編輯區隨便打幾個字，再執行一次上面的指令：視窗跳出第 6 集的確認框，按「Cancel」，編輯區的內容不會被換掉。接著把檔名換成一個不存在的，像 `./src-tauri/target/debug/tauri-app nope.md`，編輯區不動，狀態列顯示：
+再試兩個情況。先在編輯區隨便打幾個字，再執行一次上面的指令：視窗跳出第 6 集的確認對話框，按「Cancel」，編輯區的內容不會被換掉。接著把檔名換成一個不存在的，像 `./src-tauri/target/debug/tauri-app nope.md`，編輯區不動，狀態列顯示：
 
 ```text
 開啟失敗：/Users/ada/tauri-app/nope.md：No such file or directory (os error 2)
 ```
 
-測不到的是第三個入口。macOS 的 `RunEvent::Opened` 要在打包後的 `.app` 被系統叫起來才會送來，dev 模式的執行檔沒有被登記進系統，`Opened` 這一支這一集沒有實測，等第 15 章打包之後，再用 Finder 雙擊 `.md` 檔試。打包安裝之後，系統的「打開方式」就會出現這個 App，要不要設成預設，由使用者在系統裡決定，App 不能替他選。
+測不到的是第三個入口。dev 模式用命令列帶路徑啟動，把 `run` 收到的 `RunEvent` 印出來看，只有 `Ready` 和視窗取得、失去焦點，沒有 `Opened`。`Opened` 是系統要 App 開啟檔案的通知，這一集沒有實測，等第 15 章打包之後，再用 Finder 雙擊 `.md` 檔試。這一集也只在 macOS 實測，Windows 與 Linux 收檔案的方式，是依 Tauri 的文件與 single-instance 的行為整理的。打包安裝之後，系統的「打開方式」就會出現這個 App，要不要設成預設，由使用者在系統裡決定，App 不能替他選。
 
 ## 重點整理
 
