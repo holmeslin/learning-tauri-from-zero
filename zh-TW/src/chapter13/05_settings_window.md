@@ -34,7 +34,7 @@ npm run tauri add store
 
 ### capability 是給「視窗」的
 
-`capabilities/default.json` 裡的 `windows` 是一份視窗 label 的清單，permission 只發給清單上的視窗。範本裡只有 `"main"`，而設定視窗的 label 是 `settings`，沒列進去，就算 `permissions` 裡有 `store:default`，設定視窗也一樣用不了 store。把 `windows` 改成 `["main", "settings"]`：
+`capabilities/default.json` 裡的 `windows` 是一份視窗 label 的清單，permission 只發給清單上的視窗。範本裡只有 `"main"`，而設定視窗的 label 是 `settings`，沒列進去，就算 `permissions` 裡有 `store:default`，設定視窗也一樣用不了 store。把 `windows` 改成 `["main", "settings"]`。capability 與 permission 完整的規則，第 14 章會正式介紹，這裡只要記得「permission 是發給視窗的」：
 
 `src-tauri/capabilities/default.json`：
 
@@ -338,8 +338,8 @@ body {
 `main.ts` 的做法：
 
 - 便條視窗（`main`）：顯示便條那一塊，讀字型大小套上去，再 `listen("settings-changed", ...)`，每次收到就重新讀一次。套用字型大小靠 `style`：每個元素都有 `style` 欄位，可以在程式裡直接改它的 CSS，CSS 的 `font-size` 在這裡寫成 `fontSize`，值是帶單位的字串，例如 `"20px"`。
-- 設定視窗（`settings`）：顯示設定那一塊，把目前的字型大小填進輸入框。輸入框發出 `change` 事件（輸入完畢、離開輸入框時觸發一次，第 11 章第 4 集的勾選框也是這個事件）就存起來，再 `emit("settings-changed")`。`valueAsNumber` 是數字輸入框的欄位，直接給 `number`，輸入框是空的時候是 `NaN`，交給 `normalizeFontSize` 變回預設值。
-- 讀取、儲存失敗時，便條視窗只能印到 Console（第 2 章第 7 集），設定視窗有地方顯示，就寫在 `#settings-msg`。
+- 設定視窗（`settings`）：顯示設定那一塊，把目前的字型大小填進輸入框。輸入框的 `value` 是字串，所以數字要先用 `String(數字)` 轉成字串才放得進去。輸入框發出 `change` 事件（輸入完畢、離開輸入框時觸發一次，第 11 章第 4 集的勾選框也是這個事件）就存起來，再 `emit("settings-changed")`。`valueAsNumber` 是數字輸入框的欄位，直接給 `number`，輸入框是空的時候是 `NaN`，交給 `normalizeFontSize` 變回預設值。
+- 讀取、儲存失敗時，便條視窗只能印到開發者工具的 Console（第 2 章第 7 集），程式裡用的是 `console.error`：用法跟那一集的 `console.log` 一樣，只是印出來是紅色的錯誤訊息。設定視窗有地方顯示，就寫在 `#settings-msg`。
 
 `src/main.ts`：
 
