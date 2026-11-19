@@ -329,7 +329,8 @@ main {
 - `event.target` 是被點到的那個元素，可能是 `<a>`，也可能是 `<a>` 裡面的 `<strong>`。它的型別是 `EventTarget | null`，沒有 `closest` 方法，所以先用 `instanceof Element` 確認，TypeScript 才會放行。
 - `closest("a")` 從這個元素開始往外找最近的 `<a>`，找不到回傳 `null`。
 - 是連結就先 `event.preventDefault()`，擋下瀏覽器預設的前往動作。
-- 只有網址以 `http://` 或 `https://` 開頭，才交給 opener plugin 的 `openUrl`（第 7 章第 3 集），用系統預設的瀏覽器開啟，`opener:default` 範本本來就放行了。其他的，像 `mailto:` 開頭的網址、相對路徑，一律不處理（`javascript:` 開頭的，上一集已經在 Rust 端換掉了）。
+- `link.getAttribute("href")` 讀的是 `<a>` 的 `href` 屬性原本寫的字串（第 2 章第 2 集的屬性），沒有這個屬性就是 `null`，所以要先判斷。不用 `link.href`：那個欄位會把相對路徑補成完整的網址，原本寫了什麼就看不出來了。
+- 只有網址以 `http://` 或 `https://` 開頭才處理。`字串.startsWith(開頭)` 是字串的方法，字串以那段文字開頭就回傳 `true`，跟 Rust 的 `starts_with` 一樣。符合的，交給 opener plugin 的 `openUrl`（第 7 章第 3 集），用系統預設的瀏覽器開啟，`opener:default` 範本本來就放行了。其他的，像 `mailto:` 開頭的網址、相對路徑，一律不處理（`javascript:` 開頭的，上一集已經在 Rust 端換掉了）。
 
 `src/main.ts`：
 
