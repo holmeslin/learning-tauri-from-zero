@@ -91,3 +91,5 @@
     - [匯入、匯出（dialog）](chapter10/05_import_export.md)
     - [錯誤處理與提示](chapter10/06_errors.md)
     - [收尾](chapter10/07_wrap_up.md)
+- [實戰：SQLite 待辦清單](chapter11/README.md)
+    - [規劃資料表](chapter11/01_plan.md)
