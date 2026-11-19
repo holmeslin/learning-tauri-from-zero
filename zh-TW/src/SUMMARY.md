@@ -102,3 +102,5 @@
 - [實戰：Markdown 編輯器](chapter12/README.md)
     - [規劃](chapter12/01_plan.md)
     - [Rust 端轉 HTML（pulldown-cmark）](chapter12/02_pulldown_cmark.md)
+    - [即時預覽](chapter12/03_live_preview.md)
+    - [開檔與存檔](chapter12/04_open_save.md)
