@@ -462,7 +462,7 @@ if (getCurrentWindow().label === "settings") {
 
 ```text
    Compiling tauri-app v0.1.0 (~/tauri-app/src-tauri)
-    Finished `dev` profile [unoptimized + debuginfo] target(s) in 7.10s
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 4.50s
      Running `target/debug/tauri-app`
 ```
 
