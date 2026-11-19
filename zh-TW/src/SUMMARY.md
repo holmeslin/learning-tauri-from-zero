@@ -116,3 +116,9 @@
     - [設定視窗（store）](chapter13/05_settings_window.md)
     - [開機自動啟動（autostart）](chapter13/06_autostart.md)
     - [收尾](chapter13/07_wrap_up.md)
+
+# 第三部 上線
+
+- [安全性](chapter14/README.md)
+    - [Tauri 的安全模型](chapter14/01_security_model.md)
+    - [capabilities 深入](chapter14/02_capabilities.md)
