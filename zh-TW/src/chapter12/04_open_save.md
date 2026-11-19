@@ -102,7 +102,7 @@ export function writeFile(path: string, text: string): Promise<void> {
 
 這裡有一個順序要小心：`saveTo` 先算好檔名，再寫檔。寫檔成功之後，就不該再有可能丟出錯誤的步驟，否則已經寫進去的檔案，畫面上卻會顯示「儲存失敗」。所以 `await basename(...)` 放在 `writeFile` 前面，寫完只剩改變數、顯示訊息，以及自己會處理錯誤的 `refreshTitle`。`load` 也一樣，先算 `name`，才動 `path` 與編輯區。
 
-四個按鈕的動作都用 `attempt` 包起來：`attempt(動作名稱, 函式)` 呼叫函式，出錯就把「動作失敗：原因」顯示在狀態列，第 11 章第 4 集的 `attempt` 就是這個做法。「新增」現在會直接清掉編輯區，不問；第 6 集再補上確認。
+四個按鈕的動作都用 `attempt` 包起來：`attempt(動作名稱, 函式)` 呼叫函式，出錯就把「動作失敗：原因」顯示在狀態列，第 11 章第 4 集的 `attempt` 就是這個做法。`refreshPreview`、`refreshTitle` 與預覽裡連結的點擊，錯誤也交給同一個 `attempt`，訊息的格式一樣是「動作失敗：原因」。「新增」現在會直接清掉編輯區，不問；第 6 集再補上確認。
 
 `src/main.ts`：
 
@@ -142,22 +142,18 @@ const attempt = async (action: string, work: () => Promise<void>) => {
 const refreshPreview = async () => {
   renderCount += 1;
   const mine = renderCount;
-  try {
+  await attempt("轉換", async () => {
     const html = await renderMarkdown(editorEl.value);
     if (mine === renderCount) {
       previewEl.innerHTML = html;
     }
-  } catch (error) {
-    show(`轉換失敗：${error}`);
-  }
+  });
 };
 
 const refreshTitle = async () => {
-  try {
-    await appWindow.setTitle(`${fileName} — Markdown 編輯器`);
-  } catch (error) {
-    show(`更新視窗標題失敗：${error}`);
-  }
+  await attempt("更新視窗標題", () =>
+    appWindow.setTitle(`${fileName} — Markdown 編輯器`),
+  );
 };
 
 const load = async (newPath: string | null, text: string) => {
@@ -219,11 +215,7 @@ previewEl.addEventListener("click", async (event) => {
     return;
   }
   if (href.startsWith("http://") || href.startsWith("https://")) {
-    try {
-      await openUrl(href);
-    } catch (error) {
-      show(`開啟連結失敗：${error}`);
-    }
+    await attempt("開啟連結", () => openUrl(href));
   }
 });
 

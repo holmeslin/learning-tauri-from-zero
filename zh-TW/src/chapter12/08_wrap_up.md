@@ -294,25 +294,21 @@ const refreshTitle = async () => {
   if (title === shownTitle) {
     return;
   }
-  try {
+  await attempt("更新視窗標題", async () => {
     await appWindow.setTitle(title);
     shownTitle = title;
-  } catch (error) {
-    show(`更新視窗標題失敗：${error}`);
-  }
+  });
 };
 
 const refreshPreview = async () => {
   renderCount += 1;
   const mine = renderCount;
-  try {
+  await attempt("轉換", async () => {
     const html = await renderMarkdown(editorEl.value);
     if (mine === renderCount) {
       previewEl.innerHTML = html;
     }
-  } catch (error) {
-    show(`轉換失敗：${error}`);
-  }
+  });
 };
 
 const load = async (newPath: string | null, text: string) => {
@@ -424,11 +420,7 @@ previewEl.addEventListener("click", async (event) => {
     return;
   }
   if (href.startsWith("http://") || href.startsWith("https://")) {
-    try {
-      await openUrl(href);
-    } catch (error) {
-      show(`開啟連結失敗：${error}`);
-    }
+    await attempt("開啟連結", () => openUrl(href));
   }
 });
 
