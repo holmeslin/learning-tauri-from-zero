@@ -15,9 +15,9 @@
 打開 isolation 之後，Tauri 會在你的頁面裡放一個隱藏的 `<iframe>`，網址是一個專用的 `isolation-…://localhost/`，裡面載入的是你提供的另一個小網頁。頁面每次 `invoke`，訊息都先交給這個 iframe：
 
 1. iframe 裡的 `window.__TAURI_ISOLATION_HOOK__` 收到訊息，可以檢查、修改，丟出錯誤就是不放行。
-2. hook 回傳的訊息，由 iframe 用一把金鑰加密，再送給 Rust。這把金鑰是 App 每次啟動時產生的，只給了 iframe。Rust 解得開才會執行，不是這樣來的訊息一律丟掉。
+2. hook 回傳的訊息，由 iframe 用一把金鑰加密，再送給 Rust。這把金鑰是 App 每次啟動時產生的，只給了 iframe。Rust 解得開才會執行，解不開的一律丟掉。
 
-iframe 是 sandbox 的，頁面的程式既讀不到、也改不到裡面的東西，也沒有金鑰，所以繞不過去。
+iframe 是 sandbox 的，頁面的程式讀不到、改不到裡面的東西，也拿不到金鑰，所以繞不過去。
 
 ### 範例：擋下太長的名字
 
@@ -55,29 +55,80 @@ window.__TAURI_ISOLATION_HOOK__ = (message) => {
 
 `message` 就是準備送出的那則訊息：`cmd` 是 command 的名字（plugin 的是 `plugin:fs|read_text_file` 這種），`payload` 是參數物件。回傳什麼，Rust 就收到什麼。
 
-接著在 `tauri.conf.json` 的 `app.security` 加上 `pattern`，告訴 Tauri 去哪裡找這個小網頁：
+接著在 `tauri.conf.json` 的 `app.security` 加上 `pattern`，告訴 Tauri 去哪裡找這個小網頁。`dir` 是相對於 `tauri.conf.json` 的路徑：
 
-```json,ignore
-"security": {
-  "csp": null,
-  "pattern": {
-    "use": "isolation",
-    "options": { "dir": "../dist-isolation" }
+`src-tauri/tauri.conf.json`：
+
+```json
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "tauri-app",
+  "version": "0.1.0",
+  "identifier": "tw.example.tauri-app",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "withGlobalTauri": true,
+    "windows": [
+      {
+        "title": "tauri-app",
+        "width": 800,
+        "height": 600
+      }
+    ],
+    "security": {
+      "csp": null,
+      "pattern": {
+        "use": "isolation",
+        "options": {
+          "dir": "../dist-isolation"
+        }
+      }
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ]
   }
 }
 ```
 
-`dir` 是相對於 `tauri.conf.json` 的路徑。另外 `src-tauri/Cargo.toml` 的 `tauri` 與 `tauri-build` 也要打開 `isolation` 這個 feature。不用自己改：第一次跑 `npm run tauri dev` 時，Tauri CLI 會發現設定與 `Cargo.toml` 不一致，自動替你加好，結果是：
+另外，`src-tauri/Cargo.toml` 的 `tauri` 與 `tauri-build` 也要打開 `isolation` 這個 feature，兩邊必須一致，不然 `tauri-build` 會停下來，說 `Cargo.toml` 的 features 和 `tauri.conf.json` 對不上。不用自己改：第一次跑 `npm run tauri dev` 時，Tauri CLI 會發現不一致，自動替你加好。一個剛建好的專案，改完是這樣（如果你的專案還有別的 feature，像第 8 章的 `tray-icon`，會列在同一個清單裡）：
 
-```toml,ignore
+`src-tauri/Cargo.toml`（CLI 加上 `isolation` 之後）：
+
+```toml
+[package]
+name = "tauri-app"
+version = "0.1.0"
+description = "A Tauri App"
+authors = ["you"]
+edition = "2024"
+
+[lib]
+name = "tauri_app_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
 [build-dependencies]
 tauri-build = { version = "2", features = ["isolation"] }
 
 [dependencies]
 tauri = { version = "2", features = ["isolation"] }
+tauri-plugin-opener = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
 ```
-
-（你的專案如果還有別的 feature，例如第 8 章的 `tray-icon`，會列在同一個清單裡。）直接用 `cargo build` 的話，不會有人替你改，`tauri-build` 會停下來說 `Cargo.toml` 的 features 和 `tauri.conf.json` 對不上，要你自己補上。
 
 `npm run tauri dev` 的輸出（節錄，第一次要重新編譯 `tauri`，所以比較久）：
 
@@ -86,7 +137,7 @@ tauri = { version = "2", features = ["isolation"] }
    Compiling tauri-build v2.7.5
    Compiling tauri v2.12.6
    Compiling tauri-app v0.1.0 (~/tauri-app/src-tauri)
-    Finished `dev` profile [unoptimized + debuginfo] target(s) in 22.77s
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 15.22s
      Running `target/debug/tauri-app`
 ```
 

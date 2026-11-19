@@ -2,7 +2,7 @@
 
 ## 本集目標
 
-寫出一份剛好夠用的 CSP，看它擋下行內腳本與遠端圖片，並知道 `tauri dev` 套不到 CSP，要用 debug 版本才看得到效果。
+寫出一份剛好夠用的 CSP，看它擋下行內腳本與遠端圖片，並知道 `tauri dev` 載入 Vite 的頁面時套不到 CSP，要用 debug 版本才看得到效果。
 
 ## 正文
 
@@ -10,23 +10,18 @@
 
 前四集的 permission 管的是「前端能不能呼叫 Rust」。CSP（Content Security Policy，內容安全政策）管的是另一件事：頁面自己能載入什麼、執行什麼。它是一份寫給 WebView 的規則，由 WebView 來執行，頁面想載入圖片、執行腳本、連網路，都先對照規則，不符合就擋下。
 
-這補上了 permission 看不到的地方。第 12 章的預覽把 HTML 放進頁面，已經用兩道關卡擋過一次，CSP 是第二層：就算一段 `<img onerror="…">` 溜進來，WebView 也不會執行行內腳本；就算腳本想把資料送到外面，也得先過 `connect-src` 這一關。
+這補上了 permission 看不到的地方。第 12 章的預覽把 HTML 放進頁面，已經用兩道關卡擋過一次，CSP 是第二層：就算一段 `<img onerror="…">` 溜進來，WebView 也不會執行行內腳本（inline script）；就算腳本想把資料送到外面，也得先過 `connect-src` 這一關。
 
-一份 CSP 由很多條指令（directive）組成，每一條管一類資源：
-
-| 指令 | 管什麼 |
-| --- | --- |
-| `default-src` | 其他指令沒寫的資源，都照這條 |
-| `script-src` | 腳本 |
-| `img-src` | 圖片 |
-| `connect-src` | `fetch`、WebSocket 這類連線 |
-| `style-src` | 樣式 |
-
-指令後面是允許的來源，常見的有：`'self'`（頁面自己的來源，單引號是語法的一部分）、`data:`、一個完整的網址，還有 `'none'`（全部不准）。
+一份 CSP 由很多條指令（directive）組成，每一條管一類資源：`default-src` 是其他指令沒寫的資源都照它，`script-src` 管腳本，`img-src` 管圖片，`connect-src` 管 `fetch`、WebSocket 這類連線，`style-src` 管樣式。指令後面是允許的來源，常見的有 `'self'`（頁面自己的來源，單引號是語法的一部分）、`data:`、完整的網址，還有 `'none'`（全部不准）。
 
 ### 範例：模擬第 12 章的預覽
 
-這個頁面模擬預覽可能遇到的狀況：把一段不可信的 HTML 放進 `innerHTML`。裡面有兩張圖：第一張指向外部網址（這裡用 `127.0.0.1` 的一個位址代替，不需要真的有伺服器）；第二張的來源是壞的，會觸發行內的 `onerror`，如果它執行了，畫面上「惡意程式沒有執行」那行字就會被改掉。程式也監聽 `securitypolicyviolation`，CSP 每擋下一樣東西，WebView 就發這個事件，`violatedDirective` 是違反的指令，`blockedURI` 是被擋下的東西，行內腳本會是 `inline`。最後呼叫範本的 `greet`（`lib.rs` 沒動），確認 IPC 還通。
+這個頁面模擬不可信的內容溜進預覽之後的樣子。第 12 章的預覽是用 `innerHTML` 放進 HTML 的，這裡改用 `createElement` 把同樣的東西一個一個做出來，放進 `#preview`：
+
+- 第一張圖指向外部網址（這裡用 `127.0.0.1` 的一個位址代替，不需要真的有伺服器）。
+- 第二張圖的來源是壞的，會觸發 `onerror`。`setAttribute("onerror", …)` 設的是 HTML 屬性，效果跟 HTML 裡寫 `<img onerror="…">` 一樣，叫行內事件處理（inline event handler）。它要是執行了，畫面上「惡意程式沒有執行」那行字就會被改掉。
+
+程式也監聽 `securitypolicyviolation`：CSP 每擋下一樣東西，WebView 就發這個事件，`violatedDirective` 是違反的指令，`blockedURI` 是被擋下的東西，行內腳本會是 `inline`。最後呼叫範本的 `greet`（`lib.rs` 沒動），確認 IPC 還通。
 
 `index.html`：
 
@@ -71,10 +66,17 @@ document.addEventListener("securitypolicyviolation", (event) => {
   listEl.append(item);
 });
 
-previewEl.innerHTML = `
-  <img src="http://127.0.0.1:8123/pixel.png" alt="" />
-  <img src="x" onerror="document.querySelector('#msg').textContent = '惡意程式執行了'" />
-`;
+const remoteImg = document.createElement("img");
+remoteImg.src = "http://127.0.0.1:8123/pixel.png";
+previewEl.append(remoteImg);
+
+const brokenImg = document.createElement("img");
+brokenImg.setAttribute(
+  "onerror",
+  "document.querySelector('#msg').textContent = '惡意程式執行了'",
+);
+brokenImg.src = "x";
+previewEl.append(brokenImg);
 
 invoke<string>("greet", { name: "CSP" })
   .then((text) => {
@@ -158,9 +160,9 @@ invoke<string>("greet", { name: "CSP" })
 
 畫面還是「惡意程式執行了」，違規清單還是空的。CSP 好像沒有作用？
 
-### `tauri dev` 套不到 CSP
+### `tauri dev` 的頁面套不到 CSP
 
-CSP 是 Tauri 提供頁面時，附在回應上的。`tauri dev` 載入的是 Vite 開發伺服器的頁面（`devUrl`，第 1 章第 5 集），回應是 Vite 給的，Tauri 沒有經手，所以不會套上 CSP。要看效果，得用 Tauri 自己提供頁面的版本，也就是打包過的 App。這裡用 debug 版本（第 1 章第 8 集提過），`--no-bundle` 表示只編譯，不做安裝檔，打包是第 15 章的事：
+CSP 是 Tauri 提供頁面時，附在回應上的。`tauri dev` 載入的是 Vite 開發伺服器的頁面（`devUrl`，第 1 章第 5 集），回應是 Vite 給的，Tauri 沒有經手，所以不會套上 CSP。`tauri.conf.json` 另有一個 `devCsp`，是開發模式專用的另一份，同樣只會套在 Tauri 自己提供的頁面上。要看效果，得用 Tauri 自己提供頁面的版本，也就是打包過的 App。這裡用 debug 版本（第 1 章第 8 集提過），`--no-bundle` 表示只編譯，不做安裝檔，打包是第 15 章的事：
 
 ```bash
 npm run tauri build -- --debug --no-bundle
@@ -202,5 +204,5 @@ script-src-attr：inline
 - CSP 是寫給 WebView 的規則，管頁面能載入、執行什麼，補上 permission 管不到的地方。設定在 `tauri.conf.json` 的 `app.security.csp`，字串或物件都可以。
 - 範本的 `null` 是不限制。一份夠用的起點是 `default-src 'self'`、`img-src 'self' data:`、`connect-src ipc: http://ipc.localhost`。
 - 行內事件處理（`onerror`）與遠端圖片會被擋下，`securitypolicyviolation` 事件可以看到每一筆。
-- `tauri dev` 的頁面由 Vite 提供，套不到 CSP；用 `npm run tauri build -- --debug --no-bundle` 驗證。
+- `tauri dev` 載入 Vite 的頁面時套不到 CSP；用 `npm run tauri build -- --debug --no-bundle` 驗證。
 - 不要用 `'unsafe-inline'`、`'unsafe-eval'` 或 `*` 放寬。

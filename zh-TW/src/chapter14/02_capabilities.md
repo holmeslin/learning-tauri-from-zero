@@ -23,7 +23,9 @@
 
 ### 範例：主視窗與彈出視窗
 
-這個 App 一啟動就開兩個視窗：`main`，以及在 `setup`（第 4 章第 4 集）裡建的 `popup-1`，兩個都載入同一個頁面（建視窗的寫法在第 6 章第 3 集）。頁面只有一個按鈕，按下去改視窗標題。
+這個 App 一啟動就有兩個視窗：範本的主視窗（label 預設是 `main`），以及在 `setup`（第 4 章第 4 集）裡建的 `popup-1`（建視窗的寫法在第 6 章第 3 集）。兩個視窗載入同一個頁面。
+
+這個 App 沒有用 opener plugin，也用不到範本的 `greet`，所以 `lib.rs` 把這兩樣都拿掉，capability 也不放 `opener:default`：沒用到的 plugin，連同它的 permission 一起拿掉，兩邊要成對。第 11 章、第 13 章的 App 都沒用 opener，也可以這樣清。放行的越少，前端出事時能做的越少。
 
 `src-tauri/src/lib.rs`：
 
@@ -45,28 +47,7 @@ pub fn run() {
 }
 ```
 
-`index.html`：
-
-```html
-<!doctype html>
-<html lang="zh-TW">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>capability</title>
-    <link rel="stylesheet" href="/src/styles.css" />
-    <script type="module" src="/src/main.ts" defer></script>
-  </head>
-
-  <body>
-    <main class="container">
-      <h1>capability</h1>
-      <button id="title-btn" type="button">改標題</button>
-      <p id="msg"></p>
-    </main>
-  </body>
-</html>
-```
+頁面沿用範本的表單：在輸入框填新標題，按下按鈕，把這個視窗的標題改掉。
 
 `src/main.ts`：
 
@@ -74,15 +55,17 @@ pub fn run() {
 import { getCurrentWindow } from "@tauri-apps/api/window";
 
 const appWindow = getCurrentWindow();
-const msgEl: HTMLElement | null = document.querySelector("#msg");
-if (!msgEl) {
-  throw new Error("找不到 #msg");
+const titleEl: HTMLInputElement | null = document.querySelector("#greet-input");
+const msgEl: HTMLElement | null = document.querySelector("#greet-msg");
+if (!titleEl || !msgEl) {
+  throw new Error("找不到 #greet-input 或 #greet-msg");
 }
 
-document.querySelector("#title-btn")?.addEventListener("click", async () => {
+document.querySelector("#greet-form")?.addEventListener("submit", async (event) => {
+  event.preventDefault();
   try {
-    await appWindow.setTitle(`${appWindow.label} 改過了`);
-    msgEl.textContent = "標題改好了";
+    await appWindow.setTitle(titleEl.value);
+    msgEl.textContent = `${appWindow.label} 的標題改好了`;
   } catch (error) {
     msgEl.textContent = `出錯了：${error}`;
   }
@@ -107,11 +90,11 @@ capability 只放行主視窗改標題：
 
 ```text
    Compiling tauri-app v0.1.0 (~/tauri-app/src-tauri)
-    Finished `dev` profile [unoptimized + debuginfo] target(s) in 6.04s
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 5.65s
      Running `target/debug/tauri-app`
 ```
 
-兩個視窗都按「改標題」。`main` 的標題變成「main 改過了」；`popup-1` 被擋下來：
+兩個視窗都填一個標題、按下按鈕。`main` 的標題改好了；`popup-1` 被擋下來：
 
 ```text
 出錯了：window.set_title not allowed on window "popup-1", webview "popup-1", URL: local
@@ -133,7 +116,7 @@ referenced by: capability: default, permission: allow-set-title
 
 ### 另開一份 capability 給彈出視窗
 
-`default.json` 的 `windows` 只有 `main`。可以把 `popup-1` 加進去，但彈出視窗通常不該拿到跟主視窗一樣多的 permission，所以另開一份：
+可以把 `popup-1` 加進 `default.json` 的 `windows`，但彈出視窗通常不該拿到跟主視窗一樣多的 permission，所以另開一份：
 
 `src-tauri/capabilities/popup.json`：
 
@@ -147,7 +130,7 @@ referenced by: capability: default, permission: allow-set-title
 }
 ```
 
-`popup-*` 是 glob，`popup-1`、`popup-2` 都比對得到，以後從 Rust 開的彈出視窗，只要 label 取成 `popup-` 開頭，就自動拿到這份 capability。一個視窗被幾份 capability 比對到，拿到的就是全部 permission 加起來。
+`popup-*` 是 glob，`popup-1`、`popup-2` 都比對得到。一個視窗被幾份 capability 比對到，拿到的就是全部 permission 加起來。
 
 `npm run tauri dev` 的輸出（新增 `capabilities/popup.json` 之後）：
 
@@ -155,63 +138,15 @@ referenced by: capability: default, permission: allow-set-title
         Info File src-tauri/capabilities/popup.json changed. Rebuilding application...
      Running DevCommand (`cargo  run --no-default-features --color always --`)
    Compiling tauri-app v0.1.0 (~/tauri-app/src-tauri)
-    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2.54s
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 3.38s
      Running `target/debug/tauri-app`
 ```
 
-這次兩個視窗按「改標題」都成功。
+這次兩個視窗都改得了標題。
 
 ### 只啟用想要的 capability
 
-`capabilities/` 底下的每個檔案預設都生效，包括你忘了刪的、複製來試試看的。想自己掌控，就在 `tauri.conf.json` 的 `app.security.capabilities` 列出要用的 `identifier`，沒列到的檔案不生效：
-
-`src-tauri/tauri.conf.json`：
-
-```json
-{
-  "$schema": "https://schema.tauri.app/config/2",
-  "productName": "tauri-app",
-  "version": "0.1.0",
-  "identifier": "tw.example.tauri-app",
-  "build": {
-    "beforeDevCommand": "npm run dev",
-    "devUrl": "http://localhost:1420",
-    "beforeBuildCommand": "npm run build",
-    "frontendDist": "../dist"
-  },
-  "app": {
-    "withGlobalTauri": true,
-    "windows": [
-      {
-        "title": "tauri-app",
-        "width": 800,
-        "height": 600
-      }
-    ],
-    "security": {
-      "csp": null,
-      "capabilities": ["default", "popup"]
-    }
-  },
-  "bundle": {
-    "active": true,
-    "targets": "all",
-    "icon": [
-      "icons/32x32.png",
-      "icons/128x128.png",
-      "icons/128x128@2x.png",
-      "icons/icon.icns",
-      "icons/icon.ico"
-    ]
-  }
-}
-```
-
-行為不變，兩個視窗還是都能改標題。把 `"popup"` 拿掉再存檔，`popup.json` 就不生效，`popup-1` 又會被擋，訊息跟上面一樣。
-
-### 清掉用不到的 permission
-
-這集的 `default.json` 沒有範本原本的 `opener:default`，`lib.rs` 也沒有 `.plugin(tauri_plugin_opener::init())`：沒用到的 plugin，連同它的 permission 一起拿掉，兩邊要成對。第 11 章、第 13 章的 App 都沒用 opener，也可以這樣清。放行的越少，前端出事時能做的越少。
+`capabilities/` 底下的每個檔案預設都生效，包括你忘了刪的、複製來試試看的。想自己掌控，就在 `tauri.conf.json` 的 `app.security` 加一行 `"capabilities": ["default", "popup"]`，列出要用的 `identifier`，沒列到的檔案不生效。行為不變，兩個視窗還是都能改標題；把 `"popup"` 拿掉再存檔，`popup.json` 就失效，`popup-1` 又會被擋，訊息跟上面一樣。
 
 ## 重點整理
 

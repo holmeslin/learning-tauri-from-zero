@@ -37,46 +37,20 @@ pub fn run() {
 }
 ```
 
-頁面是一個輸入框加一個按鈕，把讀到的內容顯示在 `<pre>` 裡：
-
-`index.html`：
-
-```html
-<!doctype html>
-<html lang="zh-TW">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>安全模型</title>
-    <link rel="stylesheet" href="/src/styles.css" />
-    <script type="module" src="/src/main.ts" defer></script>
-  </head>
-
-  <body>
-    <main class="container">
-      <h1>安全模型</h1>
-      <form class="row" id="read-form">
-        <input id="path-input" placeholder="檔案路徑" />
-        <button type="submit">讀檔</button>
-      </form>
-      <pre id="msg"></pre>
-    </main>
-  </body>
-</html>
-```
+頁面沿用範本的表單，輸入框（`#greet-input`）填路徑，按鈕（寫著 Greet）改成讀檔，結果顯示在 `#greet-msg`，`index.html` 不用動：
 
 `src/main.ts`：
 
 ```ts
 import { invoke } from "@tauri-apps/api/core";
 
-const pathEl: HTMLInputElement | null = document.querySelector("#path-input");
-const msgEl: HTMLElement | null = document.querySelector("#msg");
+const pathEl: HTMLInputElement | null = document.querySelector("#greet-input");
+const msgEl: HTMLElement | null = document.querySelector("#greet-msg");
 if (!pathEl || !msgEl) {
-  throw new Error("找不到 #path-input 或 #msg");
+  throw new Error("找不到 #greet-input 或 #greet-msg");
 }
 
-document.querySelector("#read-form")?.addEventListener("submit", async (event) => {
+document.querySelector("#greet-form")?.addEventListener("submit", async (event) => {
   event.preventDefault();
   try {
     msgEl.textContent = await invoke<string>("read_text", { path: pathEl.value });
@@ -94,7 +68,7 @@ document.querySelector("#read-form")?.addEventListener("submit", async (event) =
      Running `target/debug/tauri-app`
 ```
 
-在輸入框填 `/etc/hosts`（Windows 可以填 `C:\Windows\System32\drivers\etc\hosts`），按「讀檔」，檔案內容就出現在畫面上（節錄）：
+在輸入框填 `/etc/hosts`（Windows 可以填 `C:\Windows\System32\drivers\etc\hosts`），按按鈕，檔案內容就出現在畫面上（節錄前幾行）：
 
 ```text
 ##
@@ -117,7 +91,7 @@ document.querySelector("#read-form")?.addEventListener("submit", async (event) =
 window.__TAURI__.core.invoke("read_text", { path: "/etc/hosts" }).then(console.log);
 ```
 
-Console 一樣印出檔案內容。`window.__TAURI__` 是範本的 `withGlobalTauri: true`（第 1 章第 6 集）放進頁面的。就算關掉它，頁面裡還有 `window.__TAURI_INTERNALS__`（第 9 章第 3 集看過），一樣呼叫得到，所以關掉它不算防線。
+Console 一樣印出檔案內容。`window.__TAURI__` 是範本的 `withGlobalTauri: true`（第 1 章第 6 集）放進頁面的。把它改成 `false`，`window.__TAURI__` 就不存在了，但頁面裡還有 `window.__TAURI_INTERNALS__`（第 9 章第 3 集看過），`window.__TAURI_INTERNALS__.invoke("read_text", …)` 照樣讀得到檔案，所以關掉它不算防線。
 
 Console 只是方便示範。任何一段跑在這個頁面裡的 JavaScript，不管是你寫的、套件帶進來的，還是 XSS 注入的，都能這樣呼叫；路徑換成使用者自己的重要檔案，也一樣讀得到。這就是第 12 章說「要發佈給別人，就該限制範圍」的原因。
 
@@ -134,20 +108,19 @@ Tauri 替這道界線準備了四道防線，後面五集會一一介紹：
 
 前三項其實是同一套存取控制清單（ACL，access control list）：capability 決定「誰」，也就是哪些視窗；permission 決定「能呼叫什麼」；scope 決定「碰得到什麼」。
 
-### 一次呼叫經過哪些關卡
-
 一個 `invoke` 抵達 Rust 時，大致是這樣走：
 
 1. 如果開了 isolation，訊息先送進隔離的 iframe，通過你的檢查才繼續（第 6 集）。
 2. Tauri 查 ACL：發出訊息的視窗，有沒有被某個 capability 放行這個 command。沒有，直接回 `not allowed`，command 不會執行。
 3. command 開始執行。有 scope 的話，由 command 對照 scope 檢查參數（第 3、4 集）。
-4. CSP 不在這條路上，它管的是頁面本身：頁面能載入哪些資源、能不能執行行內腳本（第 5 集）。
+
+CSP 不在這條路上，它管的是頁面本身：能載入哪些資源、能不能執行行內腳本。
 
 第 2 步有個例外，也是這集的重點：plugin 與 core 的 command（`plugin:fs|read_text_file` 這種名字）一定要查；自己寫的 command 要等你替它們定義過 permission（第 4 集）才會查。定義之前，沒人擋。所以前面幾章的 `greet`、`read_text` 才能不用設定就呼叫，而 plugin 的函式沒放行就是會被擋。
 
 ### 放行得越少越好
 
-四道防線有一個共同的原則：只給用得到的，也就是最小權限。前端出事時，能做的事只剩你放行的那些。範本的 `capabilities/default.json` 一開頭就有兩項：`core:default` 與 `opener:default`。`opener:default` 是為了範本附的 opener plugin 放的，如果你的 App 用不到，留著就只是多一個缺口。第 2 集會把它拿掉。
+四道防線有一個共同的原則：只給用得到的，也就是最小權限（least privilege）。前端出事時，能做的事只剩你放行的那些。範本的 `capabilities/default.json` 一開頭就有兩項：`core:default` 與 `opener:default`。`opener:default` 是為了範本附的 opener plugin 放的，如果你的 App 用不到，留著就只是多一個缺口。第 2 集會把它拿掉。
 
 ### 跟 Electron 比一比
 
