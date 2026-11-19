@@ -39,6 +39,26 @@
 - `take_pending_file` 是前端呼叫的 command：用 `take()` 拿走路徑並清空，沒有就是 `None`，到前端是 `null`。
 - 前端啟動時先 `listen`，再呼叫 `take_pending_file` 一次，之後每次聽到 `open-requested`，也呼叫它。冷啟動的路徑是啟動時那一次拿到的；App 已在跑時的路徑，是門鈴響了才去拿的。順序是「先 `listen`，再拿」，兩個動作之間不會漏掉任何一個。
 
+### 加上 single-instance
+
+第二個行程這個入口，靠的是第 8 章第 7 集的 single-instance plugin。專案裡還沒有的話，先加進來。這個 plugin 只有 Rust 的 crate，沒有 npm 套件，也沒有 permission（前端不會呼叫它），所以只要 `cargo add`。它只有桌面能用，用 `--target` 放進 `Cargo.toml` 桌面專用的區塊：
+
+```bash
+cargo add --manifest-path src-tauri/Cargo.toml --target 'cfg(not(any(target_os = "android", target_os = "ios")))' tauri-plugin-single-instance@2
+```
+
+`cargo add` 的輸出（節錄）：
+
+```text
+    Updating crates.io index
+      Adding tauri-plugin-single-instance v2 to dependencies for target `cfg(not(any(target_os = "android", target_os = "ios")))`
+             Features as of v2.0.0:
+             - deep-link
+             - semver
+```
+
+確認一下：`src-tauri/Cargo.toml` 桌面專用的那個區塊（`[target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]`）裡，多了一行 `tauri-plugin-single-instance = "2"`。註冊 plugin 的程式在下面的 `lib.rs`。
+
 ### Rust 端：三個入口
 
 - 啟動參數：`run()` 一開始，從 `std::env::args()` 與目前的工作目錄算出路徑，放進 `PendingFile` 的初始值。`file_arg(args, cwd)` 跳過第一個參數（程式本身）和 `-` 開頭的選項，取第一個剩下的，接到 `cwd` 後面：絕對路徑接上去還是原本的路徑，相對路徑就變成從 `cwd` 算起的完整路徑。
