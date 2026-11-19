@@ -99,3 +99,6 @@
     - [用事件通知畫面更新](chapter11/05_events.md)
     - [資料庫結構升級（migration）](chapter11/06_migration.md)
     - [收尾](chapter11/07_wrap_up.md)
+- [實戰：Markdown 編輯器](chapter12/README.md)
+    - [規劃](chapter12/01_plan.md)
+    - [Rust 端轉 HTML（pulldown-cmark）](chapter12/02_pulldown_cmark.md)
