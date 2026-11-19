@@ -104,3 +104,5 @@
     - [Rust 端轉 HTML（pulldown-cmark）](chapter12/02_pulldown_cmark.md)
     - [即時預覽](chapter12/03_live_preview.md)
     - [開檔與存檔](chapter12/04_open_save.md)
+    - [自動儲存](chapter12/05_autosave.md)
+    - [未儲存就關閉的提醒](chapter12/06_unsaved_warning.md)
