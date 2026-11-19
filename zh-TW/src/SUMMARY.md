@@ -106,3 +106,5 @@
     - [開檔與存檔](chapter12/04_open_save.md)
     - [自動儲存](chapter12/05_autosave.md)
     - [未儲存就關閉的提醒](chapter12/06_unsaved_warning.md)
+    - [檔案關聯（雙擊 `.md` 開啟）](chapter12/07_file_association.md)
+    - [收尾](chapter12/08_wrap_up.md)

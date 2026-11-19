@@ -135,12 +135,16 @@ body {
   font-family: sans-serif;
 }
 
+header,
+#status {
+  padding: 8px;
+  background-color: #eee;
+}
+
 header {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px;
-  background-color: #eee;
 }
 
 main {
@@ -173,13 +177,6 @@ main {
   background-color: #f4f4f4;
 }
 
-#preview blockquote {
-  margin-left: 0;
-  padding-left: 12px;
-  border-left: 4px solid #ddd;
-  color: #666;
-}
-
 #preview table {
   border-collapse: collapse;
 }
@@ -192,10 +189,8 @@ main {
 
 #status {
   margin: 0;
-  padding: 4px 8px;
   min-height: 1.5em;
   font-size: 12px;
-  background-color: #eee;
 }
 ```
 

@@ -100,7 +100,7 @@
 排版用的是第 2 章第 3 集的 flex：
 
 - `body` 是由上往下排的 flex，`height: 100vh` 讓它剛好是視窗那麼高。工具列、中間、狀態列三塊裡，只有 `main` 設了 `flex: 1`，它吃掉剩下的高度。
-- `main` 本身是 flex，左右並排；`min-height: 0` 不能省：flex 項目預設不肯縮得比內容還矮，文字一多，`main` 就會把整個頁面撐高。設成 `0`，內容太長時才會在 `main` 裡面捲動。
+- `main` 本身是 flex，左右並排；`min-height: 0` 不能省：flex 的子元素預設不肯縮得比內容還矮，文字一多，`main` 就會把整個頁面撐高。設成 `0`，內容太長時才會在 `main` 裡面捲動。
 - `#editor` 與 `#preview` 都是 `flex: 1`，各佔一半寬。`min-width: 0` 跟第 11 章第 1 集的輸入框一樣，讓它們在很窄的視窗裡也能縮；`box-sizing: border-box` 讓 `padding` 算在寬度之內，不然兩欄加起來會比視窗寬；`overflow: auto` 讓內容太長時出現捲軸。
 - `#editor` 用等寬字型，`resize: none` 拿掉右下角拖曳改大小的把手。
 
@@ -115,12 +115,16 @@ body {
   font-family: sans-serif;
 }
 
+header,
+#status {
+  padding: 8px;
+  background-color: #eee;
+}
+
 header {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px;
-  background-color: #eee;
 }
 
 main {
@@ -153,13 +157,6 @@ main {
   background-color: #f4f4f4;
 }
 
-#preview blockquote {
-  margin-left: 0;
-  padding-left: 12px;
-  border-left: 4px solid #ddd;
-  color: #666;
-}
-
 #preview table {
   border-collapse: collapse;
 }
@@ -172,10 +169,8 @@ main {
 
 #status {
   margin: 0;
-  padding: 4px 8px;
   min-height: 1.5em;
   font-size: 12px;
-  background-color: #eee;
 }
 ```
 
