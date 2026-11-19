@@ -125,3 +125,4 @@
     - [permission 與 scope](chapter14/03_permission_scope.md)
     - [替自己的 command 定義 permission](chapter14/04_own_command_permission.md)
     - [CSP](chapter14/05_csp.md)
+    - [isolation pattern](chapter14/06_isolation.md)
