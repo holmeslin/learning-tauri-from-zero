@@ -108,3 +108,6 @@
     - [未儲存就關閉的提醒](chapter12/06_unsaved_warning.md)
     - [檔案關聯（雙擊 `.md` 開啟）](chapter12/07_file_association.md)
     - [收尾](chapter12/08_wrap_up.md)
+- [實戰：系統匣小工具](chapter13/README.md)
+    - [規劃](chapter13/01_plan.md)
+    - [沒有主視窗的 app](chapter13/02_no_main_window.md)
