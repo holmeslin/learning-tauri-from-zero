@@ -61,6 +61,12 @@ pub fn count(conn: &Connection) -> Result<i64, AppError> {
 - `query_row(SQL, 參數, 函式)` 執行 `SELECT`，取第一列。第二個參數是要代入 SQL 的參數，這個 SQL 沒有，傳空陣列 `[]`；函式收到那一列 `row`，`row.get(0)` 取第 0 個欄位。`COUNT(*)` 是 SQL 的內建函式，回傳列數。取出來的值要什麼型別，由接收的地方決定：這裡函式回傳 `Result<i64, _>`，所以 `n` 就是 `i64`。
 - rusqlite 的錯誤是 `rusqlite::Error`，它不能序列化，所以包進自己的 `AppError`，做法跟第 3 章第 7 集一樣。`db.rs` 用 `crate::AppError` 找到定義在 `lib.rs` 的它；子模組看得到父模組的私有項目，`AppError` 不用加 `pub`。
 
+`AppError` 要用 `thiserror` 定義（第 3 章第 7 集）。範本沒有它，先在專案根目錄加上：
+
+```bash
+cargo add --manifest-path src-tauri/Cargo.toml thiserror@2
+```
+
 `lib.rs` 在 `setup` 裡開啟資料庫，放進 `State`，再寫一個 command 讓前端問「有幾筆」。路徑用第 7 章第 6 集的 `app_data_dir()`，它只算出路徑、不建資料夾，所以先 `create_dir_all`。`setup` 回傳的是 `Result`，打不開資料庫就用 `?` 往外丟，App 會停止啟動（第 4 章第 4 集）。
 
 先照直覺，把 `Connection` 直接交給 `manage`：
@@ -285,7 +291,7 @@ CREATE TABLE todos (
 
 ## 重點整理
 
-- rusqlite 是 Rust 的 SQLite 函式庫；`cargo add --manifest-path src-tauri/Cargo.toml rusqlite@0.43 --features bundled` 加進專案。`bundled` 把 SQLite 本體一起編進 App，不用使用者另外安裝。
+- rusqlite 是 Rust 的 SQLite 函式庫；`cargo add --manifest-path src-tauri/Cargo.toml rusqlite@0.43 --features bundled` 加進專案。`bundled` 把 SQLite 本體一起編進 App，不用使用者另外安裝。錯誤型別用的 `thiserror` 範本也沒有，要另外 `cargo add --manifest-path src-tauri/Cargo.toml thiserror@2`。
 - 資料庫檔案放在 `app_data_dir()` 底下，路徑算出來後要先 `create_dir_all`；`Connection::open` 沒有檔案時會自己建立，`CREATE TABLE IF NOT EXISTS` 讓每次啟動都能安全地確保資料表存在。
 - `Connection` 是 `Send`、不是 `Sync`，直接 `manage` 會編譯失敗（`E0277`）；包進 `Mutex` 後放進 `State<Mutex<Connection>>`，command 先 `lock()` 再用。
 - rusqlite 的函式與這一章的 command 都是同步的，用標準函式庫的 `Mutex` 就夠。
