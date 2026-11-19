@@ -54,12 +54,22 @@ fn show_main_window(app: &AppHandle) -> tauri::Result<()> {
     Ok(())
 }
 
+#[cfg(target_os = "macos")]
+fn settings_window_visible(app: &AppHandle) -> tauri::Result<bool> {
+    match app.get_webview_window("settings") {
+        Some(window) => window.is_visible(),
+        None => Ok(false),
+    }
+}
+
 fn hide_main_window(app: &AppHandle) -> tauri::Result<()> {
     if let Some(window) = app.get_webview_window("main") {
         window.hide()?;
     }
     #[cfg(target_os = "macos")]
-    app.hide()?;
+    if !settings_window_visible(app)? {
+        app.hide()?;
+    }
     Ok(())
 }
 
@@ -553,7 +563,7 @@ dist/assets/index-DOMfVWOK.js   18.97 kB │ gzip: 5.10 kB
 
 快速便條的每一塊，主要靠這些東西做成：
 
-- 沒有主視窗：設定檔 `visible: false`，`on_window_event` 擋下關閉再 `hide()`，macOS 用 `Accessory` 不佔 Dock，也要連 `app.hide()` 把焦點還給上一個 App（第 2 集）。
+- 沒有主視窗：設定檔 `visible: false`，`on_window_event` 擋下關閉再 `hide()`，macOS 用 `Accessory` 不佔 Dock，也要連 `app.hide()` 把焦點還給上一個 App，設定視窗開著的時候例外，免得把它也藏掉（第 2、5 集）。
 - 系統匣：`TrayIconBuilder` 加選單，左鍵叫出視窗、右鍵開選單，「結束」是唯一真正結束 App 的地方（第 3 集）。
 - 全域快捷鍵：`is_visible()` 加 `is_focused()` 決定切換，註冊失敗只印訊息；頁面在 `focus` 事件裡把游標放進輸入區（第 4 集）。
 - 設定：兩個視窗共用同一份 store，事件只按門鈴，讀出來的值要先檢查；capability 的 `windows` 要列出設定視窗（第 5 集）。

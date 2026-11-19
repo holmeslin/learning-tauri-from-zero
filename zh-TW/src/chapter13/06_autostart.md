@@ -103,12 +103,22 @@ fn show_main_window(app: &AppHandle) -> tauri::Result<()> {
     Ok(())
 }
 
+#[cfg(target_os = "macos")]
+fn settings_window_visible(app: &AppHandle) -> tauri::Result<bool> {
+    match app.get_webview_window("settings") {
+        Some(window) => window.is_visible(),
+        None => Ok(false),
+    }
+}
+
 fn hide_main_window(app: &AppHandle) -> tauri::Result<()> {
     if let Some(window) = app.get_webview_window("main") {
         window.hide()?;
     }
     #[cfg(target_os = "macos")]
-    app.hide()?;
+    if !settings_window_visible(app)? {
+        app.hide()?;
+    }
     Ok(())
 }
 

@@ -71,6 +71,8 @@
 
 藏視窗的程式寫成 `hide_main_window`，第 4 集的快捷鍵也要用。它不只呼叫 `window.hide()`，在 macOS 還多一行 `app.hide()`。我們在 macOS 實測：只藏視窗的話，視窗是不見了，但作業系統認定的最前面的 App 還是我們，剛才用的那個 App 沒有拿回焦點；連 `app.hide()` 一起呼叫，焦點才回到上一個 App。`app.hide()` 只有 macOS 有，所以用 `#[cfg(target_os = "macos")]` 隔開。
 
+還有一件事要先記著：`app.hide()` 藏的是整個 App，所有視窗一起藏，跟按 Cmd+H 一樣（我們查了 Tauri 底層視窗函式庫 tao 的原始碼，它呼叫的是 macOS `NSApplication` 的 `hide:`）。現在 App 只有便條一個視窗，沒有差別；第 5 集加了設定視窗之後，`hide_main_window` 會多一個判斷。
+
 ### macOS：不佔 Dock
 
 macOS 的 App 預設會在 Dock 放一個圖示，選單列左邊也有 App 自己的選單。系統匣小工具不需要這些。在 `setup` 裡把 activation policy 設成 `Accessory`：這種 App 不出現在 Dock，也沒有 App 選單，但可以有視窗，也能被叫出來。這是 macOS 才有的東西，一樣用 `cfg` 隔開（跟第 12 章第 7 集的 `#[cfg(target_os = "macos")]` 一樣）。
@@ -222,6 +224,6 @@ App 啟動之後，螢幕上沒有視窗，Dock 裡也沒有圖示，只有選�
 
 - 沒有主視窗是三件事：設定檔 `"visible": false` 讓視窗啟動時不顯示、攔下關閉改成藏起來、用系統匣圖示把視窗叫回來。
 - 在 Rust 用 `Builder::on_window_event` 接 `WindowEvent::CloseRequested { api, .. }`，`api.prevent_close()` 擋下關閉，再 `hide()` 藏起來；從 Rust 呼叫不用 permission。
-- macOS 只藏視窗，焦點不會回到上一個 App；要連 `app.hide()` 一起呼叫。
+- macOS 只藏視窗，焦點不會回到上一個 App；要連 `app.hide()` 一起呼叫。`app.hide()` 藏的是整個 App 的所有視窗，有第二個視窗的時候要小心（第 5 集）。
 - macOS 用 `set_activation_policy(ActivationPolicy::Accessory)` 讓 App 不佔 Dock，兩者都要用 `#[cfg(target_os = "macos")]` 隔開。
 - 目前還沒有選單，唯一的結束方式是在終端機按 `Ctrl+C`；下一集補上「結束」。

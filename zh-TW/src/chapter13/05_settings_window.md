@@ -104,6 +104,8 @@ export async function saveFontSize(size: number): Promise<number> {
 
 另一處要改：`on_window_event` 現在會收到兩個視窗的事件。只有便條視窗要藏起來，設定視窗按關閉鈕，就讓它真的關掉，下次要用再建新的，這樣一開就讀到最新的設定。所以先判斷 `window.label() == "main"`。
 
+`hide_main_window` 也要改。第 2 集提過，macOS 的 `app.hide()` 藏的是整個 App 的所有視窗。便條視窗與設定視窗同時開著的時候，收起便條，連設定視窗也會一起被藏起來。所以改成：設定視窗有顯示的時候，只藏便條視窗，不呼叫 `app.hide()`；代價是這時候，焦點不會自動回到上一個 App。判斷寫成 macOS 專用的 `settings_window_visible`：`get_webview_window("settings")` 找得到視窗，而且 `is_visible()` 是 `true`，才算開著。設定視窗關掉就是銷毀，下次要用再建（上面說過），所以關掉之後找不到視窗，回到第 2 集的行為。
+
 `src-tauri/src/lib.rs`：
 
 ```rust
@@ -141,12 +143,22 @@ fn show_main_window(app: &AppHandle) -> tauri::Result<()> {
     Ok(())
 }
 
+#[cfg(target_os = "macos")]
+fn settings_window_visible(app: &AppHandle) -> tauri::Result<bool> {
+    match app.get_webview_window("settings") {
+        Some(window) => window.is_visible(),
+        None => Ok(false),
+    }
+}
+
 fn hide_main_window(app: &AppHandle) -> tauri::Result<()> {
     if let Some(window) = app.get_webview_window("main") {
         window.hide()?;
     }
     #[cfg(target_os = "macos")]
-    app.hide()?;
+    if !settings_window_visible(app)? {
+        app.hide()?;
+    }
     Ok(())
 }
 
@@ -483,4 +495,5 @@ cat "$HOME/Library/Application Support/tw.example.tauri-app/settings.json"
 - capability 的 `windows` 是視窗 label 的清單，permission 只發給列在裡面的視窗；新增的設定視窗要加進去，不然它用不了 store。
 - store 檔案使用者也能改，讀出來的值要先檢查：`normalizeFontSize` 把任何值變成 12 到 32 之間的整數，不合法就用預設值 16。
 - 設定視窗在選單事件裡開，丟到另一個執行緒建，避開 Windows 上事件處理函式裡建視窗會卡死的問題；`on_window_event` 只替 `main` 擋關閉，設定視窗正常關閉。
+- macOS 的 `app.hide()` 會藏起所有視窗，所以設定視窗有顯示的時候，`hide_main_window` 只藏便條視窗。
 - 有 `hidden` 屬性的元素，不要用 CSS 替它設 `display`，否則 `hidden` 會失效。
