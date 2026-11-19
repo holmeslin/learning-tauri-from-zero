@@ -2,13 +2,13 @@
 
 ## 本集目標
 
-把 rusqlite 加進專案，在 `setup` 裡打開資料庫檔案、建好資料表，再放進 `State<Mutex<Connection>>`，讓 command 查得到資料。
+把 rusqlite 加進專案，在 `setup` 裡開啟資料庫檔案、建好資料表，再放進 `State<Mutex<Connection>>`，讓 command 查得到資料。
 
 ## 正文
 
 ### 加上 rusqlite
 
-rusqlite 是 Rust 的 SQLite 函式庫：用 Rust 的函式打開資料庫、執行 SQL、取回結果。《從零開始學 Rust》沒教過它，範本也沒有，先加進專案：
+rusqlite 是 Rust 的 SQLite 函式庫：用 Rust 的函式開啟資料庫、執行 SQL、取回結果。《從零開始學 Rust》沒教過它，範本也沒有，先加進專案：
 
 ```bash
 cargo add --manifest-path src-tauri/Cargo.toml rusqlite@0.43 --features bundled
@@ -27,9 +27,9 @@ cargo add --manifest-path src-tauri/Cargo.toml rusqlite@0.43 --features bundled
 
 代價是第一次編譯要多花幾秒鐘編 C 程式，所以電腦上要有 C 編譯器，也就是第 1 章第 2 集裝的 Xcode 命令列工具、C++ Build Tools 或 `build-essential`。
 
-### 打開資料庫，數有幾筆待辦
+### 開啟資料庫，數有幾筆待辦
 
-資料庫的程式放進新檔案 `db.rs`。`open` 打開（沒有就建立）資料庫檔案，再確保 `todos` 資料表存在；`count` 數資料表裡有幾列：
+資料庫的程式放進新檔案 `db.rs`。`open` 開啟（沒有就建立）資料庫檔案，再確保 `todos` 資料表存在；`count` 數資料表裡有幾列：
 
 `src-tauri/src/db.rs`：
 
@@ -61,7 +61,7 @@ pub fn count(conn: &Connection) -> Result<i64, AppError> {
 - `query_row(SQL, 參數, 函式)` 執行 `SELECT`，取第一列。第二個參數是要代入 SQL 的參數，這個 SQL 沒有，傳空陣列 `[]`；函式收到那一列 `row`，`row.get(0)` 取第 0 個欄位。`COUNT(*)` 是 SQL 的內建函式，回傳列數。取出來的值要什麼型別，由接收的地方決定：這裡函式回傳 `Result<i64, _>`，所以 `n` 就是 `i64`。
 - rusqlite 的錯誤是 `rusqlite::Error`，它不能序列化，所以包進自己的 `AppError`，做法跟第 3 章第 7 集一樣。`db.rs` 用 `crate::AppError` 找到定義在 `lib.rs` 的它；子模組看得到父模組的私有項目，`AppError` 不用加 `pub`。
 
-`lib.rs` 在 `setup` 裡打開資料庫，放進 `State`，再寫一個 command 讓前端問「有幾筆」。路徑用第 7 章第 6 集的 `app_data_dir()`，它只算出路徑、不建資料夾，所以先 `create_dir_all`。`setup` 回傳的是 `Result`，打不開資料庫就用 `?` 往外丟，App 會停止啟動（第 4 章第 4 集）。
+`lib.rs` 在 `setup` 裡開啟資料庫，放進 `State`，再寫一個 command 讓前端問「有幾筆」。路徑用第 7 章第 6 集的 `app_data_dir()`，它只算出路徑、不建資料夾，所以先 `create_dir_all`。`setup` 回傳的是 `Result`，打不開資料庫就用 `?` 往外丟，App 會停止啟動（第 4 章第 4 集）。
 
 先照直覺，把 `Connection` 直接交給 `manage`：
 

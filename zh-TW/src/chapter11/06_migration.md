@@ -16,7 +16,7 @@
 讀取失敗：資料庫錯誤：no such column: created_on in SELECT id, title, done, created_on FROM todos ORDER BY id at offset 24
 ```
 
-App 發出去之後，每個使用者的電腦上都有一份自己的舊資料庫，沒辦法請他們刪掉重來。所以資料表的結構要「升級」：用 SQL 把舊的結構改成新的，資料原封不動。這件事叫 migration（結構遷移）。
+App 發出去之後，使用者的電腦上各有一份舊資料庫，沒辦法請他們刪掉重來。所以資料表的結構要「升級」：用 SQL 改掉舊的結構，資料原封不動。這件事叫 migration（結構遷移）。
 
 ### 資料庫自己記著版本
 
@@ -144,7 +144,7 @@ pub fn delete(conn: &Connection, id: i64) -> Result<(), AppError> {
 - `(1..).zip(MIGRATIONS)` 把每一句配上它的版本號 `n`（從 1 開始）。`n <= version` 的是跑過的，`continue` 跳過；剩下的才執行。
 - 每一句各開一個交易（transaction）：`conn.transaction()` 開始，`tx.commit()` 才算數。交易裡的所有變動要嘛一起生效，要嘛一起取消；沒有 `commit` 就離開（例如中間某個 `?` 提早回傳），`tx` 被丟掉時會自動取消。
 - 交易裡先 `execute_batch` 跑那句 SQL，再用 `pragma_update` 把 `user_version` 設成 `n`。兩件事一起生效或一起取消，不會只做到一半：半途失敗的話，資料庫維持在原來的版本，下次啟動再試一次。`conn.transaction()` 要 `&mut Connection`，所以 `open` 裡的 `conn` 改成 `mut`。
-- 資料庫的版本比程式認得的還新（例如使用者裝回舊版的 App），就回傳 `TooNew`，不去碰它：舊程式不認得新結構，硬寫進去可能會把資料寫壞。
+- 資料庫的版本號比 `LATEST` 還大（例如使用者裝回舊版的 App），就回傳 `TooNew`，不去碰它：舊程式不認得新結構，硬寫進去可能會把資料寫壞。
 - `add` 的 SQL 多寫入 `created_on`，值用 SQLite 的 `date('now', 'localtime')`：今天的日期，本地時區，格式是 `2026-11-19`，存成文字。
 - SQLite 的 `ALTER TABLE` 能做的事有限，例如不能直接改欄位的型別；比較大的改動要建一張新的表、把資料搬過去、再換名字。這一章只加一個欄位，用不到。
 
