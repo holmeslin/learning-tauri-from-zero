@@ -95,3 +95,5 @@
     - [規劃資料表](chapter11/01_plan.md)
     - [`rusqlite`（`bundled`）與 `State<Mutex<Connection>>`](chapter11/02_rusqlite_state.md)
     - [新增與列出](chapter11/03_add_list.md)
+    - [完成與刪除](chapter11/04_done_delete.md)
+    - [用事件通知畫面更新](chapter11/05_events.md)
