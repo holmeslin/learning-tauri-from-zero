@@ -111,3 +111,5 @@
 - [實戰：系統匣小工具](chapter13/README.md)
     - [規劃](chapter13/01_plan.md)
     - [沒有主視窗的 app](chapter13/02_no_main_window.md)
+    - [系統匣選單](chapter13/03_tray_menu.md)
+    - [全域快捷鍵叫出視窗](chapter13/04_global_shortcut.md)
