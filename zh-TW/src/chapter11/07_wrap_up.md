@@ -8,16 +8,47 @@
 
 ### 視窗設定
 
-視窗標題現在還是 `tauri-app`。第 6 章第 1 集說過，標題與大小在 `src-tauri/tauri.conf.json` 的 `app.windows`。單欄的畫面不需要太寬，改成 480×640，其餘設定不動：
+視窗標題現在還是 `tauri-app`。第 6 章第 1 集說過，標題與大小在 `app.windows`。單欄的畫面不需要太寬，改成 480×640，其餘設定不動：
 
-```json,ignore
-"windows": [
-  {
-    "title": "待辦清單",
-    "width": 480,
-    "height": 640
+`src-tauri/tauri.conf.json`：
+
+```json
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "tauri-app",
+  "version": "0.1.0",
+  "identifier": "tw.example.tauri-app",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "withGlobalTauri": true,
+    "windows": [
+      {
+        "title": "待辦清單",
+        "width": 480,
+        "height": 640
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ]
   }
-]
+}
 ```
 
 `identifier` 不要動：它決定 app 資料夾的名字（第 7 章第 6 集），改了就找不到 `todos.db`，使用者會以為待辦全不見了。
@@ -519,6 +550,16 @@ const start = async () => {
 
 start();
 ```
+
+`npm run tauri dev` 的輸出（節錄）：
+
+```text
+   Compiling tauri-app v0.1.0 (~/tauri-app/src-tauri)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 3.47s
+     Running `target/debug/tauri-app`
+```
+
+視窗標題從 `tauri-app` 變成「待辦清單」，視窗變成 480×640 的窄長形，清單裡舊的待辦都還在。
 
 ### 清掉範本留下的檔案
 
