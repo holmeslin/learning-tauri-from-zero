@@ -494,6 +494,5 @@ cat "$HOME/Library/Application Support/tw.example.tauri-app/settings.json"
 - 兩個視窗各自 `load("settings.json")`，拿到的是同一張表。設定視窗寫、便條視窗讀，用 `settings-changed` 事件按門鈴，值留在 store。
 - capability 的 `windows` 是視窗 label 的清單，permission 只發給列在裡面的視窗；新增的設定視窗要加進去，不然它用不了 store。
 - store 檔案使用者也能改，讀出來的值要先檢查：`normalizeFontSize` 把任何值變成 12 到 32 之間的整數，不合法就用預設值 16。
-- 設定視窗在選單事件裡開，丟到另一個執行緒建，避開 Windows 上事件處理函式裡建視窗會卡死的問題；`on_window_event` 只替 `main` 擋關閉，設定視窗正常關閉。
-- macOS 的 `app.hide()` 會藏起所有視窗，所以設定視窗有顯示的時候，`hide_main_window` 只藏便條視窗。
+- 設定視窗在選單事件裡開，丟到另一個執行緒建，避開 Windows 上事件處理函式裡建視窗會卡死的問題；`on_window_event` 只替 `main` 擋關閉，設定視窗正常關閉；macOS 的 `app.hide()` 會藏起所有視窗，所以設定視窗有顯示的時候，`hide_main_window` 只藏便條視窗。
 - 有 `hidden` 屬性的元素，不要用 CSS 替它設 `display`，否則 `hidden` 會失效。
