@@ -90,7 +90,10 @@ const LATEST: i64 = MIGRATIONS.len() as i64;
 fn migrate(conn: &mut Connection) -> Result<(), AppError> {
     let version: i64 = conn.pragma_query_value(None, "user_version", |row| row.get(0))?;
     if version > LATEST {
-        return Err(AppError::TooNew(version, LATEST));
+        return Err(AppError::TooNew {
+            found: version,
+            supported: LATEST,
+        });
     }
     for (n, sql) in (1..).zip(MIGRATIONS) {
         if n <= version {
@@ -218,7 +221,10 @@ mod tests {
     fn migrate_refuses_a_newer_database() {
         let mut conn = Connection::open_in_memory().unwrap();
         conn.pragma_update(None, "user_version", 99).unwrap();
-        assert!(matches!(migrate(&mut conn), Err(AppError::TooNew(99, _))));
+        assert!(matches!(
+            migrate(&mut conn),
+            Err(AppError::TooNew { found: 99, .. })
+        ));
     }
 }
 ```
@@ -268,8 +274,8 @@ enum AppError {
     EmptyTitle,
     #[error("找不到編號 {0} 的待辦")]
     NotFound(i64),
-    #[error("資料庫的版本是 {0}，這個程式只認得到 {1}，請更新程式")]
-    TooNew(i64, i64),
+    #[error("資料庫的版本是 {found}，這個程式只認得到 {supported}，請更新程式")]
+    TooNew { found: i64, supported: i64 },
 }
 
 impl Serialize for AppError {

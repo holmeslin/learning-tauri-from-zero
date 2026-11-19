@@ -72,7 +72,10 @@ const LATEST: i64 = MIGRATIONS.len() as i64;
 fn migrate(conn: &mut Connection) -> Result<(), AppError> {
     let version: i64 = conn.pragma_query_value(None, "user_version", |row| row.get(0))?;
     if version > LATEST {
-        return Err(AppError::TooNew(version, LATEST));
+        return Err(AppError::TooNew {
+            found: version,
+            supported: LATEST,
+        });
     }
     for (n, sql) in (1..).zip(MIGRATIONS) {
         if n <= version {
@@ -148,7 +151,7 @@ pub fn delete(conn: &Connection, id: i64) -> Result<(), AppError> {
 - `add` 的 SQL 多寫入 `created_on`，值用 SQLite 的 `date('now', 'localtime')`：今天的日期，本地時區，格式是 `2026-11-19`，存成文字。
 - SQLite 的 `ALTER TABLE` 能做的事有限，例如不能直接改欄位的型別；比較大的改動要建一張新的表、把資料搬過去、再換名字。這一章只加一個欄位，用不到。
 
-`lib.rs` 只多了 `TooNew` 這個錯誤變體，帶著兩個版本號：
+`lib.rs` 只多了 `TooNew` 這個錯誤變體。它有兩個版本號，所以用具名欄位 `found`（資料庫的版本）與 `supported`（程式認得的版本），不靠位置：訊息裡寫 `{found}`、`{supported}`，建立錯誤時也不會把兩個數字放反：
 
 `src-tauri/src/lib.rs`：
 
@@ -168,8 +171,8 @@ enum AppError {
     EmptyTitle,
     #[error("找不到編號 {0} 的待辦")]
     NotFound(i64),
-    #[error("資料庫的版本是 {0}，這個程式只認得到 {1}，請更新程式")]
-    TooNew(i64, i64),
+    #[error("資料庫的版本是 {found}，這個程式只認得到 {supported}，請更新程式")]
+    TooNew { found: i64, supported: i64 },
 }
 
 impl Serialize for AppError {
