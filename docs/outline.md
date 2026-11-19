@@ -51,7 +51,7 @@ Tauri 2.12 · Rust 1.99（edition 2024）· Node LTS + npm · 前端 vanilla Typ
 ## 第 11 章 實戰：SQLite 待辦清單
 01 規劃資料表 · 02 rusqlite（`bundled`）與 `State<Mutex<Connection>>` · 03 新增與列出 · 04 完成與刪除 · 05 用事件通知畫面更新 · 06 資料庫結構升級（migration）· 07 收尾
 
-邊界：資料庫只在 Rust 端用 rusqlite 存取，前端只透過 `invoke`；不使用 tauri-plugin-sql。
+邊界：資料庫只在 Rust 端用 rusqlite 存取，前端對資料庫的操作只透過 `invoke`，事件只負責通知；不使用 tauri-plugin-sql。
 
 ## 第 12 章 實戰：Markdown 編輯器
 01 規劃 · 02 Rust 端轉 HTML（pulldown-cmark）· 03 即時預覽 · 04 開檔與存檔 · 05 自動儲存 · 06 未儲存就關閉的提醒 · 07 檔案關聯（雙擊 `.md` 開啟）· 08 收尾

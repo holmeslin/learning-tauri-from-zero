@@ -253,7 +253,7 @@ pub fn run() {
    Compiling libsqlite3-sys v0.40.0
    Compiling rusqlite v0.43.0
    Compiling tauri-app v0.1.0 (~/tauri-app/src-tauri)
-    Finished `dev` profile [unoptimized + debuginfo] target(s) in 7.82s
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 4.02s
      Running `target/debug/tauri-app`
 ```
 

@@ -229,8 +229,7 @@ export interface Todo {
 `npm run tauri dev` 的輸出（節錄）：
 
 ```text
-   Compiling tauri-app v0.1.0 (~/tauri-app/src-tauri)
-    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.52s
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.38s
      Running `target/debug/tauri-app`
 ```
 

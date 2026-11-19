@@ -358,7 +358,7 @@ refresh();
 
 ```text
    Compiling tauri-app v0.1.0 (~/tauri-app/src-tauri)
-    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.94s
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 4.45s
      Running `target/debug/tauri-app`
 ```
 
