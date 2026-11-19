@@ -266,9 +266,10 @@ if (!editorEl || !previewEl || !statusEl || !autosaveEl) {
 
 const appWindow = getCurrentWindow();
 const markdownFilter = [{ name: "Markdown", extensions: ["md", "markdown"] }];
+const UNTITLED = "未命名";
 
 let path: string | null = null;
-let fileName = "未命名";
+let fileName = UNTITLED;
 let savedText = "";
 let shownTitle = "";
 let renderCount = 0;
@@ -312,7 +313,7 @@ const refreshPreview = async () => {
 };
 
 const load = async (newPath: string | null, text: string) => {
-  const name = newPath === null ? "未命名" : await basename(newPath);
+  const name = newPath === null ? UNTITLED : await basename(newPath);
   docId += 1;
   path = newPath;
   fileName = name;
@@ -339,7 +340,7 @@ const saveTo = async (target: string) => {
 
 const saveAs = async () => {
   const target = await save({
-    defaultPath: path === null ? "未命名.md" : path,
+    defaultPath: path === null ? `${UNTITLED}.md` : path,
     filters: markdownFilter,
   });
   if (target !== null) {

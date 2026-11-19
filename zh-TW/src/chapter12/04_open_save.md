@@ -98,7 +98,7 @@ export function writeFile(path: string, text: string): Promise<void> {
 - `load(新的路徑, 文字)` 把一份文件放進編輯區：換掉 `path`、`fileName` 與文字，再更新預覽與標題。程式設定 `editorEl.value` 不會發出 `input` 事件（那是使用者打字才有的），所以預覽要自己呼叫 `refreshPreview()` 更新。
 - `saveTo(路徑)` 把編輯區的文字寫進路徑；`saveAs()` 用 `save()` 對話框問路徑（第 7 章第 4 集），取消會回傳 `null`，就什麼都不做；`saveCurrent()` 在有 `path` 時直接寫，沒有就改走 `saveAs()`。
 - `openWithDialog()` 用 `open()` 選一個檔案，讀進來再 `load`。兩個對話框都用 `filters` 限制在 `.md`、`.markdown`。
-- 標題用第 10 章第 5 集的 `basename(路徑)` 取檔名，沒有路徑就叫「未命名」。
+- 標題用第 10 章第 5 集的 `basename(路徑)` 取檔名，沒有路徑就叫「未命名」。這個詞好幾個地方都會用到，所以放進常數 `UNTITLED`。
 
 這裡有一個順序要小心：`saveTo` 先算好檔名，再寫檔。寫檔成功之後，就不該再有可能丟出錯誤的步驟，否則已經寫進去的檔案，畫面上卻會顯示「儲存失敗」。所以 `await basename(...)` 放在 `writeFile` 前面，寫完只剩改變數、顯示訊息，以及自己會處理錯誤的 `refreshTitle`。`load` 也一樣，先算 `name`，才動 `path` 與編輯區。
 
@@ -122,9 +122,10 @@ if (!editorEl || !previewEl || !statusEl) {
 
 const appWindow = getCurrentWindow();
 const markdownFilter = [{ name: "Markdown", extensions: ["md", "markdown"] }];
+const UNTITLED = "未命名";
 
 let path: string | null = null;
-let fileName = "未命名";
+let fileName = UNTITLED;
 let renderCount = 0;
 
 const show = (message: string) => {
@@ -157,7 +158,7 @@ const refreshTitle = async () => {
 };
 
 const load = async (newPath: string | null, text: string) => {
-  const name = newPath === null ? "未命名" : await basename(newPath);
+  const name = newPath === null ? UNTITLED : await basename(newPath);
   path = newPath;
   fileName = name;
   editorEl.value = text;
@@ -176,7 +177,7 @@ const saveTo = async (target: string) => {
 
 const saveAs = async () => {
   const target = await save({
-    defaultPath: path === null ? "未命名.md" : path,
+    defaultPath: path === null ? `${UNTITLED}.md` : path,
     filters: markdownFilter,
   });
   if (target !== null) {
