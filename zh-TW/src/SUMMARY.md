@@ -98,3 +98,4 @@
     - [完成與刪除](chapter11/04_done_delete.md)
     - [用事件通知畫面更新](chapter11/05_events.md)
     - [資料庫結構升級（migration）](chapter11/06_migration.md)
+    - [收尾](chapter11/07_wrap_up.md)
