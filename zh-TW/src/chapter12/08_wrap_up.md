@@ -221,19 +221,21 @@ cargo test --manifest-path src-tauri/Cargo.toml
 `cargo test --manifest-path src-tauri/Cargo.toml` 的輸出（節錄）：
 
 ```text
-running 7 tests
-test tests::file_arg_keeps_absolute_paths ... ok
+running 9 tests
 test tests::file_arg_skips_program_and_flags ... ok
+test tests::file_arg_keeps_absolute_paths ... ok
 test tests::read_error_mentions_the_path ... ok
-test markdown::tests::converts_headings_and_emphasis ... ok
 test markdown::tests::raw_html_is_shown_as_text ... ok
+test markdown::tests::safe_urls_are_kept ... ok
 test markdown::tests::supports_tables_and_task_lists ... ok
+test markdown::tests::converts_headings_and_emphasis ... ok
+test markdown::tests::dangerous_urls_are_removed ... ok
 test tests::write_then_read_round_trips ... ok
 
-test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 ```
 
-七個測試都過了：`markdown.rs` 的三個加上 `lib.rs` 的四個。測試是同時跑的，所以每次印出來的順序可能不一樣。這些測試沒有碰 `request_open`、single-instance 與 `RunEvent`：它們需要真的 `AppHandle`，跟第 11 章一樣，這一章不做。
+九個測試都過了：`markdown.rs` 的五個加上 `lib.rs` 的四個。測試是同時跑的，所以每次印出來的順序可能不一樣。這些測試沒有碰 `request_open`、single-instance 與 `RunEvent`：它們需要真的 `AppHandle`，跟第 11 章一樣，這一章不做。
 
 ### 其餘的檔案
 
@@ -512,13 +514,54 @@ export function onOpenRequested(callback: () => void): Promise<UnlistenFn> {
 `src-tauri/src/markdown.rs`：
 
 ```rust
-use pulldown_cmark::{Event, Options, Parser, html};
+use pulldown_cmark::{CowStr, Event, Options, Parser, Tag, html};
+
+const SAFE_SCHEMES: [&str; 3] = ["http", "https", "mailto"];
+
+fn is_safe_url(url: &str) -> bool {
+    match url.find([':', '/', '?', '#']) {
+        Some(end) if url.as_bytes()[end] == b':' => {
+            SAFE_SCHEMES.contains(&url[..end].to_ascii_lowercase().as_str())
+        }
+        _ => true,
+    }
+}
+
+fn safe_url(url: CowStr) -> CowStr {
+    if is_safe_url(&url) {
+        url
+    } else {
+        CowStr::Borrowed("")
+    }
+}
 
 pub fn to_html(text: &str) -> String {
     let options =
         Options::ENABLE_TABLES | Options::ENABLE_STRIKETHROUGH | Options::ENABLE_TASKLISTS;
     let parser = Parser::new_ext(text, options).map(|event| match event {
         Event::Html(raw) | Event::InlineHtml(raw) => Event::Text(raw),
+        Event::Start(Tag::Link {
+            link_type,
+            dest_url,
+            title,
+            id,
+        }) => Event::Start(Tag::Link {
+            link_type,
+            dest_url: safe_url(dest_url),
+            title,
+            id,
+        }),
+        Event::Start(Tag::Image {
+            link_type,
+            dest_url,
+            title,
+            id,
+        }) => Event::Start(Tag::Image {
+            link_type,
+            dest_url: safe_url(dest_url),
+            title,
+            id,
+        }),
         other => other,
     });
     let mut out = String::new();
@@ -554,6 +597,45 @@ mod tests {
         assert!(table.contains("<table>"), "{table}");
         let tasks = to_html("- [x] 完成\n- [ ] 未完成");
         assert!(tasks.contains("type=\"checkbox\""), "{tasks}");
+    }
+
+    #[test]
+    fn dangerous_urls_are_removed() {
+        assert_eq!(
+            to_html("[x](javascript:alert(1))"),
+            "<p><a href=\"\">x</a></p>\n"
+        );
+        for text in [
+            "[x](JavaScript:alert(1))",
+            "[x](&#106;avascript:alert(1))",
+            "[x](<  javascript:alert(1)>)",
+            "<javascript:alert(1)>",
+            "[x][r]\n\n[r]: javascript:alert(1)",
+            "![x](javascript:alert(1))",
+            "[x](data:text/html;base64,AAAA)",
+            "![x](data:image/svg+xml;base64,AAAA)",
+        ] {
+            let html = to_html(text).to_lowercase();
+            assert!(!html.contains("=\"javascript:"), "{text} -> {html}");
+            assert!(!html.contains("=\"data:"), "{text} -> {html}");
+        }
+    }
+
+    #[test]
+    fn safe_urls_are_kept() {
+        assert_eq!(
+            to_html("[x](HTTPS://example.com/a?b=c#d)"),
+            "<p><a href=\"HTTPS://example.com/a?b=c#d\">x</a></p>\n"
+        );
+        assert_eq!(
+            to_html("[x](notes/a.md)"),
+            "<p><a href=\"notes/a.md\">x</a></p>\n"
+        );
+        assert_eq!(
+            to_html("![圖](https://example.com/a.png)"),
+            "<p><img src=\"https://example.com/a.png\" alt=\"圖\" /></p>\n"
+        );
+        assert!(to_html("<me@example.com>").contains("href=\"mailto:me@example.com\""));
     }
 }
 ```
@@ -689,7 +771,7 @@ dist/assets/index-0PkZjrjg.js   20.16 kB │ gzip: 5.89 kB
 
 編輯器的每一塊，主要靠這些東西做成：
 
-- 轉換：pulldown-cmark 的 `Parser` 與 `push_html`，原始 HTML 在 Rust 端換成文字，預覽才敢用 `innerHTML`（第 2、3 集）。
+- 轉換：pulldown-cmark 的 `Parser` 與 `push_html`，原始 HTML 在 Rust 端換成文字、連結與圖片的網址過白名單，預覽才敢用 `innerHTML`（第 2、3 集）。
 - 預覽：`input` 事件加 command，替每次呼叫編號，舊的回應丟掉；連結交給 `openUrl`（第 3 集）。
 - 檔案：dialog 只問路徑，讀寫是自己的兩個 command，前端不碰 fs plugin（第 4 集）。
 - 狀態：`path` 與 `savedText`，有沒存的修改是比較出來的，不是旗標（第 1、5 集）。

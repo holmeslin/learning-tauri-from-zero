@@ -24,7 +24,9 @@ export function renderMarkdown(text: string): Promise<string> {
 
 ### 預覽欄：`innerHTML`
 
-把 HTML 字串變成畫面上真的元素，要用 `innerHTML`。第 2 章第 7 集說過本書不用它，因為字串裡混進別人寫的內容有安全風險。預覽是唯一不得不用的地方，而風險已經在上一集堵住了：Markdown 裡夾的原始 HTML，在 Rust 端就被轉成跳脫過的文字，`innerHTML` 收到的只剩 pulldown-cmark 自己產生的元素。
+把 HTML 字串變成畫面上真的元素，要用 `innerHTML`。第 2 章第 7 集說過本書不用它，因為字串裡混進別人寫的內容有安全風險。預覽是唯一不得不用的地方，而風險已經在上一集用兩道關卡堵住了，兩道都在 Rust 端：Markdown 裡夾的原始 HTML，被轉成跳脫過的文字；連結與圖片的網址，只放行 `http`、`https`、`mailto` 與相對路徑。所以 `innerHTML` 收到的，是 pulldown-cmark 自己產生的元素，而且元素裡的網址都過了白名單。
+
+這兩道關卡是目前唯一的防線。WebView 還有更外面的一層，叫 CSP（Content Security Policy），可以限制頁面能載入、能執行什麼；範本的 `tauri.conf.json` 是 `"csp": null`，等於沒有開。CSP 第 14 章會正式介紹。
 
 ### 回應的順序
 
@@ -113,13 +115,54 @@ pub fn run() {
 `src-tauri/src/markdown.rs`：
 
 ```rust
-use pulldown_cmark::{Event, Options, Parser, html};
+use pulldown_cmark::{CowStr, Event, Options, Parser, Tag, html};
+
+const SAFE_SCHEMES: [&str; 3] = ["http", "https", "mailto"];
+
+fn is_safe_url(url: &str) -> bool {
+    match url.find([':', '/', '?', '#']) {
+        Some(end) if url.as_bytes()[end] == b':' => {
+            SAFE_SCHEMES.contains(&url[..end].to_ascii_lowercase().as_str())
+        }
+        _ => true,
+    }
+}
+
+fn safe_url(url: CowStr) -> CowStr {
+    if is_safe_url(&url) {
+        url
+    } else {
+        CowStr::Borrowed("")
+    }
+}
 
 pub fn to_html(text: &str) -> String {
     let options =
         Options::ENABLE_TABLES | Options::ENABLE_STRIKETHROUGH | Options::ENABLE_TASKLISTS;
     let parser = Parser::new_ext(text, options).map(|event| match event {
         Event::Html(raw) | Event::InlineHtml(raw) => Event::Text(raw),
+        Event::Start(Tag::Link {
+            link_type,
+            dest_url,
+            title,
+            id,
+        }) => Event::Start(Tag::Link {
+            link_type,
+            dest_url: safe_url(dest_url),
+            title,
+            id,
+        }),
+        Event::Start(Tag::Image {
+            link_type,
+            dest_url,
+            title,
+            id,
+        }) => Event::Start(Tag::Image {
+            link_type,
+            dest_url: safe_url(dest_url),
+            title,
+            id,
+        }),
         other => other,
     });
     let mut out = String::new();
@@ -155,6 +198,45 @@ mod tests {
         assert!(table.contains("<table>"), "{table}");
         let tasks = to_html("- [x] 完成\n- [ ] 未完成");
         assert!(tasks.contains("type=\"checkbox\""), "{tasks}");
+    }
+
+    #[test]
+    fn dangerous_urls_are_removed() {
+        assert_eq!(
+            to_html("[x](javascript:alert(1))"),
+            "<p><a href=\"\">x</a></p>\n"
+        );
+        for text in [
+            "[x](JavaScript:alert(1))",
+            "[x](&#106;avascript:alert(1))",
+            "[x](<  javascript:alert(1)>)",
+            "<javascript:alert(1)>",
+            "[x][r]\n\n[r]: javascript:alert(1)",
+            "![x](javascript:alert(1))",
+            "[x](data:text/html;base64,AAAA)",
+            "![x](data:image/svg+xml;base64,AAAA)",
+        ] {
+            let html = to_html(text).to_lowercase();
+            assert!(!html.contains("=\"javascript:"), "{text} -> {html}");
+            assert!(!html.contains("=\"data:"), "{text} -> {html}");
+        }
+    }
+
+    #[test]
+    fn safe_urls_are_kept() {
+        assert_eq!(
+            to_html("[x](HTTPS://example.com/a?b=c#d)"),
+            "<p><a href=\"HTTPS://example.com/a?b=c#d\">x</a></p>\n"
+        );
+        assert_eq!(
+            to_html("[x](notes/a.md)"),
+            "<p><a href=\"notes/a.md\">x</a></p>\n"
+        );
+        assert_eq!(
+            to_html("![圖](https://example.com/a.png)"),
+            "<p><img src=\"https://example.com/a.png\" alt=\"圖\" /></p>\n"
+        );
+        assert!(to_html("<me@example.com>").contains("href=\"mailto:me@example.com\""));
     }
 }
 ```
@@ -247,7 +329,7 @@ main {
 - `event.target` 是被點到的那個元素，可能是 `<a>`，也可能是 `<a>` 裡面的 `<strong>`。它的型別是 `EventTarget | null`，沒有 `closest` 方法，所以先用 `instanceof Element` 確認，TypeScript 才會放行。
 - `closest("a")` 從這個元素開始往外找最近的 `<a>`，找不到回傳 `null`。
 - 是連結就先 `event.preventDefault()`，擋下瀏覽器預設的前往動作。
-- 只有網址以 `http://` 或 `https://` 開頭，才交給 opener plugin 的 `openUrl`（第 7 章第 3 集），用系統預設的瀏覽器開啟，`opener:default` 範本本來就放行了。其他的，像 `javascript:` 開頭的網址、相對路徑，一律不處理。
+- 只有網址以 `http://` 或 `https://` 開頭，才交給 opener plugin 的 `openUrl`（第 7 章第 3 集），用系統預設的瀏覽器開啟，`opener:default` 範本本來就放行了。其他的，像 `mailto:` 開頭的網址、相對路徑，一律不處理（`javascript:` 開頭的，上一集已經在 Rust 端換掉了）。
 
 `src/main.ts`：
 

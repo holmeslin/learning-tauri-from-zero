@@ -2,7 +2,7 @@
 
 ## 本集目標
 
-加上 pulldown-cmark，在 Rust 端把 Markdown 轉成 HTML，用 command 讓前端呼叫；並擋掉 Markdown 裡夾帶的原始 HTML，為下一集把結果放進畫面做準備。
+加上 pulldown-cmark，在 Rust 端把 Markdown 轉成 HTML，用 command 讓前端呼叫；並擋掉 Markdown 裡夾帶的原始 HTML 與危險的網址，為下一集把結果放進畫面做準備。
 
 ## 正文
 
@@ -235,7 +235,7 @@ Markdown 允許直接夾 HTML。把左邊換成兩行：一行普通的文字加
 
 兩段 HTML 都原封不動地出現在輸出裡。這一集用 `textContent` 顯示，所以只是看到文字。但下一集要把輸出放進頁面當真的 HTML 來顯示，到時候 `<img>` 一載入失敗，`onerror` 裡的 JavaScript 就會跑起來。它跑在我們的視窗裡，跟我們自己寫的程式碼有一樣的權限，能呼叫這個 App 所有的 command，包括第 4 集會寫的、能寫入任何路徑的 `write_file`。也就是說，從網路上載下來的一個 `.md` 檔，打開就可能在你的電腦上寫檔案。
 
-第 2 章第 7 集提過，`innerHTML` 混進使用者輸入的內容有安全風險，所以本書不用。預覽是唯一的例外：它的工作就是把 HTML 放進畫面。所以風險要在 Rust 端堵住：把原始 HTML 的事件改成 `Event::Text`，`push_html` 會把文字裡的 `<`、`>` 跳脫成 `&lt;`、`&gt;`，瀏覽器就只會把它當成文字顯示。
+第 2 章第 7 集提過，`innerHTML` 混進使用者輸入的內容有安全風險，所以本書不用。預覽是唯一的例外：它的工作就是把 HTML 放進畫面。所以風險要在 Rust 端堵住：把原始 HTML 的事件改成 `Event::Text`，`push_html` 會把文字裡的 `<`、`>` 跳脫（escape）成 `&lt;`、`&gt;`，瀏覽器就只會把它當成文字顯示。
 
 原始 HTML 對應兩種事件：獨立成一個區塊的是 `Event::Html`，夾在一行文字中間的是 `Event::InlineHtml`。`Parser` 是迭代器，用 `.map` 換掉它們就好，其他事件原樣放行：
 
@@ -278,22 +278,158 @@ pub fn to_html(text: &str) -> String {
 &lt;img src=x onerror=alert(1)&gt;
 ```
 
-`<b>` 與 `<img>` 都變成了跳脫過的文字。這個行為以後不能默默壞掉，所以替它寫測試。
+`<b>` 與 `<img>` 都變成了跳脫過的文字。但原始 HTML 不是唯一的入口。
 
-### 測試 `to_html`
+### 連結與圖片的網址也不能信
 
-`to_html` 只收字串、回傳字串，不碰 Tauri，直接用 `cargo test` 就能測（第 9 章第 1 集）。測試放在 `markdown.rs` 最後的 `tests` 模組，三個測試各守一件事。預期的字串都是手寫的固定值，不是用別的程式算出來的：
+Markdown 自己的連結 `[文字](網址)` 與圖片 `![說明](網址)`，會把檔案作者寫的網址原樣放進 `<a href>` 與 `<img src>`。把左邊換成這一行，按「轉成 HTML」：
+
+```text
+[點我](javascript:alert(1))
+```
+
+右邊是：
+
+```text
+<p><a href="javascript:alert(1)">點我</a></p>
+```
+
+`javascript:` 開頭的網址，一旦被「前往」（點擊就是其中一種），瀏覽器不會去載入網頁，而是把冒號後面的文字當 JavaScript 執行，威力跟上面的 `onerror` 一樣。換成 `<javascript:alert(1)>`、`![圖](javascript:alert(1))`，或在別處寫一行 `[r]: javascript:alert(1)`、再用 `[點我][r]` 引用，輸出也都是原樣。`data:` 開頭的網址則能把一整段內容直接塞在網址裡。下一集會攔下預覽裡連結的點擊，但不該把安全押在「每一條路都被攔下」上，所以在 Rust 端先處理。
+
+做法是白名單，只放行認得的 scheme（網址裡冒號前面那一段，像 `https`、`mailto`）：
+
+- 有 scheme 的網址，只放行 `http`、`https`、`mailto`，大小寫不分，`HTTPS://` 也算 `https`。
+- 沒有 scheme 的是相對路徑，像 `notes/a.md`、`#標題`，照放。
+- 不合格的，換成空字串：輸出 `<a href="">`、`<img src="">`，哪裡都連不到。
+
+怎麼看網址有沒有 scheme：在網址裡找 `:`、`/`、`?`、`#` 最先出現的是哪一個。是 `:` 的話，冒號前面就是 scheme；先遇到別的，就是相對路徑。`a/b:c` 的冒號在斜線後面，是路徑的一部分，不是 scheme。`str::find` 可以一次找好幾個字元，傳字元陣列給它就行。
+
+換個寫法能不能繞過去？`JavaScript:` 大小寫不同，轉成小寫再比；`&#106;avascript:` 用 HTML 實體寫了一個 `j`，pulldown-cmark 剖析的時候就已經還原成 `j`，`dest_url` 拿到的已經是 `javascript:alert(1)`；開頭多出來的空白或控制字元，`push_html` 輸出時一律編成 `%20`、`%09` 這種百分比編碼，不會變成 scheme 的一部分。所以只要檢查 `dest_url`，測試會把這些寫法都試一遍。
+
+要改的是 `Event::Start(Tag::Link { .. })` 與 `Event::Start(Tag::Image { .. })`，網址在它們的 `dest_url` 欄位。`Tag::Link` 有四個欄位（`link_type`、`dest_url`、`title`、`id`），只換其中一個，其他三個要原樣搬回去，所以每個欄位都寫出來。`dest_url` 的型別是 `CowStr`，就是前面提過的那個字串型別，用法類似 `Cow<str>`，`CowStr::Borrowed("")` 是一個空字串。
 
 `src-tauri/src/markdown.rs`：
 
 ```rust
-use pulldown_cmark::{Event, Options, Parser, html};
+use pulldown_cmark::{CowStr, Event, Options, Parser, Tag, html};
+
+const SAFE_SCHEMES: [&str; 3] = ["http", "https", "mailto"];
+
+fn is_safe_url(url: &str) -> bool {
+    match url.find([':', '/', '?', '#']) {
+        Some(end) if url.as_bytes()[end] == b':' => {
+            SAFE_SCHEMES.contains(&url[..end].to_ascii_lowercase().as_str())
+        }
+        _ => true,
+    }
+}
+
+fn safe_url(url: CowStr) -> CowStr {
+    if is_safe_url(&url) {
+        url
+    } else {
+        CowStr::Borrowed("")
+    }
+}
 
 pub fn to_html(text: &str) -> String {
     let options =
         Options::ENABLE_TABLES | Options::ENABLE_STRIKETHROUGH | Options::ENABLE_TASKLISTS;
     let parser = Parser::new_ext(text, options).map(|event| match event {
         Event::Html(raw) | Event::InlineHtml(raw) => Event::Text(raw),
+        Event::Start(Tag::Link {
+            link_type,
+            dest_url,
+            title,
+            id,
+        }) => Event::Start(Tag::Link {
+            link_type,
+            dest_url: safe_url(dest_url),
+            title,
+            id,
+        }),
+        Event::Start(Tag::Image {
+            link_type,
+            dest_url,
+            title,
+            id,
+        }) => Event::Start(Tag::Image {
+            link_type,
+            dest_url: safe_url(dest_url),
+            title,
+            id,
+        }),
+        other => other,
+    });
+    let mut out = String::new();
+    html::push_html(&mut out, parser);
+    out
+}
+```
+
+存檔後 `tauri dev` 自動重新編譯，視窗重開，再按一次「轉成 HTML」，右邊變成：
+
+```text
+<p><a href="">點我</a></p>
+```
+
+`https://tauri.app` 這類的連結，`mailto:` 與相對路徑，都照常通過。圖片也放行 `http`、`https`，預覽才看得到網路上的圖；代價是打開別人的檔案時，App 會去連圖片的網址。要連這個也限制，得靠 WebView 的 CSP，第 14 章會正式介紹。
+
+### 測試 `to_html`
+
+`to_html` 只收字串、回傳字串，不碰 Tauri，直接用 `cargo test` 就能測（第 9 章第 1 集）。測試放在 `markdown.rs` 最後的 `tests` 模組，五個測試各守一件事。預期的字串都是手寫的固定值，不是用別的程式算出來的：
+
+`src-tauri/src/markdown.rs`：
+
+```rust
+use pulldown_cmark::{CowStr, Event, Options, Parser, Tag, html};
+
+const SAFE_SCHEMES: [&str; 3] = ["http", "https", "mailto"];
+
+fn is_safe_url(url: &str) -> bool {
+    match url.find([':', '/', '?', '#']) {
+        Some(end) if url.as_bytes()[end] == b':' => {
+            SAFE_SCHEMES.contains(&url[..end].to_ascii_lowercase().as_str())
+        }
+        _ => true,
+    }
+}
+
+fn safe_url(url: CowStr) -> CowStr {
+    if is_safe_url(&url) {
+        url
+    } else {
+        CowStr::Borrowed("")
+    }
+}
+
+pub fn to_html(text: &str) -> String {
+    let options =
+        Options::ENABLE_TABLES | Options::ENABLE_STRIKETHROUGH | Options::ENABLE_TASKLISTS;
+    let parser = Parser::new_ext(text, options).map(|event| match event {
+        Event::Html(raw) | Event::InlineHtml(raw) => Event::Text(raw),
+        Event::Start(Tag::Link {
+            link_type,
+            dest_url,
+            title,
+            id,
+        }) => Event::Start(Tag::Link {
+            link_type,
+            dest_url: safe_url(dest_url),
+            title,
+            id,
+        }),
+        Event::Start(Tag::Image {
+            link_type,
+            dest_url,
+            title,
+            id,
+        }) => Event::Start(Tag::Image {
+            link_type,
+            dest_url: safe_url(dest_url),
+            title,
+            id,
+        }),
         other => other,
     });
     let mut out = String::new();
@@ -330,12 +466,53 @@ mod tests {
         let tasks = to_html("- [x] 完成\n- [ ] 未完成");
         assert!(tasks.contains("type=\"checkbox\""), "{tasks}");
     }
+
+    #[test]
+    fn dangerous_urls_are_removed() {
+        assert_eq!(
+            to_html("[x](javascript:alert(1))"),
+            "<p><a href=\"\">x</a></p>\n"
+        );
+        for text in [
+            "[x](JavaScript:alert(1))",
+            "[x](&#106;avascript:alert(1))",
+            "[x](<  javascript:alert(1)>)",
+            "<javascript:alert(1)>",
+            "[x][r]\n\n[r]: javascript:alert(1)",
+            "![x](javascript:alert(1))",
+            "[x](data:text/html;base64,AAAA)",
+            "![x](data:image/svg+xml;base64,AAAA)",
+        ] {
+            let html = to_html(text).to_lowercase();
+            assert!(!html.contains("=\"javascript:"), "{text} -> {html}");
+            assert!(!html.contains("=\"data:"), "{text} -> {html}");
+        }
+    }
+
+    #[test]
+    fn safe_urls_are_kept() {
+        assert_eq!(
+            to_html("[x](HTTPS://example.com/a?b=c#d)"),
+            "<p><a href=\"HTTPS://example.com/a?b=c#d\">x</a></p>\n"
+        );
+        assert_eq!(
+            to_html("[x](notes/a.md)"),
+            "<p><a href=\"notes/a.md\">x</a></p>\n"
+        );
+        assert_eq!(
+            to_html("![圖](https://example.com/a.png)"),
+            "<p><img src=\"https://example.com/a.png\" alt=\"圖\" /></p>\n"
+        );
+        assert!(to_html("<me@example.com>").contains("href=\"mailto:me@example.com\""));
+    }
 }
 ```
 
 - `converts_headings_and_emphasis`：標題、粗體、斜體各轉成對應的元素，整串比對。輸出的最後有一個換行。
 - `raw_html_is_shown_as_text`：獨立一行的 `<img>`、夾在文字中間的 `<script>`，輸出裡都只剩跳脫過的文字。`assert!` 的第二個參數是失敗時要印的訊息，這裡把實際的輸出印出來，失敗時一眼就看得出是什麼。
 - `supports_tables_and_task_lists`：打開的 `Options` 真的有效，表格轉成 `<table>`，待辦項目轉成勾選框。
+- `dangerous_urls_are_removed`：`javascript:` 的連結，輸出空的 `href`。其他寫法（大小寫、HTML 實體、前導空白、自動連結、參照式連結、圖片、`data:`）的輸出裡，都不能出現 `="javascript:` 或 `="data:`。`="` 是屬性值的開頭，所以擋的是出現在屬性裡的網址，不會誤傷連結文字：`<javascript:alert(1)>` 的連結文字就是網址本身，看得到 `javascript:` 沒關係。
+- `safe_urls_are_kept`：大寫的 `HTTPS://`、相對路徑、圖片的 `https` 網址、`<me@example.com>` 的 `mailto:`，都原樣放行。這個測試防的是白名單寫得太緊，連正常的連結都擋掉。
 
 ```bash
 cargo test --manifest-path src-tauri/Cargo.toml
@@ -344,12 +521,14 @@ cargo test --manifest-path src-tauri/Cargo.toml
 `cargo test --manifest-path src-tauri/Cargo.toml` 的輸出（節錄）：
 
 ```text
-running 3 tests
+running 5 tests
 test markdown::tests::converts_headings_and_emphasis ... ok
+test markdown::tests::dangerous_urls_are_removed ... ok
 test markdown::tests::raw_html_is_shown_as_text ... ok
+test markdown::tests::safe_urls_are_kept ... ok
 test markdown::tests::supports_tables_and_task_lists ... ok
 
-test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 ```
 
 ## 重點整理
@@ -357,4 +536,5 @@ test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
 - pulldown-cmark 的 `Parser` 是事件的迭代器，`html::push_html` 把事件轉成 HTML；表格、刪除線、待辦勾選框要用 `Options` 打開。用 `cargo add --manifest-path src-tauri/Cargo.toml pulldown-cmark@0.13` 加進專案。
 - 轉換函式 `to_html` 放在 `markdown.rs`，不碰 Tauri 的型別；`lib.rs` 的 command 只是把文字交給它。
 - Markdown 裡夾的 HTML 預設會原封不動出現在輸出裡；放進頁面就等於讓檔案的作者在你的視窗裡執行 JavaScript，所以要把 `Event::Html` 與 `Event::InlineHtml` 換成 `Event::Text`，讓它被跳脫。
-- 這件事要用測試守住：輸出裡不能出現 `<img`、`<script`。
+- 連結與圖片的網址也要檢查：`Tag::Link`、`Tag::Image` 的 `dest_url`，有 scheme 的只放行 `http`、`https`、`mailto`（大小寫不分），沒有 scheme 的相對路徑照放，不合格的換成空字串。
+- 這兩件事都要用測試守住：輸出裡不能出現 `<img`、`<script`，也不能有 `="javascript:` 開頭的屬性值。

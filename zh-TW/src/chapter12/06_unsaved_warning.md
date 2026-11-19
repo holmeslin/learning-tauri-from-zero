@@ -319,13 +319,54 @@ pub fn run() {
 `src-tauri/src/markdown.rs`：
 
 ```rust
-use pulldown_cmark::{Event, Options, Parser, html};
+use pulldown_cmark::{CowStr, Event, Options, Parser, Tag, html};
+
+const SAFE_SCHEMES: [&str; 3] = ["http", "https", "mailto"];
+
+fn is_safe_url(url: &str) -> bool {
+    match url.find([':', '/', '?', '#']) {
+        Some(end) if url.as_bytes()[end] == b':' => {
+            SAFE_SCHEMES.contains(&url[..end].to_ascii_lowercase().as_str())
+        }
+        _ => true,
+    }
+}
+
+fn safe_url(url: CowStr) -> CowStr {
+    if is_safe_url(&url) {
+        url
+    } else {
+        CowStr::Borrowed("")
+    }
+}
 
 pub fn to_html(text: &str) -> String {
     let options =
         Options::ENABLE_TABLES | Options::ENABLE_STRIKETHROUGH | Options::ENABLE_TASKLISTS;
     let parser = Parser::new_ext(text, options).map(|event| match event {
         Event::Html(raw) | Event::InlineHtml(raw) => Event::Text(raw),
+        Event::Start(Tag::Link {
+            link_type,
+            dest_url,
+            title,
+            id,
+        }) => Event::Start(Tag::Link {
+            link_type,
+            dest_url: safe_url(dest_url),
+            title,
+            id,
+        }),
+        Event::Start(Tag::Image {
+            link_type,
+            dest_url,
+            title,
+            id,
+        }) => Event::Start(Tag::Image {
+            link_type,
+            dest_url: safe_url(dest_url),
+            title,
+            id,
+        }),
         other => other,
     });
     let mut out = String::new();
@@ -361,6 +402,45 @@ mod tests {
         assert!(table.contains("<table>"), "{table}");
         let tasks = to_html("- [x] 完成\n- [ ] 未完成");
         assert!(tasks.contains("type=\"checkbox\""), "{tasks}");
+    }
+
+    #[test]
+    fn dangerous_urls_are_removed() {
+        assert_eq!(
+            to_html("[x](javascript:alert(1))"),
+            "<p><a href=\"\">x</a></p>\n"
+        );
+        for text in [
+            "[x](JavaScript:alert(1))",
+            "[x](&#106;avascript:alert(1))",
+            "[x](<  javascript:alert(1)>)",
+            "<javascript:alert(1)>",
+            "[x][r]\n\n[r]: javascript:alert(1)",
+            "![x](javascript:alert(1))",
+            "[x](data:text/html;base64,AAAA)",
+            "![x](data:image/svg+xml;base64,AAAA)",
+        ] {
+            let html = to_html(text).to_lowercase();
+            assert!(!html.contains("=\"javascript:"), "{text} -> {html}");
+            assert!(!html.contains("=\"data:"), "{text} -> {html}");
+        }
+    }
+
+    #[test]
+    fn safe_urls_are_kept() {
+        assert_eq!(
+            to_html("[x](HTTPS://example.com/a?b=c#d)"),
+            "<p><a href=\"HTTPS://example.com/a?b=c#d\">x</a></p>\n"
+        );
+        assert_eq!(
+            to_html("[x](notes/a.md)"),
+            "<p><a href=\"notes/a.md\">x</a></p>\n"
+        );
+        assert_eq!(
+            to_html("![圖](https://example.com/a.png)"),
+            "<p><img src=\"https://example.com/a.png\" alt=\"圖\" /></p>\n"
+        );
+        assert!(to_html("<me@example.com>").contains("href=\"mailto:me@example.com\""));
     }
 }
 ```
