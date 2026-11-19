@@ -265,6 +265,8 @@ ls "$HOME/Library/Application Support/tw.example.tauri-app"
 todos.db
 ```
 
+同一個資料夾裡如果還有別的檔案（例如第 10 章留下的 `notes.json`），也會一起列出來；這個專案只管 `todos.db`。
+
 用 `sqlite3` 指令看資料表長什麼樣子（沒有這個指令的平台可以跳過）：
 
 ```bash

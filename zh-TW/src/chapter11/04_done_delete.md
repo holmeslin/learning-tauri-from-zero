@@ -362,7 +362,7 @@ refresh();
      Running `target/debug/tauri-app`
 ```
 
-沿用上一集的資料：清單裡有「買牛奶」（`id` 是 1）和「Tom's list」（`id` 是 2）。勾選「買牛奶」，文字變成灰色加刪除線，再勾一次就恢復；按「Tom's list」旁邊的「刪除」，它就從清單消失。到終端機確認（macOS 的路徑）：
+沿用上一集的資料：清單裡有「買牛奶」（`id` 是 1）和「Tom's list」（`id` 是 2）。勾選「買牛奶」，文字變成灰色加刪除線；再點一次就恢復，試過之後把它勾回去。按「Tom's list」旁邊的「刪除」，它就從清單消失。到終端機確認（macOS 的路徑）：
 
 ```bash
 sqlite3 -header -column "$HOME/Library/Application Support/tw.example.tauri-app/todos.db" "SELECT * FROM todos"

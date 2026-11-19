@@ -20,7 +20,7 @@ App 發出去之後，使用者的電腦上各有一份舊資料庫，沒辦法�
 
 ### 資料庫自己記著版本
 
-升級要知道「現在是第幾版」。SQLite 在資料庫檔案裡替你預留了一個整數，叫 `user_version`，不屬於任何資料表，預設是 `0`，讀寫用 `PRAGMA`（SQLite 的設定指令）。可以先在第 5 集的版本裡新增兩則待辦，關掉 App，用 `sqlite3` 看看版本（macOS 的路徑）：
+升級要知道「現在是第幾版」。SQLite 在資料庫檔案裡替你預留了一個整數，叫 `user_version`，不屬於任何資料表，預設是 `0`，讀寫用 `PRAGMA`（SQLite 的設定指令）。可以先在第 5 集的版本裡新增「買牛奶」和「寫第 11 章」兩則待辦，關掉 App，用 `sqlite3` 看看版本（macOS 的路徑）：
 
 ```bash
 sqlite3 "$HOME/Library/Application Support/tw.example.tauri-app/todos.db" "PRAGMA user_version"

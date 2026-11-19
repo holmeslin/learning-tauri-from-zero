@@ -63,7 +63,7 @@ pub fn add(conn: &Connection, title: &str) -> Result<(), AppError> {
 
 先看 `list`：
 
-- `conn.prepare(SQL)` 把 SQL 先編譯成一個預備好的陳述式（prepared statement），回傳 `Statement`。
+- `conn.prepare(SQL)` 把 SQL 先編譯成一個預備好的語句（prepared statement），回傳 `Statement`。
 - `stmt.query_map(參數, 函式)` 執行它，對每一列呼叫一次函式，把那一列 `row` 轉成你要的型別，這裡是 `Todo`。`row.get(0)` 取第 0 個欄位，也就是 `SELECT` 列出的第一個 `id`；`get(1)` 是 `title`，`get(2)` 是 `done`。欄位的型別由接收的地方決定：資料表的 `INTEGER` 變成 `i64`，`TEXT` 變成 `String`，存著 `0`、`1` 的 `INTEGER` 欄位可以直接變成 `bool`。
 - `query_map` 回傳一個迭代器，每個元素都是 `Result<Todo>`（讀某一列可能失敗）。`collect::<Result<Vec<_>, _>>()` 把它們收成 `Result<Vec<Todo>>`：全部成功才是 `Ok`，有一個失敗就整個是 `Err`。這是 Rust 標準的 `collect` 用法。
 
