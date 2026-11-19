@@ -100,8 +100,8 @@ id    title     done
 ### 程式怎麼分工
 
 - Rust 端用 rusqlite（Rust 的 SQLite 函式庫，第 2 集介紹）持有資料庫，所有 SQL 都寫在這裡。
-- 前端完全不碰資料庫，只用 `invoke` 呼叫四個 command：`list_todos`、`add_todo`、`set_done`、`delete_todo`。
-- 資料有變動時，Rust 送出 `todos-changed` 事件，前端收到就重畫清單（第 5 集）。
+- 前端完全不碰資料庫，對資料庫的操作只走 `invoke`，呼叫四個 command：`list_todos`、`add_todo`、`set_done`、`delete_todo`。
+- 事件只負責通知：資料有變動時，Rust 送出 `todos-changed` 事件，前端收到就重畫清單（第 5 集）。
 
 Tauri 官方也有 SQL plugin（`tauri-plugin-sql`），讓前端直接把 SQL 送給資料庫。這一章刻意不用它：SQL 留在 Rust 端，前端只看得到「新增待辦」「刪除待辦」這幾個有意義的操作，不能對資料庫下任意的 SQL；以後資料庫的存法有變，前端也不用跟著改。
 
@@ -240,6 +240,6 @@ export interface Todo {
 
 - 待辦清單只要一張資料表 `todos`：`id` 是主鍵，`title` 是文字，`done` 用 `0`、`1` 表示有沒有完成。
 - 四個 SQL 語句對應新增、讀取、修改、刪除：`INSERT`、`SELECT`、`UPDATE`、`DELETE`；`UPDATE` 與 `DELETE` 一定要寫 `WHERE`。
-- 資料庫只在 Rust 端用 rusqlite 存取，前端只用 `invoke` 呼叫四個 command，資料變了由 `todos-changed` 事件通知畫面；不使用 `tauri-plugin-sql`。
+- 資料庫只在 Rust 端用 rusqlite 存取；對資料庫的操作只走 `invoke` 呼叫的四個 command，`todos-changed` 事件只負責通知畫面資料變了；不使用 `tauri-plugin-sql`。
 - 檔案分工：`db.rs` 管 SQL，`lib.rs` 管 command 與組裝，`todos.ts` 包住 `invoke`，`main.ts` 管畫面。
 - 畫面是單欄、不靠滑鼠才能操作，之後搬到手機時不用重排。

@@ -596,7 +596,7 @@ dist/assets/index-TxbkJYEi.js   3.17 kB │ gzip: 1.46 kB
 
 - 資料庫：rusqlite 的 `bundled`，連線放在 `State<Mutex<Connection>>`，在 `setup` 裡開啟（第 4 章、這一章第 2 集）。
 - 讀寫：`prepare`、`query_map`、`execute`，值一律走參數；SQL 都收在 `db.rs`（這一章第 3、4 集）。
-- 前端與 Rust 的分工：前端只用 `invoke` 呼叫四個 command，資料變了由 Rust 送 `todos-changed` 事件通知畫面（第 3、5 章）。
+- 前端與 Rust 的分工：對資料庫的操作只走 `invoke` 呼叫的四個 command，`todos-changed` 事件只負責通知畫面資料變了（第 3、5 章）。
 - 結構升級：`user_version` 加上一串 migration，舊資料庫不丟資料（這一章第 6 集）。
 - 測試：`db.rs` 不碰 Tauri，用記憶體資料庫就能測（第 9 章）。
 
