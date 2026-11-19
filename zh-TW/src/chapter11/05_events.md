@@ -88,7 +88,7 @@ pub fn delete(conn: &Connection, id: i64) -> Result<(), AppError> {
 }
 ```
 
-`lib.rs` 加一個小函式 `notify`：讀出最新的清單，送出 `todos-changed`。三個會改資料的 command 都在成功之後呼叫它。`emit` 定義在 `Emitter` 上，要 `use tauri::Emitter`；它回傳 `tauri::Result<()>`，所以 `AppError` 多一個變體 `Emit`，用 `#[from]` 讓 `?` 自動轉換：
+`lib.rs` 加一個小函式 `emit_todos_changed`：讀出最新的清單，送出 `todos-changed`。三個會改資料的 command 都在成功之後呼叫它。`emit` 定義在 `Emitter` 上，要 `use tauri::Emitter`。`AppError` 沒有變，`emit_todos_changed` 也不回傳錯誤，原因在程式後面說明：
 
 `src-tauri/src/lib.rs`：
 
@@ -108,8 +108,6 @@ enum AppError {
     EmptyTitle,
     #[error("找不到編號 {0} 的待辦")]
     NotFound(i64),
-    #[error("送出事件失敗：{0}")]
-    Emit(#[from] tauri::Error),
 }
 
 impl Serialize for AppError {
@@ -121,9 +119,15 @@ impl Serialize for AppError {
     }
 }
 
-fn notify(app: &AppHandle, conn: &Connection) -> Result<(), AppError> {
-    app.emit("todos-changed", db::list(conn)?)?;
-    Ok(())
+fn emit_todos_changed(app: &AppHandle, conn: &Connection) {
+    match db::list(conn) {
+        Ok(todos) => {
+            if let Err(error) = app.emit("todos-changed", todos) {
+                eprintln!("送出 todos-changed 失敗：{error}");
+            }
+        }
+        Err(error) => eprintln!("讀取清單失敗，沒有送出 todos-changed：{error}"),
+    }
 }
 
 #[tauri::command]
@@ -135,7 +139,8 @@ fn list_todos(state: State<Mutex<Connection>>) -> Result<Vec<db::Todo>, AppError
 fn add_todo(title: &str, app: AppHandle, state: State<Mutex<Connection>>) -> Result<(), AppError> {
     let conn = state.lock().unwrap();
     db::add(&conn, title)?;
-    notify(&app, &conn)
+    emit_todos_changed(&app, &conn);
+    Ok(())
 }
 
 #[tauri::command]
@@ -147,14 +152,16 @@ fn set_done(
 ) -> Result<(), AppError> {
     let conn = state.lock().unwrap();
     db::set_done(&conn, id, done)?;
-    notify(&app, &conn)
+    emit_todos_changed(&app, &conn);
+    Ok(())
 }
 
 #[tauri::command]
 fn delete_todo(id: i64, app: AppHandle, state: State<Mutex<Connection>>) -> Result<(), AppError> {
     let conn = state.lock().unwrap();
     db::delete(&conn, id)?;
-    notify(&app, &conn)
+    emit_todos_changed(&app, &conn);
+    Ok(())
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -180,9 +187,10 @@ pub fn run() {
 ```
 
 - 三個 command 都多了一個 `AppHandle` 參數（第 3 章第 9 集），`emit` 要靠它。`AppHandle` 跟 `State` 都是 Tauri 幫 command 填的參數，前端呼叫時完全不用傳。
-- command 先 `let conn = state.lock().unwrap()` 把鎖守衛存下來，改完資料庫，再用同一個 `conn` 呼叫 `notify`。
-- `notify` 收的是 `&Connection`，不是 `State`，因為它不該自己再 `lock()`：標準函式庫的 `Mutex` 不能重複上鎖，同一條執行緒鎖已經握在手上的 `Mutex`，會卡死或 panic（標準函式庫沒有保證是哪一種）。需要連線的函式一律收 `&Connection`，由最外層的 command 上鎖，是這一章 `db.rs` 一貫的寫法。
-- 改失敗（標題是空的、找不到那一列）時，`?` 已經提早回傳，不會走到 `notify`：資料沒變，就不送事件。
+- command 先 `let conn = state.lock().unwrap()` 把鎖守衛存下來，改完資料庫，再用同一個 `conn` 呼叫 `emit_todos_changed`。
+- `emit_todos_changed` 收的是 `&Connection`，不是 `State`，因為它不該自己再 `lock()`：標準函式庫的 `Mutex` 不能重複上鎖，同一條執行緒鎖已經握在手上的 `Mutex`，會卡死或 panic（標準函式庫沒有保證是哪一種）。需要連線的函式一律收 `&Connection`，由最外層的 command 上鎖，是這一章 `db.rs` 一貫的寫法。
+- 改失敗（標題是空的、找不到那一列）時，`?` 已經提早回傳，不會走到 `emit_todos_changed`：資料沒變，就不送事件。
+- `emit_todos_changed` 沒有回傳值，失敗只用 `eprintln!` 印出來（第 5 章第 3 集用過）。它被呼叫時，資料已經寫進資料庫了：要是這時讀清單或 `emit` 失敗就回傳 `Err`，前端會顯示「新增失敗」，使用者再按一次，同一則待辦就新增兩次。所以 command 照樣回傳成功；這一次畫面沒更新，但資料是對的，下一個事件或重新載入就會補上。
 
 ### 前端：收到事件就重畫
 
@@ -409,6 +417,6 @@ start();
 ## 重點整理
 
 - 資料由 Rust 管，就由 Rust 在資料庫改完之後 `emit("todos-changed", 最新的清單)`；前端只 `listen`，收到就重畫。畫面更新只剩一個入口。
-- payload 要 `Serialize + Clone`，所以 `Todo` 要加 `Clone`；`emit` 的錯誤用 `#[from]` 併進 `AppError`。
-- `notify` 收 `&Connection`，不自己 `lock()`：同一條執行緒對握在手上的標準 `Mutex` 再上鎖，會卡死或 panic。
+- payload 要 `Serialize + Clone`，所以 `Todo` 要加 `Clone`；送出事件時資料已經寫進資料庫，`emit` 失敗只印出來，不讓 command 回傳 `Err`，免得使用者重按而重複新增。
+- `emit_todos_changed` 收 `&Connection`，不自己 `lock()`：同一條執行緒對握在手上的標準 `Mutex` 再上鎖，會卡死或 panic。
 - 前端先 `listen` 再讀第一次清單，因為事件不會補發；動作失敗時沒有事件，要自己重新讀一次，畫面才不會停在過期的狀態。

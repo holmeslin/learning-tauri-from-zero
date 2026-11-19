@@ -55,7 +55,7 @@
 
 ### 測試資料庫函式
 
-`db.rs` 的函式只收 `&Connection`，不碰 Tauri 的型別，所以不用開 App、不用開視窗就能測它們（第 9 章第 1 集）。測試要的是一個乾淨的資料庫：`Connection::open_in_memory()` 開一個只存在記憶體裡的資料庫，跟第 1 集的 `:memory:` 一樣，不留檔案，每個測試各拿一個全新的，互不影響。
+`db.rs` 的函式只收 `&Connection`，用到的 `AppError` 也沒有 Tauri 的型別，所以不用開 App、不用開視窗就能測它們（第 9 章第 1 集）。測試要的是一個乾淨的資料庫：`Connection::open_in_memory()` 開一個只存在記憶體裡的資料庫，跟第 1 集的 `:memory:` 一樣，不留檔案，每個測試各拿一個全新的，互不影響。
 
 測試放在 `db.rs` 最後的 `tests` 模組。`use super::*` 讓它看得到同一個檔案裡的所有東西，包括沒有 `pub` 的 `migrate`。其餘的檔案沒有改，為了讓這一集也能獨立開始，一併貼在下面：
 
@@ -270,8 +270,6 @@ enum AppError {
     NotFound(i64),
     #[error("資料庫的版本是 {0}，這個程式只認得到 {1}，請更新程式")]
     TooNew(i64, i64),
-    #[error("送出事件失敗：{0}")]
-    Emit(#[from] tauri::Error),
 }
 
 impl Serialize for AppError {
@@ -283,9 +281,15 @@ impl Serialize for AppError {
     }
 }
 
-fn notify(app: &AppHandle, conn: &Connection) -> Result<(), AppError> {
-    app.emit("todos-changed", db::list(conn)?)?;
-    Ok(())
+fn emit_todos_changed(app: &AppHandle, conn: &Connection) {
+    match db::list(conn) {
+        Ok(todos) => {
+            if let Err(error) = app.emit("todos-changed", todos) {
+                eprintln!("送出 todos-changed 失敗：{error}");
+            }
+        }
+        Err(error) => eprintln!("讀取清單失敗，沒有送出 todos-changed：{error}"),
+    }
 }
 
 #[tauri::command]
@@ -297,7 +301,8 @@ fn list_todos(state: State<Mutex<Connection>>) -> Result<Vec<db::Todo>, AppError
 fn add_todo(title: &str, app: AppHandle, state: State<Mutex<Connection>>) -> Result<(), AppError> {
     let conn = state.lock().unwrap();
     db::add(&conn, title)?;
-    notify(&app, &conn)
+    emit_todos_changed(&app, &conn);
+    Ok(())
 }
 
 #[tauri::command]
@@ -309,14 +314,16 @@ fn set_done(
 ) -> Result<(), AppError> {
     let conn = state.lock().unwrap();
     db::set_done(&conn, id, done)?;
-    notify(&app, &conn)
+    emit_todos_changed(&app, &conn);
+    Ok(())
 }
 
 #[tauri::command]
 fn delete_todo(id: i64, app: AppHandle, state: State<Mutex<Connection>>) -> Result<(), AppError> {
     let conn = state.lock().unwrap();
     db::delete(&conn, id)?;
-    notify(&app, &conn)
+    emit_todos_changed(&app, &conn);
+    Ok(())
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
