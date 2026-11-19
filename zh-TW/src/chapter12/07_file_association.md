@@ -22,9 +22,8 @@
 
 作業系統把檔案交給 App 的方式不只一種：
 
-- **命令列參數**：Windows 雙擊 `.md` 檔，是用 `App 路徑 "檔案路徑"` 的方式啟動 App（打包工具替 NSIS 與 MSI 安裝檔登記的指令就是 `"App 路徑" "%1"`，`%1` 是被雙擊的檔案），檔案路徑在 `std::env::args()` 裡。如果已經有一個 App 在跑，又被啟動了第二個行程，就是第 8 章第 7 集的 single-instance：第二個行程把參數交給第一個，自己結束，參數會出現在 `init` 函式的 `args`。
+- **命令列參數**：Windows 與 Linux 雙擊 `.md` 檔，是用 `App 路徑 檔案路徑` 的方式啟動 App，檔案路徑在 `std::env::args()` 裡。這是我們查原始碼整理的：Windows 的 NSIS 與 MSI 安裝檔登記的指令是 `"App 路徑" "%1"`，`%1` 是被雙擊的檔案。Linux 靠安裝檔裡的 `.desktop` 檔，打包工具（Tauri CLI 2.12 內建的 tauri-bundler 2.10）產生的 `Exec=` 那一行只有執行檔的名稱，沒有 `%F`、`%U` 這種「把檔案交給程式」的欄位碼。遇到這種沒有欄位碼的 `.desktop`，GNOME 底層的 GLib 會自己把檔案接在後面，當成 `%f` 處理（它的原始碼註解寫著 KDE 也是這樣）。傳進來的是一般路徑，不是 `file://` 網址，所以下面的 `file_arg` 不用改。別的桌面環境的啟動器怎麼做，我們沒有查；Linux 這一段也沒有實測。如果已經有一個 App 在跑，又被啟動了第二個行程，就是第 8 章第 7 集的 single-instance：第二個行程把參數交給第一個，自己結束，參數會出現在 `init` 函式的 `args`。
 - **`RunEvent::Opened`**：macOS 不靠命令列參數，而是向 App 送一個「請開啟這些檔案」的事件，Tauri 把它變成 `RunEvent::Opened { urls }`，`urls` 是 `file://` 開頭的網址陣列。
-- **Linux 雙擊預設不帶檔案**：Linux 的檔案關聯靠安裝檔裡的 `.desktop` 檔。我們查了 Tauri CLI 2.12 內建的打包工具（tauri-bundler 2.10）的原始碼，它產生的 `.desktop` 檔，`Exec=` 那一行只有執行檔的名稱，沒有 `%F`、`%U` 這種「把檔案交給程式」的欄位碼，所以雙擊 `.md` 檔，系統只會啟動 App，不會帶上檔案。要讓它帶，得自己寫一份 `.desktop` 範本，把 `Exec` 那一行改成 `Exec={{exec}} %F`，再用 `bundle.linux.deb.desktopTemplate` 與 `bundle.linux.rpm.desktopTemplate` 指向它（AppImage 用的是 deb 的範本）。`%F` 是 `.desktop` 規格裡的「檔案路徑清單」，每個檔案一個參數，是一般路徑，不是 `file://` 網址，下面的 `file_arg` 不用改。這一章不做這件事，也沒有在 Linux 上實測，把它當成這個編輯器在 Linux 的限制：雙擊 `.md` 檔不會開啟檔案，從命令列帶路徑則沒問題。
 
 三個入口（啟動參數、第二個行程、`Opened`），要的都是同一件事：把路徑交給前端去開。
 
@@ -756,7 +755,7 @@ npm run tauri dev -- -- -- "$PWD/hello.md"
 開啟失敗：/Users/ada/tauri-app/nope.md：No such file or directory (os error 2)
 ```
 
-測不到的是第三個入口。dev 模式用命令列帶路徑啟動，把 `run` 收到的 `RunEvent` 印出來看，只有 `Ready` 和視窗取得、失去焦點，沒有 `Opened`。`Opened` 是系統要 App 開啟檔案的通知，這一集沒有實測，等第 15 章打包之後，再用 Finder 雙擊 `.md` 檔試。這一集也只在 macOS 實測，Windows 與 Linux 收檔案的方式，是依 tauri-bundler 的原始碼與 single-instance 的行為整理的。打包安裝之後，系統的「打開方式」就會出現這個 App，要不要設成預設，由使用者在系統裡決定，App 不能替他選。
+測不到的是第三個入口。dev 模式用命令列帶路徑啟動，把 `run` 收到的 `RunEvent` 印出來看，只有 `Ready` 和視窗取得、失去焦點，沒有 `Opened`。`Opened` 是系統要 App 開啟檔案的通知，這一集沒有實測，等第 15 章打包之後，再用 Finder 雙擊 `.md` 檔試。這一集也只在 macOS 實測，Windows 與 Linux 收檔案的方式，是依 tauri-bundler、GLib 的原始碼與 single-instance 的行為整理的。打包安裝之後，系統的「打開方式」就會出現這個 App，要不要設成預設，由使用者在系統裡決定，App 不能替他選。
 
 ## 重點整理
 
