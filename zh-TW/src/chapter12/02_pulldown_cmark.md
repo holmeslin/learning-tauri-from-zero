@@ -294,9 +294,9 @@ Markdown 自己的連結 `[文字](網址)` 與圖片 `![說明](網址)`，會�
 <p><a href="javascript:alert(1)">點我</a></p>
 ```
 
-`javascript:` 開頭的網址，一旦被「前往」（點擊就是其中一種），瀏覽器不會去載入網頁，而是把冒號後面的文字當 JavaScript 執行，威力跟上面的 `onerror` 一樣。換成 `<javascript:alert(1)>`、`![圖](javascript:alert(1))`，或在別處寫一行 `[r]: javascript:alert(1)`、再用 `[點我][r]` 引用，輸出也都是原樣。`data:` 開頭的網址則能把一整段內容直接塞在網址裡。下一集會攔下預覽裡連結的點擊，但不該把安全押在「每一條路都被攔下」上，所以在 Rust 端先處理。
+`javascript:` 開頭的網址，一旦被「前往」（點擊就是其中一種），瀏覽器不會去載入網頁，而是把冒號後面的文字當 JavaScript 執行，威力跟上面的 `onerror` 一樣。換成 `<javascript:alert(1)>`（自動連結，autolink）、`![圖](javascript:alert(1))`，或在別處寫一行 `[r]: javascript:alert(1)`、再用 `[點我][r]` 引用（參照式連結，reference link），輸出也都是原樣。`data:` 開頭的網址則能把一整段內容直接塞在網址裡。下一集會攔下預覽裡連結的點擊，但不該把安全押在「每一條路都被攔下」上，所以在 Rust 端先處理。
 
-做法是白名單，只放行認得的 scheme（網址裡冒號前面那一段，像 `https`、`mailto`）：
+做法是白名單（allowlist），只放行認得的 scheme（網址裡冒號前面那一段，像 `https`、`mailto`）：
 
 - 有 scheme 的網址，只放行 `http`、`https`、`mailto`，大小寫不分，`HTTPS://` 也算 `https`。
 - 沒有 scheme 的是相對路徑，像 `notes/a.md`、`#標題`，照放。
@@ -304,7 +304,7 @@ Markdown 自己的連結 `[文字](網址)` 與圖片 `![說明](網址)`，會�
 
 怎麼看網址有沒有 scheme：在網址裡找 `:`、`/`、`?`、`#` 最先出現的是哪一個。是 `:` 的話，冒號前面就是 scheme；先遇到別的，就是相對路徑。`a/b:c` 的冒號在斜線後面，是路徑的一部分，不是 scheme。`str::find` 可以一次找好幾個字元，傳字元陣列給它就行。
 
-換個寫法能不能繞過去？`JavaScript:` 大小寫不同，轉成小寫再比；`&#106;avascript:` 用 HTML 實體寫了一個 `j`，pulldown-cmark 剖析的時候就已經還原成 `j`，`dest_url` 拿到的已經是 `javascript:alert(1)`；開頭多出來的空白或控制字元，`push_html` 輸出時一律編成 `%20`、`%09` 這種百分比編碼，不會變成 scheme 的一部分。所以只要檢查 `dest_url`，測試會把這些寫法都試一遍。
+換個寫法能不能繞過去？`JavaScript:` 大小寫不同，轉成小寫再比；`&#106;avascript:` 用 HTML 實體（entity）寫了一個 `j`，pulldown-cmark 剖析的時候就已經還原成 `j`，`dest_url` 拿到的已經是 `javascript:alert(1)`；開頭多出來的空白或控制字元，`push_html` 輸出時一律編成 `%20`、`%09` 這種百分比編碼（percent-encoding），不會變成 scheme 的一部分。所以只要檢查 `dest_url`，測試會把這些寫法都試一遍。
 
 要改的是 `Event::Start(Tag::Link { .. })` 與 `Event::Start(Tag::Image { .. })`，網址在它們的 `dest_url` 欄位。`Tag::Link` 有四個欄位（`link_type`、`dest_url`、`title`、`id`），只換其中一個，其他三個要原樣搬回去，所以每個欄位都寫出來。`dest_url` 的型別是 `CowStr`，就是前面提過的那個字串型別，用法類似 `Cow<str>`，`CowStr::Borrowed("")` 是一個空字串。
 

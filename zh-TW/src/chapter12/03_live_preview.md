@@ -388,7 +388,7 @@ previewEl.addEventListener("click", async (event) => {
 
 ## 重點整理
 
-- 輸入框的 `input` 事件每次改變就發出，收到就呼叫 `render_markdown`，結果用 `innerHTML` 放進預覽欄；原始 HTML 已在 Rust 端擋掉，這是本書唯一用 `innerHTML` 的地方。
+- 輸入框的 `input` 事件每次改變就發出，收到就呼叫 `render_markdown`，結果用 `innerHTML` 放進預覽欄；原始 HTML 與危險的網址已在 Rust 端用兩道關卡擋掉（CSP 是第 14 章的事），這是本書唯一用 `innerHTML` 的地方。
 - 連續呼叫 command 時，回應不保證照順序回來；替每次呼叫編號，只有最新的那次才更新畫面。
 - 預覽裡的連結不攔的話，WebView 會直接前往那個網址，把編輯器換掉。
 - 在外層的 `#preview` 聽 `click`，用 `closest("a")` 找到連結，`preventDefault()` 之後，只有 `http://`、`https://` 才交給 `openUrl`。
