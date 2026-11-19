@@ -69,13 +69,19 @@
 
 沒有 `prevent_close()` 的話，視窗會被銷毀。這是唯一的視窗，App 就跟著結束，跟第 6 章第 6 集一樣。
 
-藏視窗的程式寫成 `hide_main_window`，下一集的快捷鍵也要用。它不只呼叫 `window.hide()`，在 macOS 還多一行 `app.hide()`。我們在 macOS 實測：只藏視窗的話，視窗是不見了，但作業系統認定的最前面的 App 還是我們，剛才用的那個 App 沒有拿回焦點；連 `app.hide()` 一起呼叫，焦點才回到上一個 App。`app.hide()` 只有 macOS 有，所以用 `#[cfg(target_os = "macos")]` 隔開。
+藏視窗的程式寫成 `hide_main_window`，第 4 集的快捷鍵也要用。它不只呼叫 `window.hide()`，在 macOS 還多一行 `app.hide()`。我們在 macOS 實測：只藏視窗的話，視窗是不見了，但作業系統認定的最前面的 App 還是我們，剛才用的那個 App 沒有拿回焦點；連 `app.hide()` 一起呼叫，焦點才回到上一個 App。`app.hide()` 只有 macOS 有，所以用 `#[cfg(target_os = "macos")]` 隔開。
 
 ### macOS：不佔 Dock
 
 macOS 的 App 預設會在 Dock 放一個圖示，選單列左邊也有 App 自己的選單。系統匣小工具不需要這些。在 `setup` 裡把 activation policy 設成 `Accessory`：這種 App 不出現在 Dock，也沒有 App 選單，但可以有視窗，也能被叫出來。這是 macOS 才有的東西，一樣用 `cfg` 隔開（跟第 12 章第 7 集的 `#[cfg(target_os = "macos")]` 一樣）。
 
 ### 用系統匣圖示叫回視窗
+
+系統匣要先在 `Cargo.toml` 開啟 `tauri` 的 `tray-icon` feature，沒開的話 `use tauri::tray::...` 編譯不過（第 8 章第 4 集）。專案還沒開的話，把 `[dependencies]` 裡 `tauri` 那一行改成：
+
+```toml,ignore
+tauri = { version = "2", features = ["tray-icon"] }
+```
 
 建圖示跟第 8 章第 4 集一樣：只處理左鍵放開（`Up`），因為一次點擊會有 `Down` 與 `Up` 兩個事件。左鍵點下去，叫出便條視窗。叫出視窗的 `show_main_window`，也是第 8 章第 4 集那三個一起用：`show()`、`unminimize()`、`set_focus()`。這些操作都可能失敗，但事件處理函式沒地方回傳 `Err`，所以它們回傳 `tauri::Result<()>`，再交給 `log_error` 印到終端機就好。
 

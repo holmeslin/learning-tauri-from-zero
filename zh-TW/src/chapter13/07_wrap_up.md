@@ -15,7 +15,7 @@
 
 這兩個函式出錯，使用者馬上感覺得到：快捷鍵按了視窗不動，或字型大小變成 `NaN`。測試只要幾行。
 
-Rust 這邊，測試放在 `lib.rs` 最後的 `tests` 模組，三個斷言守三種情況：有顯示又有焦點才收起來；沒顯示，或有顯示卻沒焦點，都是叫出來。「沒顯示卻有焦點」實際上不會發生，但函式不該因此出錯，一併測了。
+Rust 這邊，測試放在 `lib.rs` 最後的 `tests` 模組，三個測試守三種情況：有顯示又有焦點才收起來；沒顯示，或有顯示卻沒焦點，都是叫出來。「沒顯示卻有焦點」實際上不會發生，但函式不該因此出錯，一併測了。
 
 `src-tauri/src/lib.rs`：
 
@@ -207,7 +207,13 @@ test tests::shows_when_hidden_or_not_focused ... ok
 test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 ```
 
-前端這邊，`normalizeFontSize` 不碰 `window`，只要 vitest 就能測，不需要 jsdom（第 9 章第 3 集）。預期值都直接寫字面的數字，不去引用 `settings.ts` 裡的常數：測試和程式用同一個常數，常數寫錯了，測試也跟著錯。四個測試，守「照用」「四捨五入」「夾回上下限」「不是數字就用預設值」。最後一個故意放了字串 `"20"`：store 檔案裡的字串不會被當成數字。
+前端這邊，`normalizeFontSize` 不碰 `window`，只要 vitest 就能測，不需要 jsdom。專案還沒有 vitest 的話，照第 9 章第 3 集裝：
+
+```bash
+npm install -D vitest
+```
+
+預期值都直接寫字面的數字，不去引用 `settings.ts` 裡的常數：測試和程式用同一個常數，常數寫錯了，測試也跟著錯。四個測試，守「照用」「四捨五入」「夾回上下限」「不是數字就用預設值」。最後一個故意放了字串 `"20"`：store 檔案裡的字串不會被當成數字。
 
 `src/settings.test.ts`：
 
@@ -552,7 +558,7 @@ dist/assets/index-DOMfVWOK.js   18.97 kB │ gzip: 5.10 kB
 - 全域快捷鍵：`is_visible()` 加 `is_focused()` 決定切換，註冊失敗只印訊息；頁面在 `focus` 事件裡把游標放進輸入區（第 4 集）。
 - 設定：兩個視窗共用同一份 store，事件只按門鈴，讀出來的值要先檢查；capability 的 `windows` 要列出設定視窗（第 5 集）。
 - 開機自動啟動：狀態由作業系統記著，不存進 store，每次都用 `isEnabled()` 問（第 6 集）。
-- 測試：`toggle_action` 與 `normalizeFontSize` 是純粹的判斷，各用一個測試守住（第 7 集）。
+- 測試：`toggle_action` 與 `normalizeFontSize` 是純粹的判斷，各寫了測試守住（第 7 集）。
 
 這個 App 刻意用了只有桌面才有的東西（系統匣、全域快捷鍵、開機自動啟動），所以沒有設計成能搬到手機上。
 

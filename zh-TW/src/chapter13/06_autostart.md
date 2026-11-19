@@ -33,7 +33,7 @@ npm run tauri add autostart
         Info Running `cargo fmt`...
 ```
 
-跟第 4 集裝 global-shortcut 一樣，它做了三件事，每一件都要看一下：
+跟第 8 章第 6 集裝 global-shortcut 一樣，它做了三件事，每一件都要看一下：
 
 - 手機沒有開機自動啟動，所以 crate 放在 `Cargo.toml` 桌面專用的區塊。
 - `lib.rs` 的 `Builder` 鏈上多了 `.plugin(tauri_plugin_autostart::Builder::new().build())`。這個 plugin 只有桌面有，下面的範例改在 `setup` 裡用 `#[cfg(desktop)]` 註冊，所以直接用範例的整份 `lib.rs` 取代，不要兩邊都留。`Builder::new().build()` 在 macOS 預設用 LaunchAgent。
@@ -346,7 +346,7 @@ if (getCurrentWindow().label === "settings") {
 }
 ```
 
-其餘兩個檔案跟第 5 集一模一樣，為了讓這一集也能獨立開始，一併貼在下面：
+其餘三個檔案跟第 5 集一模一樣，為了讓這一集也能獨立開始，一併貼在下面：
 
 `src/settings.ts`：
 
