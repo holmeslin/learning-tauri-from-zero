@@ -353,9 +353,9 @@ if (getCurrentWindow().label === "settings") {
 ```ts
 import { load } from "@tauri-apps/plugin-store";
 
-export const DEFAULT_FONT_SIZE = 16;
-export const MIN_FONT_SIZE = 12;
-export const MAX_FONT_SIZE = 32;
+const DEFAULT_FONT_SIZE = 16;
+const MIN_FONT_SIZE = 12;
+const MAX_FONT_SIZE = 32;
 
 export function normalizeFontSize(value: unknown): number {
   if (typeof value !== "number" || !Number.isFinite(value)) {

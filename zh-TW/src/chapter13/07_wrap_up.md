@@ -213,7 +213,7 @@ test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
 npm install -D vitest
 ```
 
-預期值都直接寫字面的數字，不去引用 `settings.ts` 裡的常數：測試和程式用同一個常數，常數寫錯了，測試也跟著錯。四個測試，守「照用」「四捨五入」「夾回上下限」「不是數字就用預設值」。最後一個故意放了字串 `"20"`：store 檔案裡的字串不會被當成數字。
+預期值都直接寫字面的數字，不去引用 `settings.ts` 裡的常數：測試和程式用同一個常數，常數寫錯了，測試也跟著錯。那幾個常數只有 `settings.ts` 自己用，沒有 `export`，測試本來也拿不到。四個測試，守「照用」「四捨五入」「夾回上下限」「不是數字就用預設值」。最後一個故意放了字串 `"20"`：store 檔案裡的字串不會被當成數字。
 
 `src/settings.test.ts`：
 
@@ -355,9 +355,9 @@ if (getCurrentWindow().label === "settings") {
 ```ts
 import { load } from "@tauri-apps/plugin-store";
 
-export const DEFAULT_FONT_SIZE = 16;
-export const MIN_FONT_SIZE = 12;
-export const MAX_FONT_SIZE = 32;
+const DEFAULT_FONT_SIZE = 16;
+const MIN_FONT_SIZE = 12;
+const MAX_FONT_SIZE = 32;
 
 export function normalizeFontSize(value: unknown): number {
   if (typeof value !== "number" || !Number.isFinite(value)) {
