@@ -94,3 +94,4 @@
 - [實戰：SQLite 待辦清單](chapter11/README.md)
     - [規劃資料表](chapter11/01_plan.md)
     - [`rusqlite`（`bundled`）與 `State<Mutex<Connection>>`](chapter11/02_rusqlite_state.md)
+    - [新增與列出](chapter11/03_add_list.md)
