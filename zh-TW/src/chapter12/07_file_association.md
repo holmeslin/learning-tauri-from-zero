@@ -219,7 +219,7 @@ pub fn run() {
 
 ### 前端：先聽，再拿
 
-`commands.ts` 多兩個函式：`takePendingFile` 包住 command，`onOpenRequested` 包住 `listen`，收到事件就呼叫 `callback`，不看 payload：
+`commands.ts` 多兩個函式：`takePendingFile` 包住 command，`onOpenRequested` 包住 `listen`，收到事件就呼叫 `callback`，不看 payload。`listen` 呼叫函式時會傳進一個事件物件，`callback` 沒有宣告參數，那個物件就被忽略了，所以直接把 `callback` 交給 `listen` 就行：
 
 `src/commands.ts`：
 
@@ -244,7 +244,7 @@ export function takePendingFile(): Promise<string | null> {
 }
 
 export function onOpenRequested(callback: () => void): Promise<UnlistenFn> {
-  return listen("open-requested", () => callback());
+  return listen("open-requested", callback);
 }
 ```
 

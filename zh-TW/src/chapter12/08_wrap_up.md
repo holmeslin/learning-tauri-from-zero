@@ -476,7 +476,7 @@ export function takePendingFile(): Promise<string | null> {
 }
 
 export function onOpenRequested(callback: () => void): Promise<UnlistenFn> {
-  return listen("open-requested", () => callback());
+  return listen("open-requested", callback);
 }
 ```
 
