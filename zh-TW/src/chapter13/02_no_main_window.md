@@ -151,7 +151,7 @@ pub fn run() {
 ```
 
 - 這個 App 沒有自己的 command，範本的 `greet` 用不到，一併拿掉。
-- `window.app_handle()` 從視窗取回 `AppHandle`：視窗跟 `AppHandle` 一樣實作了 `Manager`（第 6 章第 4 集）。
+- `window.app_handle()` 從視窗取回 `AppHandle`：視窗跟 `AppHandle` 一樣實作了 `Manager`（第 4 章第 5 集）。
 頁面這一集沒有改，維持第 1 集的樣子，為了讓這一集也能獨立開始，一併貼在下面：
 
 `index.html`：
