@@ -20,6 +20,12 @@
 - `load` 載入新內容時，`savedText` 設成**編輯區的值**，不是剛讀進來的 `text`。`<textarea>` 會把換行統一成 `\n`，如果檔案是 Windows 的 `\r\n`，拿讀進來的原文當基準，一打開就會被判成「有修改」。
 - `saveTo` 寫檔前先把編輯區的文字抄到 `text`，寫成功之後 `savedText` 設成這個 `text`，不是設成當下的編輯區。`writeFile` 是非同步的，等待的時候使用者可能又打了字，那些字還沒寫進檔案，不能算成已儲存。
 
+### 寫到一半，文件換掉了
+
+`writeFile` 還有另一個等待的問題。從這一集起，儲存可以由計時器在背景觸發，使用者沒有按任何鈕。等它寫完的這段時間，編輯區可能已經用 `load` 換成別份文件了（使用者開了別的檔案，第 7 集還有作業系統送來的檔案）。如果寫完還照舊把 `path`、`savedText` 設成舊檔的值，就會出事：畫面上是新文件，狀態卻是舊的，標題變回「● 舊檔名」，再按「儲存」，新文件的內容會被寫進舊檔，把它蓋掉。
+
+解法是替每份文件編號：`docId` 在每次 `load` 的時候加一。`saveTo` 一開始就把當時的號碼記在 `mine`（跟 `text` 一樣，要在第一個 `await` 之前記下，記的才是「開始存」那一刻的文件），寫完先比一下：號碼變了，就表示編輯區已經換成別份文件。檔案已經寫好，沒有問題，但 `path`、`savedText`、標題與狀態列現在都屬於新的文件，不要再去動它們，直接結束。
+
 ### 標題的「●」
 
 `refreshTitle` 現在會看 `isDirty()`：沒存的時候標題前面加「● 」。它在每次輸入都會被呼叫，所以先把要顯示的標題組好，跟上一次成功設定的 `shownTitle` 一樣就直接結束，不重複呼叫 `setTitle`。`shownTitle` 要等 `setTitle` 成功之後才更新，失敗了，下次還會再試。
@@ -63,6 +69,7 @@ let fileName = "未命名";
 let savedText = "";
 let shownTitle = "";
 let renderCount = 0;
+let docId = 0;
 let autosaveTimer: ReturnType<typeof setTimeout> | undefined;
 
 const show = (message: string) => {
@@ -107,6 +114,7 @@ const refreshPreview = async () => {
 
 const load = async (newPath: string | null, text: string) => {
   const name = newPath === null ? "未命名" : await basename(newPath);
+  docId += 1;
   path = newPath;
   fileName = name;
   editorEl.value = text;
@@ -117,8 +125,12 @@ const load = async (newPath: string | null, text: string) => {
 
 const saveTo = async (target: string) => {
   const text = editorEl.value;
+  const mine = docId;
   const name = await basename(target);
   await writeFile(target, text);
+  if (mine !== docId) {
+    return;
+  }
   path = target;
   fileName = name;
   savedText = text;
@@ -534,3 +546,4 @@ Rust 端沒有改，所以不用重新編譯。先在還沒存過的文件裡打
 - 有沒有沒存的修改，是 `editorEl.value !== savedText`。`savedText` 在載入時取編輯區的值（`textarea` 會統一換行），在存檔時取寫檔前抄下來的文字，不是寫完之後的編輯區。
 - 沒有 `path` 的文件不自動存；自動存失敗時，訊息與標題的「●」會留著提醒使用者。
 - `refreshTitle` 只在標題真的變了才呼叫 `setTitle`，成功之後才記下 `shownTitle`。
+- 寫檔的時候文件可能被換掉：`load` 讓 `docId` 加一，`saveTo` 開始時記下號碼，寫完發現號碼變了，就不更新 `path`、`savedText` 與標題。

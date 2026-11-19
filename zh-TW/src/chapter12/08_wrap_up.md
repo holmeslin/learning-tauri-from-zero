@@ -272,6 +272,7 @@ let fileName = "未命名";
 let savedText = "";
 let shownTitle = "";
 let renderCount = 0;
+let docId = 0;
 let autosaveTimer: ReturnType<typeof setTimeout> | undefined;
 
 const show = (message: string) => {
@@ -316,6 +317,7 @@ const refreshPreview = async () => {
 
 const load = async (newPath: string | null, text: string) => {
   const name = newPath === null ? "未命名" : await basename(newPath);
+  docId += 1;
   path = newPath;
   fileName = name;
   editorEl.value = text;
@@ -326,8 +328,12 @@ const load = async (newPath: string | null, text: string) => {
 
 const saveTo = async (target: string) => {
   const text = editorEl.value;
+  const mine = docId;
   const name = await basename(target);
   await writeFile(target, text);
+  if (mine !== docId) {
+    return;
+  }
   path = target;
   fileName = name;
   savedText = text;
