@@ -44,7 +44,7 @@
 - 第二個行程：single-instance 的函式收到的 `cwd`，是第二個行程的工作目錄，不是第一個行程的，所以相對路徑要用它來算。算出路徑就 `request_open`，再用第 8 章第 7 集的 `show_main_window` 把視窗叫到前面。plugin 要最先註冊，寫法跟那一集一樣（`let mut builder`、`#[cfg(desktop)]`）。
 - macOS 的 `Opened`：之前都是 `.run(generate_context!())` 一行跑起來，要接 `RunEvent` 得拆成兩步。`Builder::run(context)` 其實就是 `build(context)` 之後再 `run(|_, _| {})`，現在改成 `.build(context)` 拿到 `App`，再呼叫 `App::run(函式)`，函式每收到一個 `RunEvent` 就被呼叫一次，參數是 `&AppHandle` 與 `RunEvent`。
 
-`RunEvent::Opened` 只有 macOS 才有，所以要寫 `#[cfg(target_os = "macos")]`。其他平台這個分支不存在，函式的兩個參數就沒人用，編譯器會警告「沒用到的變數」。所以另一邊用 `#[cfg(not(target_os = "macos"))]` 接一行 `let _ = (app, event);`，把它們用掉。
+`RunEvent::Opened` 只在 macOS、iOS 與 Android 才有（Tauri 2.12 的原始碼是這樣標的）。桌面上只有 macOS，所以這裡寫 `#[cfg(target_os = "macos")]`；iOS 與 Android 不在這個 App 的範圍。其他平台這個分支不存在，函式的兩個參數就沒人用，編譯器會警告「沒用到的變數」。所以另一邊用 `#[cfg(not(target_os = "macos"))]` 接一行 `let _ = (app, event);`，把它們用掉。
 
 macOS 那一支用了 `if let ... && let ...`：兩個 `if let` 用 `&&` 接在同一個 `if` 裡，這是 Rust 2024 edition 的語法。巢狀的兩層 `if let`，clippy 會要求你寫成這樣。`Url` 的 `to_file_path()` 把 `file:///Users/ada/a.md` 轉成路徑，不是檔案網址就回傳 `Err`，`ok()` 把它變成 `None`，`find_map` 取第一個轉得成功的。這個編輯器一次只開一份文件，多選的檔案只取第一個。
 
@@ -749,5 +749,5 @@ npm run tauri dev -- -- -- "$PWD/hello.md"
 - `bundle.fileAssociations` 宣告 App 能開哪些副檔名，是打包工具讀的設定；dev 模式的執行檔沒被登記進系統，雙擊要等第 15 章打包之後。
 - 檔案路徑有三個入口：啟動參數、第二個行程（single-instance 的 `args` 與 `cwd`）、macOS 的 `RunEvent::Opened`；接 `RunEvent` 要把 `.run(context)` 拆成 `.build(context)` 加 `App::run(函式)`。
 - 路徑先存進 `State`，前端啟動時先 `listen` 再用 command 去拿；事件只負責通知，這樣冷啟動時事件早到，也不會弄丟路徑。
-- 第二個行程的相對路徑要用它自己的 `cwd` 來算；`-` 開頭的參數要跳過；`RunEvent::Opened` 只有 macOS 有，要用 `cfg` 隔開，其他平台才不會有沒用到的變數。
+- 第二個行程的相對路徑要用它自己的 `cwd` 來算；`-` 開頭的參數要跳過；`RunEvent::Opened` 在桌面上只有 macOS 有（手機的 iOS、Android 也有），要用 `cfg` 隔開，其他桌面平台才不會有沒用到的變數。
 - 在 dev 模式，用 `npm run tauri dev -- -- -- 路徑` 測啟動參數，直接再執行一次執行檔測第二個行程。
