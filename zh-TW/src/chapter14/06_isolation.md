@@ -8,7 +8,7 @@
 
 ### 為什麼要多一道
 
-前幾集的防線，permission 管的是「能不能呼叫這個 command」，參數對不對，只能靠 command 自己檢查（第 4 集）。如果你的前端依賴很多第三方程式（npm 套件、載入進來的外部腳本），想在所有 command 前面統一加一道檢查，就可以開 isolation pattern：每一則 IPC 訊息，在送到 Rust 之前，先經過一段你寫的 JavaScript。這段程式跑在頁面碰不到的地方，頁面裡的惡意程式改不到它。
+前幾集的防線，permission 管的是「能不能呼叫這個 command」，參數對不對，只能靠 command 自己檢查（第 4 集）。如果你的前端用了很多第三方程式（npm 套件、載入進來的外部腳本），想在所有 command 前面統一加一道檢查，就可以開 isolation pattern：每一則 IPC 訊息，在送到 Rust 之前，先經過一段你寫的 JavaScript。這段程式跑在頁面碰不到的地方，頁面裡的惡意程式改不到它。
 
 ### 它怎麼運作
 
