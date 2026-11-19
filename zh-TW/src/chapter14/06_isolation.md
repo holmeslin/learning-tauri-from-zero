@@ -116,7 +116,12 @@ description = "A Tauri App"
 authors = ["you"]
 edition = "2024"
 
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
 [lib]
+# The `_lib` suffix may seem redundant but it is necessary
+# to make the lib name unique and wouldn't conflict with the bin name.
+# This seems to be only an issue on Windows, see https://github.com/rust-lang/cargo/issues/8519
 name = "tauri_app_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
@@ -128,6 +133,15 @@ tauri = { version = "2", features = ["isolation"] }
 tauri-plugin-opener = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+
+
+# Read the optimization guideline for more details: https://tauri.app/concept/size/#cargo-configuration
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = 3
+panic = "abort"
+strip = true
 ```
 
 `npm run tauri dev` 的輸出（節錄，第一次要重新編譯 `tauri`，所以比較久）：
