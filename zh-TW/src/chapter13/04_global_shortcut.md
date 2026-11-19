@@ -31,7 +31,7 @@ cargo add --manifest-path src-tauri/Cargo.toml --target 'cfg(not(any(target_os =
 
 註冊的程式寫成 `register_shortcut`，整個函式都包在 `#[cfg(desktop)]` 裡（第 8 章第 6 集；`cfg(desktop)` 第 18 章會正式介紹），在 `setup` 裡呼叫。內容跟第 8 章第 6 集一樣：先把 plugin 註冊進來，再 `on_shortcut(字串, 函式)`，函式只處理 `Pressed`，不然按一次會做兩次。
 
-快捷鍵選 `CommandOrControl+Alt+Shift+N`。全域快捷鍵一旦註冊，按下這組按鍵，最前面的 App 就收不到了，所以要挑別的 App 不太會用的組合：`Cmd+Shift+N` 這種兩個鍵的組合，Finder、瀏覽器都用了；三個修飾鍵再加一個字母，撞到的機會小很多。
+快捷鍵選 `CommandOrControl+Alt+Shift+N`。全域快捷鍵一旦註冊，按下這組按鍵，最前面的 App 就收不到了，所以要挑別的 App 不太會用的組合：`Cmd+Shift+N` 這種兩個修飾鍵的組合，Finder、瀏覽器都用了；三個修飾鍵再加一個字母，撞到的機會小很多。
 
 註冊可能失敗：字串寫錯，或這組按鍵被別的程式佔走（第 8 章第 6 集）。第 8 章第 6 集用 `?` 把錯誤丟出去，註冊失敗 App 就打不開。這一次不一樣：快捷鍵只是入口之一，用不了還有系統匣，所以只用 `eprintln!` 印出訊息，App 照常啟動。
 

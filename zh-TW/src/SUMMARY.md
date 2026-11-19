@@ -115,3 +115,4 @@
     - [全域快捷鍵叫出視窗](chapter13/04_global_shortcut.md)
     - [設定視窗（store）](chapter13/05_settings_window.md)
     - [開機自動啟動（autostart）](chapter13/06_autostart.md)
+    - [收尾](chapter13/07_wrap_up.md)

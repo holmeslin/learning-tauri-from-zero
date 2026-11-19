@@ -14,7 +14,7 @@ autostart plugin 把「使用者登入之後，自動啟動這個 App」包成�
 - Windows：在登錄檔的 `HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Run` 加一項。
 - Linux：在 `~/.config/autostart/` 放一個 `.desktop` 檔。
 
-三個平台，「有沒有開」都是靠這些檔案或登錄檔項目判斷的，作業系統自己就是唯一的真相。所以勾選框的狀態不要另外存進 store：每次打開設定視窗，用 `isEnabled()` 問一次；使用者勾選之後，也再問一次，畫面才會跟實際一致。要是自己存一份，使用者在系統設定裡把它關掉，兩邊就對不起來了。
+三個平台，「有沒有開」都是靠這些檔案或登錄檔項目判斷的，作業系統自己就是唯一的真相。所以勾選框的狀態不要另外存進 store：每次開啟設定視窗，用 `isEnabled()` 問一次；使用者勾選之後，也再問一次，畫面才會跟實際一致。要是自己存一份，使用者在系統設定裡把它關掉，兩邊就對不起來了。
 
 ### 裝 plugin
 
@@ -43,7 +43,7 @@ npm run tauri add autostart
 
 設定視窗多一個勾選框。`main.ts` 的 `showSettings` 做三件事：
 
-- 一打開，就用 `isEnabled()` 問作業系統，把結果填進勾選框的 `checked`。
+- 一開啟，就用 `isEnabled()` 問作業系統，把結果填進勾選框的 `checked`。
 - 使用者勾選或取消，勾選框發出 `change` 事件（第 11 章第 4 集），依 `checked` 呼叫 `enable()` 或 `disable()`。
 - 不管成功或失敗，最後都再問一次 `isEnabled()`，讓勾選框顯示的是作業系統真正的狀態。失敗的原因寫在 `#settings-msg`。
 
@@ -520,6 +520,6 @@ cat ~/Library/LaunchAgents/tauri-app.plist
 ## 重點整理
 
 - autostart plugin 提供 `enable`、`disable`、`isEnabled`；macOS 預設在 `~/Library/LaunchAgents/` 放 plist，Windows 寫登錄檔，Linux 放 `.desktop` 檔。
-- 「有沒有開機自動啟動」只有作業系統知道：打開設定視窗時用 `isEnabled()` 填勾選框，改了之後再問一次，不另外存進 store。
+- 「有沒有開機自動啟動」只有作業系統知道：開啟設定視窗時用 `isEnabled()` 填勾選框，改了之後再問一次，不另外存進 store。
 - `tauri add autostart` 會把 plugin 放進 `Builder` 鏈、建一個只含 `main` 的 `desktop.json`；桌面專用的 plugin 要改在 `setup` 用 `#[cfg(desktop)]` 註冊，permission 寫進涵蓋設定視窗的 `default.json`。
 - dev 模式登記的是開發版執行檔的路徑，試完要取消勾選。

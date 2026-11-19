@@ -60,7 +60,7 @@ npm run tauri add store
 
 ### 讀寫字型大小：`settings.ts`
 
-字型大小存在 `settings.json` 的 `fontSize`。這個檔案使用者也能用文字編輯器打開，改成字串或一個荒謬的數字，所以從 store 讀出來的值不能直接相信。`store.get("fontSize")` 沒指定型別時，回傳的是 `unknown`（第 9 章第 3 集用過這個型別：什麼都可能是，用之前要自己檢查）。`normalizeFontSize` 負責把任何值變成可以用的數字：
+字型大小存在 `settings.json` 的 `fontSize`。這個檔案使用者也能用文字編輯器開啟，改成字串或一個荒謬的數字，所以從 store 讀出來的值不能直接相信。`store.get("fontSize")` 沒指定型別時，回傳的是 `unknown`（第 9 章第 3 集用過這個型別：什麼都可能是，用之前要自己檢查）。`normalizeFontSize` 負責把任何值變成可以用的數字：
 
 - 不是數字（或是 `NaN`、無限大），用預設的 16。`Number.isFinite(x)` 檢查 `x` 是不是有限的數字。
 - 是數字，就用 `Math.round` 四捨五入成整數，再用 `Math.max`、`Math.min`（各回傳兩個數字裡較大、較小的那個）夾在 12 到 32 之間。
@@ -256,7 +256,7 @@ pub fn run() {
 
 ### 頁面：同一頁，兩種畫面
 
-兩個視窗載入同一個 `index.html`，裡面放了兩塊畫面，先都加上 `hidden`，讓 `main.ts` 看 label 決定打開哪一塊（第 6 章第 6 集用過 `hidden`）。設定視窗只有一個輸入框：`<input type="number">` 是只收數字的輸入框，`min`、`max`、`step` 限制範圍與每次增減的量。使用者直接打字還是能打超出範圍的數字，所以 `normalizeFontSize` 仍然要在。
+兩個視窗載入同一個 `index.html`，裡面放了兩塊畫面，先都加上 `hidden`，讓 `main.ts` 看 label 決定顯示哪一塊（第 6 章第 6 集用過 `hidden`）。設定視窗只有一個輸入框：`<input type="number">` 是只收數字的輸入框，`min`、`max`、`step` 限制範圍與每次增減的量。使用者直接打字還是能打超出範圍的數字，所以 `normalizeFontSize` 仍然要在。
 
 有一個陷阱：`hidden` 屬性是靠瀏覽器預設的 `display: none` 運作的，自己的 CSS 只要替**同一個元素**設了 `display`，就會把它蓋掉，元素又顯示出來了。所以 CSS 裡沒有替 `#note-view`、`#settings-view` 設 `display`，排版交給裡面的元素。
 
@@ -337,8 +337,8 @@ body {
 
 `main.ts` 的做法：
 
-- 便條視窗（`main`）：打開便條那一塊，讀字型大小套上去，再 `listen("settings-changed", ...)`，每次收到就重新讀一次。套用字型大小靠 `style`：每個元素都有 `style` 欄位，可以在程式裡直接改它的 CSS，CSS 的 `font-size` 在這裡寫成 `fontSize`，值是帶單位的字串，例如 `"20px"`。
-- 設定視窗（`settings`）：打開設定那一塊，把目前的字型大小填進輸入框。輸入框發出 `change` 事件（輸入完畢、離開輸入框時觸發一次，第 11 章第 4 集的勾選框也是這個事件）就存起來，再 `emit("settings-changed")`。`valueAsNumber` 是數字輸入框的欄位，直接給 `number`，輸入框是空的時候是 `NaN`，交給 `normalizeFontSize` 變回預設值。
+- 便條視窗（`main`）：顯示便條那一塊，讀字型大小套上去，再 `listen("settings-changed", ...)`，每次收到就重新讀一次。套用字型大小靠 `style`：每個元素都有 `style` 欄位，可以在程式裡直接改它的 CSS，CSS 的 `font-size` 在這裡寫成 `fontSize`，值是帶單位的字串，例如 `"20px"`。
+- 設定視窗（`settings`）：顯示設定那一塊，把目前的字型大小填進輸入框。輸入框發出 `change` 事件（輸入完畢、離開輸入框時觸發一次，第 11 章第 4 集的勾選框也是這個事件）就存起來，再 `emit("settings-changed")`。`valueAsNumber` 是數字輸入框的欄位，直接給 `number`，輸入框是空的時候是 `NaN`，交給 `normalizeFontSize` 變回預設值。
 - 讀取、儲存失敗時，便條視窗只能印到 Console（第 2 章第 7 集），設定視窗有地方顯示，就寫在 `#settings-msg`。
 
 `src/main.ts`：
