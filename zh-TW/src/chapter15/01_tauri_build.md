@@ -27,11 +27,11 @@ npm run tauri build -- --bundles app
      Running beforeBuildCommand `npm run build`
    Compiling tauri v2.12.6
    Compiling tauri-app v0.1.0 (~/tauri-app/src-tauri)
-    Finished `release` profile [optimized] target(s) in 58.58s
+    Finished `release` profile [optimized] target(s) in 1m 00s
        Built application at: ~/tauri-app/src-tauri/target/release/tauri-app
     Bundling tauri-app.app (~/tauri-app/src-tauri/target/release/bundle/macos/tauri-app.app)
     Finished 1 bundle at:
-        ~/tauri-app/src-tauri/target/release/bundle/macos/tauri-app.app (3.98 MiB)
+        ~/tauri-app/src-tauri/target/release/bundle/macos/tauri-app.app (3.95 MiB)
 ```
 
 照三個步驟對一對：
@@ -59,14 +59,14 @@ npm run tauri build -- --debug --bundles app
 
 ```text
      Running beforeBuildCommand `npm run build`
-    Finished `dev` profile [unoptimized + debuginfo] target(s) in 20.46s
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 17.26s
        Built application at: ~/tauri-app/src-tauri/target/debug/tauri-app
     Bundling tauri-app.app (~/tauri-app/src-tauri/target/debug/bundle/macos/tauri-app.app)
     Finished 1 bundle at:
-        ~/tauri-app/src-tauri/target/debug/bundle/macos/tauri-app.app (24.56 MiB)
+        ~/tauri-app/src-tauri/target/debug/bundle/macos/tauri-app.app (29.53 MiB)
 ```
 
-這次用的是 `dev` profile，編譯比較快（我們的機器上 20 秒，release 要 58 秒），檔案卻大了很多：`target/debug/tauri-app` 約 24 MiB，release 的不到 4 MiB。範本的 `[profile.release]` 打開了 `lto` 與 `strip`，就是為了縮小檔案。debug 版自帶開發者工具，遇到「只有打包後才會發生」的問題，先拿它來查。
+這次用的是 `dev` profile，編譯比較快（我們的機器上 17 秒，release 要 1 分鐘），檔案卻大了很多：`target/debug/tauri-app` 約 29 MiB，release 的不到 4 MiB。範本的 `[profile.release]` 打開了 `lto` 與 `strip`，就是為了縮小檔案。debug 版自帶開發者工具，遇到「只有打包後才會發生」的問題，先拿它來查。
 
 注意 `--debug` 載入的還是打包進去的前端，不是 `devUrl`。第 14 章第 5 集用它驗證 CSP，靠的就是這一點。
 
@@ -123,21 +123,17 @@ npm run tauri build -- --bundles app
 ```text
    Compiling tauri v2.12.6
    Compiling tauri-app v0.1.0 (~/tauri-app/src-tauri)
-    Finished `release` profile [optimized] target(s) in 48.62s
+    Finished `release` profile [optimized] target(s) in 45.72s
        Built application at: ~/tauri-app/src-tauri/target/release/tauri-app
     Bundling tauri-app.app (~/tauri-app/src-tauri/target/release/bundle/macos/tauri-app.app)
     Finished 1 bundle at:
-        ~/tauri-app/src-tauri/target/release/bundle/macos/tauri-app.app (4.00 MiB)
+        ~/tauri-app/src-tauri/target/release/bundle/macos/tauri-app.app (3.95 MiB)
 ```
 
-新的 `.app` 打開後，右鍵選單會出現 Inspect Element，`Command + Option + I` 也能用。這一點我們沒有開啟打包後的視窗確認，是依 `wry`（Tauri 用來開 WebView 的函式庫）的說明整理的。要留意兩件事：
+`devtools` 一路傳到 `wry`（Tauri 用來開 WebView 的函式庫）。它在 macOS 的原始碼註解寫著，這會打開 WebKit 的 `developerExtrasEnabled`，也就是視窗裡的開發者工具；右鍵選單的 Inspect Element 與 `Command + Option + I` 是 WebKit 的 Web Inspector 本來就有的操作（第 1 章第 8 集在 `tauri dev` 用過）。這個新 `.app` 打開後是不是真的這樣，我們沒有開啟確認。要留意兩件事：
 
-- 這個 feature 在 macOS 會呼叫私有 API，而 App Store 不收這樣的 App，要上架的版本別打開它。
+- `wry` 的說明寫著，這個 feature 在 macOS 要呼叫私有 API，要上架 App Store 的版本不要打開它。
 - 發佈給使用者的版本最好也拿掉，不然每個使用者都能打開你的前端來翻。
-
-### 跟 Electron 比一比
-
-Electron 的打包要另外裝 electron-builder 或 electron-forge 這類工具，做的主要是把你的 JavaScript 和一份現成的 Electron 執行檔包在一起，沒有東西要編譯。Tauri 的打包器內建在 CLI 裡，打包前還要把整個 Rust 專案用 release 模式編一遍，第一次會等一陣子，專案大了更久。
 
 ## 重點整理
 

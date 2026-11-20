@@ -85,11 +85,11 @@ npm run tauri build -- --bundles app
 `npm run tauri build -- --bundles app` 的輸出（節錄）：
 
 ```text
-    Finished `release` profile [optimized] target(s) in 35.62s
+    Finished `release` profile [optimized] target(s) in 40.40s
        Built application at: ~/tauri-app/src-tauri/target/release/tauri-app
     Bundling tauri-app.app (~/tauri-app/src-tauri/target/release/bundle/macos/tauri-app.app)
     Finished 1 bundle at:
-        ~/tauri-app/src-tauri/target/release/bundle/macos/tauri-app.app (3.94 MiB)
+        ~/tauri-app/src-tauri/target/release/bundle/macos/tauri-app.app (3.91 MiB)
 ```
 
 在 Finder 看 `src-tauri/target/release/bundle/macos/`，`tauri-app.app` 的圖示就是剛剛畫的那個。想用指令確認的話，`.app` 裡的圖示在 `Contents/Resources/icon.icns`，跟 `icons/icon.icns` 比一下雜湊值（你的數字會不同，重點是兩行一樣）：
@@ -101,8 +101,8 @@ shasum src-tauri/icons/icon.icns src-tauri/target/release/bundle/macos/tauri-app
 `shasum` 的輸出：
 
 ```text
-32a6ee0076122d9e544d9f2e9c4e33a546fa8c24  src-tauri/icons/icon.icns
-32a6ee0076122d9e544d9f2e9c4e33a546fa8c24  src-tauri/target/release/bundle/macos/tauri-app.app/Contents/Resources/icon.icns
+04d3a882ece3feca11bcec20ba59db1ab2fe5c9c  src-tauri/icons/icon.icns
+04d3a882ece3feca11bcec20ba59db1ab2fe5c9c  src-tauri/target/release/bundle/macos/tauri-app.app/Contents/Resources/icon.icns
 ```
 
 ## 重點整理
