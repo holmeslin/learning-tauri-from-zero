@@ -193,6 +193,14 @@ fn copy_dir(from: &Path, to: &Path) -> std::io::Result<()> {
     Ok(())
 }
 
+/// 用 `--locked`：書中用到的 crate 都要先加進範本並鎖版本。
+/// 例外：一集自己替換了 `src-tauri/Cargo.toml`（例如打開 `isolation` feature，
+/// 範本不能預先打開，tauri-build 會檢查 feature 與 `tauri.conf.json` 一致），
+/// 範本的 `Cargo.lock` 對不上，改讓 cargo 更新 work/ 裡那一份。
+fn use_locked(files: &BTreeMap<String, String>) -> bool {
+    !files.contains_key("src-tauri/Cargo.toml")
+}
+
 fn run(cmd: &mut Command) -> Result<(bool, String), String> {
     let out = cmd.output().map_err(|e| format!("無法執行 {cmd:?}：{e}"))?;
     let mut text = String::from_utf8_lossy(&out.stdout).into_owned();
@@ -231,16 +239,13 @@ impl Env {
         let (fmt_ok, fmt_text) = run(Command::new("cargo")
             .args(["fmt", "--check"])
             .current_dir(&tauri))?;
-        let (rust_ok, rust_text) = run(Command::new("cargo")
-            // --locked：書中用到的 crate 都要先加進範本並鎖版本。
-            .args([
-                "clippy",
-                "--locked",
-                "--all-targets",
-                "--",
-                "-D",
-                "warnings",
-            ])
+        let mut clippy = Command::new("cargo");
+        clippy.arg("clippy");
+        if use_locked(files) {
+            clippy.arg("--locked");
+        }
+        let (rust_ok, rust_text) = run(clippy
+            .args(["--all-targets", "--", "-D", "warnings"])
             .current_dir(&tauri)
             .env("CARGO_TARGET_DIR", &self.target)
             .env("CARGO_TERM_COLOR", "never"))?;
@@ -429,5 +434,14 @@ mod tests {
         assert_eq!(error_codes(text), vec!["E0308", "TS2345"]);
         assert!(shows_error(text));
         assert!(!shows_error("Running `target/debug/tauri-app`\n"));
+    }
+
+    #[test]
+    fn locked_unless_cargo_toml_replaced() {
+        let mut files = BTreeMap::new();
+        files.insert("src-tauri/src/lib.rs".to_string(), String::new());
+        assert!(use_locked(&files));
+        files.insert("src-tauri/Cargo.toml".to_string(), String::new());
+        assert!(!use_locked(&files));
     }
 }
