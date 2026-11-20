@@ -34,7 +34,7 @@ _Avoid_: 樣板專案、boilerplate
 
 原則：跟 Tauri、Rust、Web 平台 API 名稱相同的詞保留英文；其他翻成台灣用語，第一次出現時附英文。
 
-保留英文：command、plugin、capability、permission、scope、set（permission 的）、WebView、IPC、CSP、ACL、XSS、isolation、hook、label（視窗的）、`AppHandle`、`State`、`Channel`、`invoke`、`emit`、`listen`、payload、DOM、HTML、CSS、TypeScript、JavaScript、npm、Vite、crate、serde、JSON、AppImage、MSI、NSIS、APK、AAB、IPA、tray（只在 API 名稱裡，正文寫「系統匣」）。
+保留英文：command、plugin、capability、permission、scope、set（permission 的）、WebView、IPC、CSP、ACL、XSS、isolation、hook、label（視窗的）、`AppHandle`、`State`、`Channel`、`invoke`、`emit`、`listen`、payload、DOM、HTML、CSS、TypeScript、JavaScript、npm、Vite、crate、serde、JSON、AppImage、MSI、NSIS、deb、rpm、WiX、WebView2、bootstrapper、APK、AAB、IPA、tray（只在 API 名稱裡，正文寫「系統匣」）。
 
 | 書中用語 | 英文 | 不要用 |
 | --- | --- | --- |
@@ -73,7 +73,6 @@ _Avoid_: 樣板專案、boilerplate
 | 變數 | variable | 變量 |
 | 預設 | default | 默認 |
 | 相依套件 | dependency | 依賴 |
-| deb、rpm、WiX、WebView2、bootstrapper（打包的格式與工具名，保留英文） | deb、rpm、WiX、WebView2、bootstrapper | deb 包、rpm 包、引導程式 |
 | 模擬器 | emulator / simulator | 仿真器 |
 | 最小權限 | least privilege | 最小特權 |
 | 指令（CSP 的） | directive | 指示 |

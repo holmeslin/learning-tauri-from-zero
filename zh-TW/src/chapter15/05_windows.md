@@ -38,7 +38,7 @@ NSIS 另有一條路：原始碼的註解寫著，NSIS 安裝檔可以在 Linux 
 在 Windows 上打包，要先準備兩件事：
 
 - **網路**：第一次打包時，工具要從網路下載。MSI 是用 WiX 做的，Tauri 從 GitHub 下載 WiX 3.14；NSIS 是另一套工具（`makensis`），不經過 WiX，Tauri 下載的是 NSIS 3.13 和一個輔助用的 `nsis_tauri_utils.dll`。下載的東西存在使用者快取資料夾底下的 `tauri` 資料夾，之後就不用再下載。
-- **VBSCRIPT**：Tauri 官方文件說，打 MSI 需要啟用 Windows 的 VBSCRIPT 可選功能。這一條是文件寫的，tauri 的原始碼裡一個字也搜不到，我們也沒有驗證過；原始碼只看得出 MSI 是呼叫 WiX 的 `candle.exe` 與 `light.exe` 做的。
+- **VBSCRIPT**：Tauri 官方文件說，打 MSI 需要啟用 Windows 的 VBSCRIPT 選用功能（optional feature）。這一條是文件寫的，tauri 的原始碼裡一個字也搜不到，我們也沒有驗證過；原始碼只看得出 MSI 是呼叫 WiX 的 `candle.exe` 與 `light.exe` 做的。
 
 ### MSI 的版本號只吃數字
 

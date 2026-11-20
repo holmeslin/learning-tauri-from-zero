@@ -41,7 +41,7 @@
 | rpm | `tauri-app-0.1.0-1.aarch64.rpm` | `tauri-app-0.1.0-1.x86_64.rpm` |
 | AppImage | `tauri-app_0.1.0_aarch64.AppImage` | `tauri-app_0.1.0_amd64.AppImage` |
 
-最後一欄是照 tauri-bundler 的原始碼整理的，我們沒有在 x86_64 的機器上跑過。要給別種 CPU 的使用者，就得在那種 CPU 的機器上打；一次打好各平台，是第 17 章 GitHub Actions 的事。
+最後一欄是照 tauri-bundler 的原始碼整理的，我們沒有在 x86_64 的機器上跑過。要給別種 CPU 的使用者，最直接的做法是在那種 CPU 的機器上打；一次打好各平台，是第 17 章 GitHub Actions 的事。
 
 ### deb 與 rpm：函式庫交給系統
 
@@ -55,7 +55,7 @@ deb 與 rpm 都只放你的程式、桌面項目和圖示，App 要用的函式�
  Depends: libayatana-appindicator3-1, libwebkit2gtk-4.1-0, libgtk-3-0
 ```
 
-`libwebkit2gtk-4.1-0` 與 `libgtk-3-0` 是每個 Tauri App 都會有的，也就是第 1 章第 1 集說的 Linux 版 WebView（WebKitGTK）。`libayatana-appindicator3-1` 是這個範本才有的：第 8 章替 `tauri` 開了 `tray-icon`，CLI 看到就把系統匣用的函式庫也加進清單。用沒有 `tray-icon` 的專案打包，清單會少這一個。`Maintainer: you` 來自 `Cargo.toml` 的 `authors`，想改就改那裡。
+`libwebkit2gtk-4.1-0` 是第 1 章第 1 集說的 Linux 版 WebView（WebKitGTK），`libgtk-3-0` 是視窗用的 GTK，這兩個每個 Tauri App 都會有。`libayatana-appindicator3-1` 是這個範本才有的：第 8 章替 `tauri` 開了 `tray-icon`，CLI 看到就把系統匣用的函式庫也加進清單。用沒有 `tray-icon` 的專案打包，清單會少這一個。`Maintainer: you` 來自 `Cargo.toml` 的 `authors`，想改就改那裡。
 
 rpm 一樣，只是清單寫成函式庫檔名。`rpm -qpR tauri-app-0.1.0-1.aarch64.rpm` 的輸出（節錄）：
 
@@ -77,10 +77,10 @@ sudo apt install ./tauri-app_0.1.0_arm64.deb
 
 ```text
 /usr/bin/tauri-app
-/usr/share/applications/tauri-app.desktop
 /usr/share/icons/hicolor/32x32/apps/tauri-app.png
 /usr/share/icons/hicolor/128x128/apps/tauri-app.png
 /usr/share/icons/hicolor/256x256@2/apps/tauri-app.png
+/usr/share/applications/tauri-app.desktop
 ```
 
 執行檔在 `/usr/bin`，圖示放進 `hicolor` 圖示主題，`.desktop` 檔則讓桌面環境的選單找得到這個 App。`.desktop` 檔的內容：
