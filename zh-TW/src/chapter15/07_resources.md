@@ -60,7 +60,7 @@ pub fn run() {
 }
 ```
 
-`resolve` 的第一個參數，就是 `resources` 裡寫的路徑；它回傳 `Result<PathBuf>`，用標準函式庫讀檔，不需要 permission（第 7 章第 6 集）。
+`resolve` 的第一個參數是資源檔在資源資料夾裡的相對路徑，陣列寫法就是 `resources` 裡寫的那一串；它回傳 `Result<PathBuf>`，用標準函式庫讀檔，不需要 permission（第 7 章第 6 集）。
 
 ### 打包，看它放在哪裡
 
@@ -122,7 +122,7 @@ src-tauri/target/release/bundle/macos/tauri-app.app/Contents/MacOS/tauri-app
 | `["../shared/x.txt"]` | `_up_/shared/x.txt`，`..` 被換成 `_up_` |
 | `{"data/greeting.txt": "hi/hello.txt"}` | `hi/hello.txt`，自己指定位置 |
 
-陣列與物件二選一。走出 `src-tauri/` 的路徑，位置會變成 `_up_/shared/x.txt`，不是你寫的樣子；但 `resolve` 照同樣的規則換，`resolve("../shared/x.txt", BaseDirectory::Resource)` 就會得到 `_up_` 那個位置（我們用 `cargo build` 做出來的執行檔試過，檔案找得到），所以程式裡照 `resources` 的寫法給路徑就好，不用自己拼 `_up_`。資源檔放在 `src-tauri/` 底下仍然最單純。
+陣列與物件二選一。走出 `src-tauri/` 的路徑，位置會變成 `_up_/shared/x.txt`，不是你寫的樣子；但 `resolve` 照同樣的規則換，`resolve("../shared/x.txt", BaseDirectory::Resource)` 就會得到 `_up_` 那個位置（我們用 `cargo build` 做出來的執行檔試過，檔案找得到），所以陣列寫法照 `resources` 的字串給路徑就好，不用自己拼 `_up_`；物件寫法則是表裡右邊你指定的位置。資源檔放在 `src-tauri/` 底下仍然最單純。
 
 路徑一定要存在。刪掉 `data/greeting.txt` 再跑 `cargo check`，馬上失敗，不用等到打包，因為 `tauri-build` 編譯時就要複製資源檔；`tauri dev` 也是先用 cargo 編譯，一樣會停。輸出（節錄）：
 
@@ -144,5 +144,5 @@ error: failed to run custom build command for `tauri-app v0.1.0 (~/tauri-app/src
 
 - 要跟著 App 走的檔案，列在 `bundle.resources`，路徑從 `src-tauri/` 算起；可以是檔案、資料夾、`*`，或用物件指定位置。
 - macOS 的資源檔放進 `.app` 的 `Contents/Resources/`，保留相對路徑；`..` 會變成 `_up_`。
-- Rust 用 `app.path().resolve("相對路徑", BaseDirectory::Resource)` 找資源檔，路徑照 `resources` 的寫法給，連 `..` 變 `_up_` 都會替你換；`tauri dev`、打包後與各平台的位置都不同，不要自己拼。
+- Rust 用 `app.path().resolve("相對路徑", BaseDirectory::Resource)` 找資源檔，陣列寫法照 `resources` 的字串給路徑，連 `..` 變 `_up_` 都會替你換；`tauri dev`、打包後與各平台的位置都不同，不要自己拼。
 - `resources` 指到不存在的路徑，連 `cargo check` 都會失敗；資源檔唯讀，要寫的資料放 `app_data_dir()`。
