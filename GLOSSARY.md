@@ -73,6 +73,7 @@ _Avoid_: 樣板專案、boilerplate
 | 變數 | variable | 變量 |
 | 預設 | default | 默認 |
 | 相依套件 | dependency | 依賴 |
+| deb、rpm、WiX、WebView2、bootstrapper（打包的格式與工具名，保留英文） | deb、rpm、WiX、WebView2、bootstrapper | deb 包、rpm 包、引導程式 |
 | 模擬器 | emulator / simulator | 仿真器 |
 | 最小權限 | least privilege | 最小特權 |
 | 指令（CSP 的） | directive | 指示 |
