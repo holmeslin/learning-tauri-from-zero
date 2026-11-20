@@ -34,7 +34,7 @@
 - `copyright`：版權文字，寫進 `.app` 的 `Info.plist`。
 - `category`：App 的分類，例如 `Productivity`，macOS 與 Linux 用它。
 
-`publisher`（發行者）、`shortDescription`（簡短說明）這類欄位，macOS 的 `.app` 用不到，是 Windows 的安裝檔與 Linux 的套件才會顯示，第 5、6 集再看。
+`publisher`（發行者）、`shortDescription`（簡短說明）這類欄位，是 Windows 的安裝檔與 Linux 的套件才會用到，macOS 的 `.app` 裡找不到它們。
 
 ### 改成自己的
 
