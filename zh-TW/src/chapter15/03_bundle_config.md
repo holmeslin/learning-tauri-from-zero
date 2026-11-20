@@ -93,11 +93,11 @@ npm run tauri build -- --bundles app
 
 ```text
      Running beforeBuildCommand `npm run build`
-    Finished `release` profile [optimized] target(s) in 36.84s
+    Finished `release` profile [optimized] target(s) in 41.09s
        Built application at: ~/tauri-app/src-tauri/target/release/tauri-app
     Bundling Hello Tauri.app (~/tauri-app/src-tauri/target/release/bundle/macos/Hello Tauri.app)
     Finished 1 bundle at:
-        ~/tauri-app/src-tauri/target/release/bundle/macos/Hello Tauri.app (3.98 MiB)
+        ~/tauri-app/src-tauri/target/release/bundle/macos/Hello Tauri.app (3.95 MiB)
 ```
 
 `Warn` 不見了，`.app` 也改叫 `Hello Tauri.app`。`Built application at` 的執行檔還是 `tauri-app`，那是 `Cargo.toml` 的 package 名稱；`productName` 管的是安裝檔與顯示給使用者的名字。看 `.app` 裡的 `Info.plist`：

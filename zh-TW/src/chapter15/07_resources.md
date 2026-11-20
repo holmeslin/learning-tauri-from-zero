@@ -2,7 +2,7 @@
 
 ## 本集目標
 
-用 `bundle.resources` 把額外的檔案一起打包，在 `.app` 裡找到它們，並用 `app.path().resource_dir()` 在執行時讀出來。
+用 `bundle.resources` 把額外的檔案一起打包，在 `.app` 裡找到它們，並用 `app.path().resolve(…, BaseDirectory::Resource)` 在執行時找到、讀出來。
 
 ## 正文
 
@@ -28,12 +28,13 @@
 
 ### 在 Rust 讀資源檔
 
-資源檔裝好之後在哪裡，每個平台、`tauri dev` 與打包後都不一樣，所以跟第 7 章第 6 集的 app 資料夾一樣，要用函式問。`app.path()` 上跟 `app_data_dir()` 並排的是 `resource_dir()`，回傳資源資料夾的 `Result<PathBuf>`。我們在 `setup`（第 4 章第 4 集）裡讀 `greeting.txt` 並印出來，`greet` 照範本留著：
+資源檔裝好之後在哪裡，每個平台、`tauri dev` 與打包後都不一樣，所以跟第 7 章第 6 集的 app 資料夾一樣，要用函式問。`app.path()` 的 `resolve` 要兩個參數：相對路徑，以及從哪個資料夾算起的 `BaseDirectory`（第 7 章第 5 集在 JavaScript 見過 `BaseDirectory.AppData`，Rust 這邊是 `tauri::path::BaseDirectory`）。選 `Resource`，就是資源資料夾，也就是 `app.path().resource_dir()` 回傳的那個。我們在 `setup`（第 4 章第 4 集）裡讀 `greeting.txt` 並印出來，`greet` 照範本留著：
 
 `src-tauri/src/lib.rs`（加上 `setup`）：
 
 ```rust
 use tauri::Manager;
+use tauri::path::BaseDirectory;
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
@@ -46,9 +47,11 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .setup(|app| {
-            let file = app.path().resource_dir()?.join("data/greeting.txt");
-            println!("資源檔位置：{}", file.display());
-            println!("內容：{}", std::fs::read_to_string(&file)?.trim());
+            let path = app
+                .path()
+                .resolve("data/greeting.txt", BaseDirectory::Resource)?;
+            println!("資源檔位置：{}", path.display());
+            println!("內容：{}", std::fs::read_to_string(&path)?.trim());
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![greet])
@@ -57,7 +60,7 @@ pub fn run() {
 }
 ```
 
-`join` 後面接的，就是 `resources` 裡寫的路徑。Rust 用標準函式庫讀檔，不需要 permission（第 7 章第 6 集）。
+`resolve` 的第一個參數是資源檔在資源資料夾裡的相對路徑，陣列寫法就是 `resources` 裡寫的那一串；它回傳 `Result<PathBuf>`，用標準函式庫讀檔，不需要 permission（第 7 章第 6 集）。
 
 ### 打包，看它放在哪裡
 
@@ -69,13 +72,12 @@ npm run tauri build -- --bundles app
 
 ```text
      Running beforeBuildCommand `npm run build`
-   Compiling tauri v2.12.6
    Compiling tauri-app v0.1.0 (~/tauri-app/src-tauri)
-    Finished `release` profile [optimized] target(s) in 56.91s
+    Finished `release` profile [optimized] target(s) in 40.31s
        Built application at: ~/tauri-app/src-tauri/target/release/tauri-app
     Bundling tauri-app.app (~/tauri-app/src-tauri/target/release/bundle/macos/tauri-app.app)
     Finished 1 bundle at:
-        ~/tauri-app/src-tauri/target/release/bundle/macos/tauri-app.app (4.00 MiB)
+        ~/tauri-app/src-tauri/target/release/bundle/macos/tauri-app.app (3.95 MiB)
 ```
 
 第 4 集說過，`Contents/Resources/` 除了圖示，也放資源檔：
@@ -106,7 +108,7 @@ src-tauri/target/release/bundle/macos/tauri-app.app/Contents/MacOS/tauri-app
 內容：你好，我是跟著 App 一起打包的資源檔。
 ```
 
-不是打包出來的版本，位置就不同。`tauri dev` 啟動的是 `src-tauri/target/debug/tauri-app`（第 13 章第 6 集），它印出的位置是 `~/tauri-app/src-tauri/target/debug/data/greeting.txt`，資源檔在執行檔旁邊，是 `tauri-build` 編譯時複製過去的。（我們沒有開 `tauri dev`，是 `cargo build` 之後直接執行那個檔案。）兩個位置不同，`resource_dir()` 都指對了。
+不是打包出來的版本，位置就不同。`tauri dev` 啟動的是 `src-tauri/target/debug/tauri-app`（第 13 章第 6 集），它印出的位置是 `~/tauri-app/src-tauri/target/debug/data/greeting.txt`，資源檔在執行檔旁邊，是 `tauri-build` 編譯時複製過去的。（我們沒有開 `tauri dev`，是 `cargo build` 之後直接執行那個檔案。）兩個位置不同，`resolve` 都指對了。
 
 ### `resources` 的寫法
 
@@ -120,7 +122,7 @@ src-tauri/target/release/bundle/macos/tauri-app.app/Contents/MacOS/tauri-app
 | `["../shared/x.txt"]` | `_up_/shared/x.txt`，`..` 被換成 `_up_` |
 | `{"data/greeting.txt": "hi/hello.txt"}` | `hi/hello.txt`，自己指定位置 |
 
-陣列與物件二選一。走出 `src-tauri/` 的路徑，`join` 要接 `_up_/shared/x.txt`，麻煩，資源檔放在 `src-tauri/` 底下比較省事。
+陣列與物件二選一。走出 `src-tauri/` 的路徑，位置會變成 `_up_/shared/x.txt`，不是你寫的樣子；但 `resolve` 照同樣的規則換，`resolve("../shared/x.txt", BaseDirectory::Resource)` 就會得到 `_up_` 那個位置（我們用 `cargo build` 做出來的執行檔試過，檔案找得到），所以陣列寫法照 `resources` 的字串給路徑就好，不用自己拼 `_up_`；物件寫法則是表裡右邊你指定的位置。資源檔放在 `src-tauri/` 底下仍然最單純。
 
 路徑一定要存在。刪掉 `data/greeting.txt` 再跑 `cargo check`，馬上失敗，不用等到打包，因為 `tauri-build` 編譯時就要複製資源檔；`tauri dev` 也是先用 cargo 編譯，一樣會停。輸出（節錄）：
 
@@ -132,10 +134,7 @@ error: failed to run custom build command for `tauri-app v0.1.0 (~/tauri-app/src
 
 ### 其他平台
 
-這一段是照 Tauri 2.12 的原始碼（`tauri-utils` 與 tauri-bundler）整理的，沒有在 Windows 與 Linux 上實測：
-
-- Windows：`resource_dir()` 是執行檔所在的資料夾，安裝檔把資源檔裝在安裝資料夾裡。
-- Linux：deb 與 rpm 裝到 `/usr/lib/<productName>/`，AppImage 則在包裡的 `usr/lib/<productName>/`。
+這一段是照 Tauri 2.12 的原始碼（`tauri-utils` 與 tauri-bundler）整理的，沒有在 Windows 與 Linux 上實測。Windows 的 `resource_dir()` 是執行檔所在的資料夾，安裝檔把資源檔裝在安裝資料夾裡；Linux 的 deb 與 rpm 裝到 `/usr/lib/<productName>/`，AppImage 則在包裡的 `usr/lib/<productName>/`。這些位置都由 `resolve` 替你處理。
 
 ### 資源檔只能讀
 
@@ -145,6 +144,5 @@ error: failed to run custom build command for `tauri-app v0.1.0 (~/tauri-app/src
 
 - 要跟著 App 走的檔案，列在 `bundle.resources`，路徑從 `src-tauri/` 算起；可以是檔案、資料夾、`*`，或用物件指定位置。
 - macOS 的資源檔放進 `.app` 的 `Contents/Resources/`，保留相對路徑；`..` 會變成 `_up_`。
-- Rust 用 `app.path().resource_dir()` 取得資源資料夾再 `join`，不要自己拼路徑，`tauri dev`、打包後與各平台的位置都不同。
-- `resources` 指到不存在的路徑，連 `cargo check` 都會失敗。
-- 資源檔唯讀，要寫的資料放 `app_data_dir()`。這一集只在 macOS 實測，Windows 與 Linux 依原始碼整理。
+- Rust 用 `app.path().resolve("相對路徑", BaseDirectory::Resource)` 找資源檔，陣列寫法照 `resources` 的字串給路徑，連 `..` 變 `_up_` 都會替你換；`tauri dev`、打包後與各平台的位置都不同，不要自己拼。
+- `resources` 指到不存在的路徑，連 `cargo check` 都會失敗；資源檔唯讀，要寫的資料放 `app_data_dir()`。

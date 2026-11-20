@@ -8,7 +8,7 @@
 
 ### 這一集的環境
 
-這一集的指令是實際跑過的：OrbStack 2.2.5 裡的 Ubuntu 26.04.1 LTS（arm64），裝好第 1 章第 2 集那組套件（`libwebkit2gtk-4.1-dev` 是 2.52.6），Rust 1.99.1、Node.js v26.5.0、Tauri CLI 2.12.5。專案是起始專案，一個檔案都沒改，也沒有開啟打包出來的 App 視窗。
+這一集的指令是實際跑過的：OrbStack 2.2.5 裡新建的 Ubuntu 26.04.1 LTS（arm64），裝好第 1 章第 2 集那組套件（`libwebkit2gtk-4.1-dev` 是 2.52.6），Rust 1.99.1、Node.js v26.5.0、Tauri CLI 2.12.5。專案是起始專案，複製到 Linux 自己的檔案系統，在那裡 `npm install`，一個檔案都沒改。打包出來的 App，我們只試過它能不能啟動，沒有看過視窗的畫面。
 
 三種格式只有在 Linux 上打得出來。範本的 `bundle.targets` 是 `"all"`，在 Linux 上展開成 `deb`、`rpm`、`appimage`；同一份設定在 macOS 上是 `app` 與 `dmg`。
 
@@ -18,15 +18,15 @@
      Running beforeBuildCommand `npm run build`
    Compiling tauri v2.12.6
    Compiling tauri-app v0.1.0 (~/tauri-app/src-tauri)
-    Finished `release` profile [optimized] target(s) in 1m 45s
+    Finished `release` profile [optimized] target(s) in 1m 19s
        Built application at: ~/tauri-app/src-tauri/target/release/tauri-app
     Bundling tauri-app_0.1.0_arm64.deb (~/tauri-app/src-tauri/target/release/bundle/deb/tauri-app_0.1.0_arm64.deb)
     Bundling tauri-app-0.1.0-1.aarch64.rpm (~/tauri-app/src-tauri/target/release/bundle/rpm/tauri-app-0.1.0-1.aarch64.rpm)
     Bundling tauri-app_0.1.0_aarch64.AppImage (~/tauri-app/src-tauri/target/release/bundle/appimage/tauri-app_0.1.0_aarch64.AppImage)
     Finished 3 bundles at:
-        ~/tauri-app/src-tauri/target/release/bundle/deb/tauri-app_0.1.0_arm64.deb (2.37 MiB)
-        ~/tauri-app/src-tauri/target/release/bundle/rpm/tauri-app-0.1.0-1.aarch64.rpm (2.38 MiB)
-        ~/tauri-app/src-tauri/target/release/bundle/appimage/tauri-app_0.1.0_aarch64.AppImage (79.89 MiB)
+        ~/tauri-app/src-tauri/target/release/bundle/deb/tauri-app_0.1.0_arm64.deb (2.21 MiB)
+        ~/tauri-app/src-tauri/target/release/bundle/rpm/tauri-app-0.1.0-1.aarch64.rpm (2.22 MiB)
+        ~/tauri-app/src-tauri/target/release/bundle/appimage/tauri-app_0.1.0_aarch64.AppImage (79.60 MiB)
 ```
 
 第一次打 AppImage 時，輸出裡會多幾行 `Downloading`：打包工具要從網路下載 `linuxdeploy` 一類的工具，存在 `~/.cache/tauri`，之後就不用再下載。
@@ -52,15 +52,14 @@ deb 與 rpm 都只放你的程式、桌面項目和圖示，App 要用的函式�
  Version: 0.1.0
  Architecture: arm64
  Maintainer: you
- Depends: libayatana-appindicator3-1, libwebkit2gtk-4.1-0, libgtk-3-0
+ Depends: libwebkit2gtk-4.1-0, libgtk-3-0
 ```
 
-`libwebkit2gtk-4.1-0` 是第 1 章第 1 集說的 Linux 版 WebView（WebKitGTK），`libgtk-3-0` 是視窗用的 GTK，這兩個每個 Tauri App 都會有。`libayatana-appindicator3-1` 是這個範本才有的：第 8 章替 `tauri` 開了 `tray-icon`，CLI 看到就把系統匣用的函式庫也加進清單。用沒有 `tray-icon` 的專案打包，清單會少這一個。`Maintainer: you` 來自 `Cargo.toml` 的 `authors`，想改就改那裡。
+`libwebkit2gtk-4.1-0` 是第 1 章第 1 集說的 Linux 版 WebView（WebKitGTK），`libgtk-3-0` 是視窗用的 GTK，這兩個每個 Tauri App 都會有。專案若像第 8 章那樣替 `tauri` 開了 `tray-icon`，原始碼會再把系統匣用的 `libayatana-appindicator3-1` 加進清單，這一點我們沒有再用那種專案打包確認。`Maintainer: you` 來自 `Cargo.toml` 的 `authors`，想改就改那裡。
 
 rpm 一樣，只是清單寫成函式庫檔名。`rpm -qpR tauri-app-0.1.0-1.aarch64.rpm` 的輸出（節錄）：
 
 ```text
-libayatana-appindicator3.so.1()(64bit)
 libgtk-3.so.0()(64bit)
 libwebkit2gtk-4.1.so.0()(64bit)
 ```
@@ -101,9 +100,13 @@ Type=Application
 
 ### AppImage：全部帶著走
 
-AppImage 是另一個做法：它是單一個檔案，`file` 看它是 ELF 執行檔，設計上不用安裝就能執行（我們沒有開啟它）。它也不寫相依套件清單，而是把函式庫整包放進檔案裡。`bundle/appimage/tauri-app.AppDir/usr/lib` 是打包前的檔案樹，有 162 個項目，約 266 MB，其中 `libwebkit2gtk-4.1.so.0`（WebKitGTK）一個就有 94 MB，`libgtk-3.so.0` 也在裡面。同一個 App，AppImage 有 79.89 MiB，deb 只有 2.37 MiB，差的主要就是這些。
+AppImage 是另一個做法：它是單一個檔案，`file` 看它是 ELF 執行檔，不用安裝就能執行。它也不寫相依套件清單，而是把函式庫整包放進檔案裡。打包前的檔案樹留在 `bundle/appimage/tauri-app.AppDir/`，其中 `usr/lib` 沒壓縮的大小是 265 MiB，`libwebkit2gtk-4.1.so.0`（WebKitGTK）一個就有 94 MiB，`libgtk-3.so.0` 也在裡面。AppImage 本身是壓縮過的，79.60 MiB；同樣是壓縮檔的 deb 只有 2.21 MiB，差的主要就是這些函式庫。
 
 每種格式旁邊都會留一個打包前的資料夾（`tauri-app.AppDir`、`tauri-app_0.1.0_arm64`），要上傳或發佈時，只拿 `.AppImage`、`.deb`、`.rpm` 這三個檔案就好。
+
+### 能不能啟動
+
+VM 沒有螢幕，我們另外裝了虛擬畫面工具 `xvfb`，用 `xvfb-run` 分別啟動裝好的 `tauri-app` 與 AppImage，兩個在 12 到 15 秒的限時結束前都還在執行，沒有當掉。這台 VM 只有 `fuse3`、沒有 `libfuse2`，AppImage 一樣能啟動，沒有出現 FUSE 的錯誤；別的系統怎樣，我們沒有試。
 
 ### 該挑哪一種
 
@@ -117,6 +120,5 @@ AppImage 是另一個做法：它是單一個檔案，`file` 看它是 ELF 執�
 
 - 在 Linux 上，`bundle.targets: "all"` 做出 `deb`、`rpm`、`appimage`，都放在 `src-tauri/target/release/bundle/` 底下各自的資料夾。
 - 檔名的架構跟著打包的機器走，三種格式拼法不同：arm64 是 `arm64`／`aarch64`／`aarch64`，x86_64 是 `amd64`／`x86_64`／`amd64`。
-- deb 與 rpm 很小，WebKitGTK、GTK 寫成相依套件由系統裝；`tray-icon` 會讓系統匣的函式庫也加進清單。
-- AppImage 把函式庫整包帶著，不用安裝，但大了三十幾倍。
-- 這一集在 Ubuntu 26.04 arm64 實測，沒有開啟打包出來的視窗；x86_64 的檔名依原始碼整理，Fedora 與 openSUSE 沒有試過。
+- deb 與 rpm 只有 2 MiB 出頭，WebKitGTK、GTK 寫成相依套件由系統裝；開了 `tray-icon` 的專案，系統匣的函式庫也會加進清單。
+- AppImage 把函式庫整包帶著，不用安裝，但壓縮後也有 79.60 MiB，是 deb 的三十幾倍。
