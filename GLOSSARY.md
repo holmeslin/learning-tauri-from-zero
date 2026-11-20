@@ -54,6 +54,9 @@ _Avoid_: 樣板專案、boilerplate
 | 熱重載 | hot reload | 熱更新 |
 | 打包 | bundle | 捆綁 |
 | 安裝檔 | installer | 安裝包 |
+| 圖示（App 的） | icon | 圖標 |
+| 磁碟映像檔（`.dmg`） | disk image | 光碟映像、映像檔案 |
+| 開發者工具 | developer tools（devtools） | 開發人員工具、控制台（那是 Console 分頁） |
 | 自動更新 | auto update | 熱更新 |
 | 程式碼簽章 | code signing | 代碼簽名 |
 | 公證 | notarization（macOS） | 認證 |
