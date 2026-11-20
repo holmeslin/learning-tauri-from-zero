@@ -10,14 +10,14 @@
 
 範本的 `bundle`（第 1 章第 6 集）有三個欄位：
 
-- `active`：要不要打包。結構的預設值是 `false`，範本寫 `true`。設成 `false`，`tauri build` 就只編譯，效果跟 `--no-bundle` 一樣。
-- `targets`：要做哪些格式。`"all"` 是這個平台做得出來的全部：macOS 是 `app` 與 `dmg`，Windows 是 `msi` 與 `nsis`，Linux 是 `deb`、`rpm` 與 `appimage`。也可以寫成陣列，例如 `["app"]`。指定了別的平台才有的格式，會被略過。命令列的 `--bundles` 優先，它會蓋掉這個欄位（第 1 集介紹過）。
+- `active`：要不要打包。沒寫的預設值是 `false`，範本寫了 `true`。設成 `false`，`tauri build` 就只編譯，效果跟 `--no-bundle` 一樣，我們試過，`bundle/` 資料夾不會出現。
+- `targets`：要做哪些格式。`"all"` 是這個平台做得出來的全部：macOS 是 `app` 與 `dmg`，Windows 是 `msi` 與 `nsis`，Linux 是 `deb`、`rpm` 與 `appimage`。也可以寫成陣列，例如 `["app"]`。指定了別的平台才有的格式，會被略過：我們在 macOS 試過 `["msi"]`，不報錯，也沒有東西被打包。命令列的 `--bundles` 優先，它會蓋掉這個欄位（第 1 集介紹過）。
 - `icon`：上一集的圖示清單。
 
 ### `productName` 與 `version`
 
 - `productName` 是給使用者看的名字，也是安裝檔的檔名。`.app` 叫 `<productName>.app`，`.dmg` 叫 `<productName>_<version>_<架構>.dmg`（下一集會看到 `tauri-app_0.1.0_aarch64.dmg`）。名字裡不能有檔名不能用的字元，像 `/` 與 `:`。範本的 `tauri-app` 只是預設值，所以第 1 集的輸出才會有 `Warn`。
-- `version` 要是 `主.次.修` 的 semver 字串，寫成 `1.0` 這種會被擋下來。
+- `version` 要是 `主.次.修` 的 semver 字串，寫成 `1.0` 會被擋下來：`tauri.conf.json > version` must be a semver string。
 
 專案裡有三個 `0.1.0`：`tauri.conf.json`、`Cargo.toml` 與 `package.json`。它們各自獨立，改一個不會動另外兩個。打進安裝檔的版本號看 `tauri.conf.json` 的 `version`；那一欄如果沒寫，才用 `Cargo.toml` 的 `package.version`。不想同步兩個地方，`version` 可以改寫成 `package.json` 的路徑，路徑從 `tauri.conf.json` 所在的資料夾算起：
 
@@ -34,7 +34,7 @@
 - `copyright`：版權文字，寫進 `.app` 的 `Info.plist`。
 - `category`：App 的分類，例如 `Productivity`，macOS 與 Linux 用它。
 
-`publisher`（發行者）、`shortDescription`（簡短說明）這類欄位，macOS 的 `.app` 用不到，是 Windows 的安裝程式與 Linux 的套件才會顯示，第 5、6 集再看。
+`publisher`（發行者）、`shortDescription`（簡短說明）這類欄位，macOS 的 `.app` 用不到，是 Windows 的安裝檔與 Linux 的套件才會顯示，第 5、6 集再看。
 
 ### 改成自己的
 

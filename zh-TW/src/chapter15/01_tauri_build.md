@@ -66,7 +66,7 @@ npm run tauri build -- --debug --bundles app
         ~/tauri-app/src-tauri/target/debug/bundle/macos/tauri-app.app (24.56 MiB)
 ```
 
-這次用的是 `dev` profile，編譯比較快（我們的機器上 20 秒，release 要 58 秒），檔案卻大了很多：`target/debug/tauri-app` 約 26 MB，release 的約 4 MB。範本的 `[profile.release]` 打開了 `lto` 與 `strip`，就是為了縮小檔案。debug 版自帶開發者工具，遇到「只有打包後才會發生」的問題，先拿它來查。
+這次用的是 `dev` profile，編譯比較快（我們的機器上 20 秒，release 要 58 秒），檔案卻大了很多：`target/debug/tauri-app` 約 24 MiB，release 的不到 4 MiB。範本的 `[profile.release]` 打開了 `lto` 與 `strip`，就是為了縮小檔案。debug 版自帶開發者工具，遇到「只有打包後才會發生」的問題，先拿它來查。
 
 注意 `--debug` 載入的還是打包進去的前端，不是 `devUrl`。第 14 章第 5 集用它驗證 CSP，靠的就是這一點。
 
@@ -130,7 +130,7 @@ npm run tauri build -- --bundles app
         ~/tauri-app/src-tauri/target/release/bundle/macos/tauri-app.app (4.00 MiB)
 ```
 
-新的 `.app` 打開後，右鍵選單會出現 Inspect Element，`Command + Option + I` 也能用。要留意兩件事：
+新的 `.app` 打開後，右鍵選單會出現 Inspect Element，`Command + Option + I` 也能用。這一點我們沒有開啟打包後的視窗確認，是依 `wry`（Tauri 用來開 WebView 的函式庫）的說明整理的。要留意兩件事：
 
 - 這個 feature 在 macOS 會呼叫私有 API，而 App Store 不收這樣的 App，要上架的版本別打開它。
 - 發佈給使用者的版本最好也拿掉，不然每個使用者都能打開你的前端來翻。
