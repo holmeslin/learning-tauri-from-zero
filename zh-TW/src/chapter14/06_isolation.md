@@ -171,7 +171,7 @@ window.__TAURI__.core.invoke("greet", { name: "x".repeat(100) }).then(console.lo
 
 - 被擋下的訊息，前端的 `invoke` 既不會成功也不會失敗，Promise 一直停在等待。需要的話，前端要自己設逾時。
 - isolation 的小網頁是編譯時嵌進 App 的。`dist-isolation/` 裡的檔案改了，`tauri dev` 不會自動重新編譯，畫面看起來沒變。存一次 `src-tauri/` 底下的檔案，例如 `lib.rs`，它才會重新編譯，新的 hook 才生效。
-- 它只檢查訊息，不取代 Rust 端的 permission 與 scope。每一條訊息要多繞一趟 iframe 和加密，所以前端只有你自己寫的程式時，沒必要開。
+- 它只檢查訊息，不取代 Rust 端的 permission 與 scope。每一條訊息要多繞一趟 iframe 和加密。Tauri 的設定說明把它標為「為了安全建議開啟」；前端用的 npm 套件越多，越值得付這個成本。
 - 同時設了 CSP（第 5 集）的話，Tauri 會自動把 isolation iframe 的來源加進 `default-src`，不用自己寫。
 
 ### 跟 Electron 比一比

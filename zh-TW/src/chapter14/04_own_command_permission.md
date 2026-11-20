@@ -8,7 +8,7 @@
 
 ### 把缺口補起來
 
-第 1 集看到的缺口是：plugin 與 core 的 command 沒被放行就不能呼叫，自己寫的 command 卻誰都能呼叫（第 3 章第 1 集也提過）。補法是在 `build.rs` 告訴 Tauri「這些 command 也要檢查」，之後它們就跟 plugin 的 command 一樣，要有 permission 才呼叫得到。
+第 1 集看到的缺口是：plugin 與 core 的 command 沒被放行就不能呼叫，自己寫的 command 卻誰都能呼叫（第 3 章第 1 集也提過）。開關是：App 只要有任何一項自己的 permission，Tauri 就會檢查 App 的每一個 command，它們從此跟 plugin 的 command 一樣，要被放行才呼叫得到。最直接的做法是在 `build.rs` 列出 command，讓 Tauri 替它們產生 permission。
 
 這集的例子是 `write_note`：前端給檔名和內容，Rust 在 App 資料夾裡寫檔，是第 12 章那兩個檔案 command 的縮小版。
 
@@ -136,7 +136,7 @@ fn main() {
 出錯了：write_note not allowed. Permissions associated with this command: allow-write-note
 ```
 
-從現在起，App 的 command 都要列進 `commands`，沒列的，不管有沒有放進 `generate_handler!`，前端一律呼叫不到，只會得到 `not allowed. Command not found`。
+從現在起，App 的 command 都要列進 `commands`，沒列的，不管有沒有放進 `generate_handler!`，前端一律呼叫不到，只會得到 `not allowed. Command not found`。這兩則都是開發模式的訊息，打包版只有 `Command write_note not allowed by ACL`。
 
 ### scope 由 command 自己檢查
 
@@ -151,7 +151,7 @@ Tauri 對 scope 做的事只有一件：把 capability 與 permission 裡寫的 
 
 ### 把 scope 寫進 permission 檔
 
-現在補上 scope。在 `src-tauri/permissions/` 底下放一個 `.toml` 檔，定義自己的 permission：
+現在補上 scope。在 `src-tauri/permissions/` 底下放一個 `.toml` 檔，定義自己的 permission。（這個資料夾只要有 permission 檔，就算 `build.rs` 沒列任何 command，也會打開開頭說的開關。）
 
 `src-tauri/permissions/notes.toml`：
 
@@ -205,6 +205,6 @@ dir = "notes/private"
 
 ## 重點整理
 
-- 自己的 command 預設不受 ACL 管。在 `build.rs` 用 `AppManifest::commands` 列出之後，Tauri 會產生 `allow-<command>` 與 `deny-<command>`，capability 要放行才能呼叫；沒列的 command 一律不能呼叫。
+- 自己的 command 預設不受 ACL 管；App 一有自己的 permission，所有 command 都要被放行才能呼叫。`build.rs` 的 `AppManifest::commands` 會替列出的 command 產生 `allow-<command>` 與 `deny-<command>`，沒列的就沒有 permission 可放行。
 - App 自己的 permission 在 capability 裡不加前綴；用 `permissions/*.toml` 的 `[[permission]]` 可以把 command 與 scope 綁成一項。
 - Tauri 只負責把 scope 交給 command（`CommandScope<T>`），比對由你寫。`allow` 為空時 `matches` 是 `true`，要自己先擋，路徑也要先清乾淨。

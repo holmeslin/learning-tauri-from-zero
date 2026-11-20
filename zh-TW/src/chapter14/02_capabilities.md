@@ -15,11 +15,13 @@
 | `identifier` | 這份 capability 的名字，不能重複。 |
 | `description` | 給人看的說明，不影響行為。 |
 | `windows` | 哪些視窗拿到 permission，寫 label，可以用 `*` 比對任意字元（glob）。 |
-| `permissions` | 放行的 permission，字串或物件（物件寫法第 3 集再說）。 |
+| `webviews` | 跟 `windows` 一樣，但比對的是 WebView 的 label，給一個視窗裡有好幾塊 WebView 時細分用。本書的視窗都只有一塊，用不到。 |
+| `permissions` | 放行的 permission，字串或物件（物件寫法第 7 章第 3 集用過，第 3 集再細看）。 |
 | `platforms` | 只在這些平台生效，可以寫 `linux`、`macOS`、`windows`、`android`、`iOS`；不寫就是每個平台。 |
 | `remote` | 讓從外部網址載入的頁面也拿到 permission，用 `urls` 列出網址；不寫就只有本機頁面（打包進 App 的頁面，或開發時的 `devUrl`）拿得到。 |
+| `local` | 本機頁面拿不拿得到，預設 `true`。只想放行外部網址時才設成 `false`。 |
 
-本書的 App 只載入自己的頁面，用不到 `remote`。如果哪天你的 App 要載入外部網站，那個網站就等於前端，要先想清楚它值不值得拿到這些 permission（第 1 集的信任界線）。
+本書的 App 只載入自己的頁面，用不到 `remote`。如果哪天你的 App 要載入外部網站，那個網站就等於前端，要先想清楚它值不值得拿到這些 permission（第 1 集的信任界線）。外部頁面連你自己寫的 command 都要被放行才呼叫得到，不像本機頁面預設沒人擋。
 
 ### 範例：主視窗與彈出視窗
 
@@ -108,11 +110,13 @@ referenced by: capability: default, permission: allow-set-title
 
 這則訊息分三段：
 
-- `window.set_title not allowed on window "popup-1", webview "popup-1", URL: local`：哪個 command 被擋，以及是哪個視窗、webview、什麼來源的頁面發出的呼叫。webview 是視窗裡實際顯示頁面的那一塊，本書的視窗都只有一塊，label 跟視窗一樣；`URL: local` 表示頁面是本機的。
+- `window.set_title not allowed on window "popup-1", webview "popup-1", URL: local`：哪個 command 被擋，以及是哪個視窗、WebView、什麼來源的頁面發出的呼叫。WebView 是視窗裡實際顯示頁面的那一塊，本書的視窗都只有一塊，label 跟視窗一樣；`URL: local` 表示頁面是本機的。
 - `allowed on: [windows: "main", URL: local]`：這個 command 目前在哪裡放行了。
 - `referenced by: capability: default, permission: allow-set-title`：是哪份 capability 的哪一項放行的。
 
 第 7 章第 2 集看到的 `Permissions associated with this command` 是另一種情況：沒有任何 capability 放行這個 command。這一則多了 `allowed on`，表示別的視窗放行了，而你這個視窗不在名單裡。
+
+這兩種詳細訊息都只有開發模式才有。打包版不管哪種情況，都只會說 `Command plugin:window|set_title not allowed by ACL`，要查原因得回開發模式重現。
 
 ### 另開一份 capability 給彈出視窗
 

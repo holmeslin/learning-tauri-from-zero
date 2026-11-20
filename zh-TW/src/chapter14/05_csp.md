@@ -193,7 +193,7 @@ script-src-attr：inline
 
 ### 這份 CSP 在做什麼
 
-- `default-src 'self'`：預設只准用頁面自己的來源。`script-src` 沒另外寫，也照這條，所以行內事件處理（`script-src-attr`）被擋，`onerror` 沒有跑。Tauri 打包時會替你自己的腳本與樣式在 CSP 裡補上雜湊值（hash）或 nonce，所以不用為了它們放寬。
+- `default-src 'self'`：預設只准用頁面自己的來源。`script-src` 沒另外寫，也照這條，所以行內事件處理（`script-src-attr`）被擋，`onerror` 沒有跑。Tauri 打包時會替寫在 HTML 裡的 `<script>`、`<style>` 在 CSP 裡補上雜湊值（hash）或 nonce；用 `src` 載入的腳本來自頁面自己的來源，`'self'` 已經放行。所以不用為了自己的程式放寬。
 - `img-src 'self' data:`：圖片只能來自自己或 `data:`。第 12 章第 2 集說過，預覽放行 `http`、`https` 的圖片，代價是打開別人的檔案時 App 會去連圖片的網址；有了這一行，WebView 在送出請求之前就擋下了。想放行網路上的圖片，就得自己在這裡加。
 - `connect-src ipc: http://ipc.localhost`：`invoke` 走的是 Tauri 的 `ipc:` 協定（Windows 與 Android 是 `http://ipc.localhost`）。拿掉這一行重新打包，`greet` 一樣有回應，但違規清單會多一行 `connect-src：ipc://localhost/greet`：Tauri 的第一種連線方式被擋，才改用備援的 `postMessage`。能用，但先報一次錯才改道，所以要寫進去。
 

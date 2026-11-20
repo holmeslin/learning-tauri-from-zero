@@ -106,7 +106,7 @@ Tauri 替這道界線準備了四道防線，後面五集會一一介紹：
 | CSP | 頁面能載入、能執行什麼 | `tauri.conf.json` 的 `app.security.csp` | 第 5 集 |
 | isolation | 每則 IPC 訊息送到 Rust 之前，先過一個你寫的檢查 | `tauri.conf.json` 的 `app.security.pattern` | 第 6 集 |
 
-前三項其實是同一套存取控制清單（ACL，access control list）：capability 決定「誰」，也就是哪些視窗；permission 決定「能呼叫什麼」；scope 決定「碰得到什麼」。
+表格的前兩列其實是同一套存取控制清單（ACL，access control list）：capability 決定「誰」，也就是哪些視窗；permission 決定「能呼叫什麼」；scope 決定「碰得到什麼」。
 
 一個 `invoke` 抵達 Rust 時，大致是這樣走：
 
@@ -116,7 +116,7 @@ Tauri 替這道界線準備了四道防線，後面五集會一一介紹：
 
 CSP 不在這條路上，它管的是頁面本身：能載入哪些資源、能不能執行行內腳本。
 
-第 2 步有個例外，也是這集的重點：plugin 與 core 的 command（`plugin:fs|read_text_file` 這種名字）一定要查；自己寫的 command 要等你替它們定義過 permission（第 4 集）才會查。定義之前，沒人擋。所以前面幾章的 `greet`、`read_text` 才能不用設定就呼叫，而 plugin 的函式沒放行就是會被擋。
+第 2 步有個例外，也是這集的重點：plugin 與 core 的 command（`plugin:fs|read_text_file` 這種名字）一定要查；自己寫的 command 要等你替它們定義過 permission（第 4 集）才會查。定義之前，本機頁面呼叫它們沒人擋（外部網址載入的頁面一律要查，第 2 集）。所以前面幾章的 `greet`、`read_text` 才能不用設定就呼叫，而 plugin 的函式沒放行就是會被擋。
 
 ### 放行得越少越好
 

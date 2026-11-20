@@ -141,7 +141,7 @@ scope 有兩種掛法，取決於那項 permission 有沒有 command：
 
 ### 直接禁止一個 command
 
-每個 command 的 permission 都成對：`allow-` 開頭放行，`deny-` 開頭禁止，`deny` 贏過所有的 `allow`，連 set 裡放行的也一樣。想用一個 set，又要挖掉其中一個 command，就加上 `"fs:deny-write-text-file"`。被禁止的 command 會得到 `fs.write_text_file explicitly denied on origin local`，後面接著是哪份 capability 的哪一項禁止的。
+每個 command 的 permission 都成對：`allow-` 開頭放行，`deny-` 開頭禁止，`deny` 贏過所有的 `allow`，連 set 裡放行的也一樣。想用一個 set，又要挖掉其中一個 command，就加上 `"fs:deny-write-text-file"`。被禁止的 command 會得到 `fs.write_text_file explicitly denied on origin local`，後面接著是哪份 capability 的哪一項禁止的。這也是開發模式才有的訊息，打包版只有 `Command plugin:fs|write_text_file not allowed by ACL`。
 
 ## 重點整理
 
