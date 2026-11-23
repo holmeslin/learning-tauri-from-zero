@@ -35,7 +35,7 @@ MSI 的打包程式，原始碼裡有 `#[cfg(target_os = "windows")]`，只在 W
 在 Windows 上打包，要先準備兩件事：
 
 - **網路**：第一次打包時，工具要從網路下載。MSI 是用 WiX 做的，Tauri 從 GitHub 下載 WiX 3.14；NSIS 是另一套工具，Tauri 下載的是 NSIS 3.13 和一個輔助用的 `nsis_tauri_utils.dll`。下載的東西存在使用者快取資料夾底下的 `tauri` 資料夾，之後就不用再下載。
-- **VBSCRIPT**：官方文件說，打 MSI 需要 Windows 的 VBSCRIPT 選用功能（optional feature）。多數 Windows 預設是開的；被關掉的話，打 MSI 會出現 `failed to run light.exe` 這類錯誤（`light.exe` 是 WiX 的工具）。要打開，到「設定」→「應用程式」→「選用功能」→「更多 Windows 功能」，勾選 VBSCRIPT，必要時重新開機。這一條是官方文件的說法，tauri 的原始碼裡一個字也搜不到，我們沒有驗證過。
+- **VBSCRIPT**：官方文件說，打 MSI 需要 Windows 的 VBSCRIPT 選用功能（optional feature）。多數 Windows 預設是開的；被關掉的話，打 MSI 會出現 `failed to run light.exe` 這類錯誤（`light.exe` 是 WiX 的工具）。遇到的話，到 Windows 設定的選用功能裡把 VBSCRIPT 加回來。這一條是官方文件的說法，tauri 的原始碼裡一個字也搜不到，我們沒有驗證過。
 
 ### MSI 的版本號有限制
 

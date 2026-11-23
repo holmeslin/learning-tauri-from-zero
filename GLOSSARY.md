@@ -79,3 +79,4 @@ _Avoid_: 樣板專案、boilerplate
 | 模擬器 | emulator / simulator | 仿真器 |
 | 最小權限 | least privilege | 最小特權 |
 | 指令（CSP 的） | directive | 指示 |
+| 語意化版本 | semantic versioning（semver） | 語義化版本 |
