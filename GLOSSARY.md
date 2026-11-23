@@ -59,6 +59,7 @@ _Avoid_: 樣板專案、boilerplate
 | 開發者工具 | developer tools（devtools） | 開發人員工具、控制台（那是 Console 分頁） |
 | 自動更新 | auto update | 熱更新 |
 | 程式碼簽章 | code signing | 代碼簽名 |
+| 更新檔簽章 | updater signature（`.sig`） | 更新簽名 |
 | 公證 | notarization（macOS） | 認證 |
 | 憑證 | certificate | 證書 |
 | 資源檔 | resource | 資源文件 |
@@ -79,3 +80,4 @@ _Avoid_: 樣板專案、boilerplate
 | 模擬器 | emulator / simulator | 仿真器 |
 | 最小權限 | least privilege | 最小特權 |
 | 指令（CSP 的） | directive | 指示 |
+| 語意化版本 | semantic versioning（semver） | 語義化版本 |

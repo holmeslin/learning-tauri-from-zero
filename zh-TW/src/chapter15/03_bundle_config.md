@@ -17,7 +17,7 @@
 ### `productName` 與 `version`
 
 - `productName` 是給使用者看的名字，也是安裝檔的檔名。`.app` 叫 `<productName>.app`，`.dmg` 叫 `<productName>_<version>_<架構>.dmg`（下一集會看到 `tauri-app_0.1.0_aarch64.dmg`）。名字裡不能有檔名不能用的字元，像 `/` 與 `:`。範本的 `tauri-app` 只是預設值，所以第 1 集的輸出才會有 `Warn`。
-- `version` 要是 `主.次.修` 的 semver 字串，寫成 `1.0` 會被擋下來：`tauri.conf.json > version` must be a semver string。
+- `version` 要是 `主.次.修` 格式的語意化版本（semantic versioning，簡稱 semver），寫成 `1.0` 會被擋下來：`tauri.conf.json > version` must be a semver string。
 
 專案裡有三個 `0.1.0`：`tauri.conf.json`、`Cargo.toml` 與 `package.json`。它們各自獨立，改一個不會動另外兩個。打進安裝檔的版本號看 `tauri.conf.json` 的 `version`；那一欄如果沒寫，才用 `Cargo.toml` 的 `package.version`。不想同步兩個地方，`version` 可以改寫成 `package.json` 的路徑，路徑從 `tauri.conf.json` 所在的資料夾算起：
 
@@ -85,6 +85,8 @@
 }
 ```
 
+視窗標題是 `app.windows` 裡的 `title`，跟 `productName` 是兩個欄位。這裡沒改它，所以 App 的標題列還是 `tauri-app`，要一起換就改那一欄。
+
 ```bash
 npm run tauri build -- --bundles app
 ```
@@ -124,5 +126,5 @@ plutil -p "src-tauri/target/release/bundle/macos/Hello Tauri.app/Contents/Info.p
 ## 重點整理
 
 - `bundle.active` 決定要不要打包，`targets` 決定做哪些格式（`"all"` 是這個平台做得出來的全部），`--bundles` 會蓋掉 `targets`。
-- `productName` 與 `version` 決定安裝檔的檔名與版本號；版本號要是 semver，只看 `tauri.conf.json`，也可以寫成 `"../package.json"`。
-- `copyright`、`category` 在 macOS 的 `Info.plist` 看得到；`publisher`、`shortDescription` 等到 Windows 與 Linux 才會用上。
+- `productName` 與 `version` 決定安裝檔的檔名與版本號；版本號要是語意化版本，只看 `tauri.conf.json`，也可以寫成 `"../package.json"`。
+- `copyright`、`category` 在 macOS 的 `Info.plist` 看得到；`publisher`、`shortDescription` 是 Windows 與 Linux 的安裝檔用的，macOS 用不到。
