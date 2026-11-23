@@ -141,7 +141,7 @@ src-tauri/target/release/bundle/macos/tauri-app.app: rejected
 
 ## 重點整理
 
-- 簽章是 `codesign` 用憑證替 `.app` 簽名，公證是把簽好的 `.app` 送 Apple 檢查再貼票；更新檔的簽章是另一件事。
+- 簽章是 `codesign` 用憑證替 `.app` 簽名，公證是把簽好的 `.app` 送 Apple 檢查再貼票；更新檔簽章是另一件事。
 - 沒設 `signingIdentity`，`tauri build` 不簽 `.app`：只有連結器附在執行檔上的簽章，`codesign --verify` 失敗。
 - `bundle.macOS.signingIdentity` 設成 `"-"` 是 ad-hoc 簽章：`.app` 封得起來、`--verify` 通過，但沒有憑證，`spctl --assess` 回 `rejected`。
 - Developer ID 簽章要付費帳號：憑證用 `signingIdentity` 或 `APPLE_SIGNING_IDENTITY`，公證用 `APPLE_ID` 那組或 `APPLE_API_KEY` 那組環境變數；沒有帳密只會警告略過公證。

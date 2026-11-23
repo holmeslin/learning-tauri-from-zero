@@ -26,7 +26,7 @@ App 啟動後，updater plugin 做這幾件事：
 
 第 2 集做金鑰，第 3 集做更新資訊檔，第 4 集在 App 裡寫檢查與安裝的程式。
 
-這裡的簽章叫更新簽章，是 Tauri 自己的一套，免費、一定要做。它跟本章最後兩集的程式碼簽章（macOS 簽章與公證、Windows 簽章）是兩回事：程式碼簽章讓作業系統信任你的 App，要付費憑證。本章前四集沒有用到任何憑證。
+這裡的簽章叫更新檔簽章，是 Tauri 自己的一套，免費、一定要做。它跟本章最後兩集的程式碼簽章（macOS 簽章與公證、Windows 簽章）是兩回事：程式碼簽章讓作業系統信任你的 App，要付費憑證。本章前四集沒有用到任何憑證。
 
 ### 裝 plugin
 
@@ -104,6 +104,6 @@ Failed to setup app: error encountered during setup hook: failed to initialize p
 ## 重點整理
 
 - 自動更新要三樣東西：網路上的更新檔、更新資訊檔，以及一對金鑰（私鑰簽、公鑰驗）。
-- 更新簽章是 Tauri 的一套，免費、不能省；程式碼簽章是作業系統的一套，要付費憑證，是另一回事。
+- 更新檔簽章是 Tauri 的一套，免費、不能省；程式碼簽章是作業系統的一套，要付費憑證，是另一回事。
 - `npm run tauri add updater` 會加 crate（桌面專用）、npm 套件、`desktop.json` 與 `requireSignedVersion`；從 Rust 呼叫用不到 permission 與 npm 套件。
 - plugin 在 `setup` 用 `#[cfg(desktop)]` 註冊；`plugins.updater` 沒有 `pubkey`，App 一啟動就 panic。

@@ -135,7 +135,7 @@ tauri-app.app.tar.gz.sig
 
 ## 重點整理
 
-- 更新簽章用一對金鑰：私鑰打包時簽章，公鑰寫進 `plugins.updater.pubkey` 跟著 App 發出去。
+- 更新檔簽章用一對金鑰：私鑰打包時簽章，公鑰寫進 `plugins.updater.pubkey` 跟著 App 發出去。
 - `npm run tauri signer generate -- -w <路徑>` 產生金鑰，私鑰用密碼加密；私鑰與密碼不能進 Git、不能弄丟。
 - 設定要三處：`bundle.createUpdaterArtifacts: true`、`plugins.updater.pubkey`，版本號是語意化版本。
 - 打包時用環境變數 `TAURI_SIGNING_PRIVATE_KEY`（路徑或內容）與 `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` 提供私鑰，沒設就會在簽章那步失敗。
