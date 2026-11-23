@@ -2,13 +2,13 @@
 
 ## 本集目標
 
-讓 workflow 打完包，自動在 GitHub 建一個 Release 草稿，把三個平台的安裝檔都傳上去；看懂 `permissions` 與 `GITHUB_TOKEN`，以及草稿在你按下發佈之前，別人看不到。
+讓 workflow 打完包，自動在 GitHub 建一個 release 草稿，把三個平台的安裝檔都傳上去；看懂 `permissions` 與 `GITHUB_TOKEN`，以及草稿在你按下發佈之前，別人看不到。
 
 ## 正文
 
 這一集接著第 2 集的專案，帶過來的檔案只有 `.github/workflows/release.yml`，下面整份換掉。
 
-### Release 與草稿
+### release 與草稿
 
 GitHub 的 release 是一個版本的頁面：掛在一個 tag 上，有標題、說明，還有附件（asset），使用者從 repo 的 Releases 頁下載附件。草稿（draft）是還沒公開的 release，按下發佈之前，只有你這個有寫入權限的人登入後看得到。三個平台各自上傳，上傳到一半不該有人看到缺檔的版本，所以先放成草稿，到齊、確認過再發佈。
 
@@ -73,6 +73,7 @@ Couldn't find release with tag app-v0.1.0. Creating one.
 GITHUB_TOKEN Permissions
 Contents: read
 Metadata: read
+Packages: read
 ```
 
 建 release 要寫入 repo 的內容，所以加上 `permissions: contents: write`。寫在 workflow 檔裡，比到 repo 設定裡改預設值好：權限跟著檔案走，用什麼權限一看檔案就知道。
@@ -109,18 +110,18 @@ tauri-app_0.1.0_x64_en-US.msi
 404 https://api.github.com/repos/<你的帳號>/tauri-app/releases/tags/app-v0.1.0
 ```
 
-Releases 頁也沒有任何 release。草稿的發佈留到第 5 集。
+草稿的發佈留到第 5 集。
 
 ### 執行期間，別推改了 workflow 的 commit
 
-我們補上 `permissions` 之後的第一次執行，還是失敗了，錯誤跟沒設 `permissions` 時一模一樣，但 `Set up job` 明明寫著 `Contents: write`。原因是等它跑的時候，我們又推了一個改了 `release.yml` 的 commit。
+我們補上 `permissions` 之後的第一次執行，還是失敗了，錯誤跟沒設 `permissions` 時一模一樣，但 `Set up job` 明明寫著 `Contents: write`。等它跑的時候，我們又推了一個改了 `release.yml` 的 commit。
 
-tauri-action 建 release 時，tag 指向這次執行的 commit。我們用 `curl` 直接打建 release 的 API，換不同的 commit 當 tag 的目標：它帶的 `.github/workflows/` 檔案跟分支現在的一樣就成功，不一樣就是這個 `403`。回應的 `x-accepted-github-permissions` 標頭寫著 `contents=write; contents=write,workflows=write`，我們推測是 GitHub 把這個 tag 當成把另一版的 workflow 檔推進來，而 `GITHUB_TOKEN` 沒有 workflow 的寫入權限。這是試出來的規則，沒有找到官方文件寫它。重新觸發、中間不推任何東西，這次就成功了。
+tauri-action 建 release 時，tag 指向這次執行的 commit。我們用 `curl` 直接打建 release 的 API，換幾個 commit 當 tag 的目標：`release.yml` 跟分支最新的 commit 不一樣的，都是這個 `403`；一樣的、或還沒有任何 workflow 檔的第一個 commit，都成功。回應的 `x-accepted-github-permissions` 標頭寫著 `contents=write; contents=write,workflows=write`。這只是我們試出來的現象，沒有找到官方文件寫它，背後的規則我們不確定。重新觸發、中間不推任何東西，這次就成功了。
 
 ### 這集實測了什麼
 
 - runner 與 tauri-action 版本同第 2 集（macOS 26 arm64、`ubuntu-22.04`、`windows-2025-vs2026`；v1.0.0）。成功的那次，整個 workflow 8 分 41 秒；macOS 5 分 26 秒、Linux 6 分 59 秒、Windows 8 分 38 秒。
-- 沒測：在網頁介面操作 Release（我們只用 `gh`）、兩個 job 同時建草稿。
+- 沒測：在網頁介面操作 release（我們只用 `gh`）、兩個 job 同時建草稿。
 
 ## 重點整理
 

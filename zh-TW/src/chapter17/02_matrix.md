@@ -22,7 +22,7 @@
 
 `matrix.os` 有三個值，GitHub 就把這個 job 展開成三個，各自在一台 runner 上同時跑，`${{ matrix.os }}` 換成那一個的值。`fail-fast` 預設是 `true`：一個 job 失敗，其他還沒跑完的會被取消（官方文件的說法）。我們要看每個平台自己的結果，所以關掉。
 
-Linux 選 `ubuntu-22.04`，是照 tauri-action 範例的寫法；`ubuntu-latest` 現在是 24.04，這兩個以外的 Ubuntu 版本，我們都沒有試過。
+Linux 選 `ubuntu-22.04`，是照 tauri-action 範例的寫法；`ubuntu-latest` 現在是 24.04，我們沒有試過，其他 Ubuntu 版本也沒有。
 
 ### 先不裝套件，看會怎樣
 
@@ -95,7 +95,7 @@ jobs:
 | `windows-latest` | `tauri-app_0.1.0_x64_en-US.msi`（2.11 MiB）、`tauri-app_0.1.0_x64-setup.exe`（1.42 MiB） |
 | `ubuntu-22.04` | `tauri-app_0.1.0_amd64.deb`（2.46 MiB）、`tauri-app-0.1.0-1.x86_64.rpm`（2.47 MiB）、`tauri-app_0.1.0_amd64.AppImage`（77.51 MiB） |
 
-這跟第 15 章第 5、6 集的內容一致：Windows 的兩個檔名、Linux 的 `amd64`、`x86_64`、`amd64` 拼法（那時只讀了原始碼，現在在 x86_64 的機器上對上了），Windows 的 log 也看得到下載 WiX 3.14 與 NSIS 3.13：
+這跟第 15 章第 5、6 集的內容一致：Windows 的兩個檔名、Linux 的 `amd64`、`x86_64`、`amd64` 拼法（那時只讀了原始碼，現在在 x86_64 的機器上對上了），這次 Windows 的 tauri-action step 的 log（節錄）也看得到下載 WiX 3.14 與 NSIS 3.13：
 
 ```text
  Downloading https://github.com/wixtoolset/wix3/releases/download/wix3141rtm/wix314-binaries.zip

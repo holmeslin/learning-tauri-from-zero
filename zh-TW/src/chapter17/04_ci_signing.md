@@ -10,11 +10,13 @@
 
 - `.github/workflows/release.yml`：第 3 集那份，下面只改一個 step。
 - `src-tauri/src/lib.rs`：第 16 章第 4 集那一整份（啟動時檢查並安裝更新），一個字都不改。
-- `src-tauri/tauri.conf.json`：第 16 章設好的 `createUpdaterArtifacts`、`pubkey`、`requireSignedVersion`，下面改兩處。
+- `src-tauri/tauri.conf.json`：第 16 章設好的 `createUpdaterArtifacts`、`pubkey`、`requireSignedVersion`，下面改三處。
 - `src-tauri/Cargo.toml`：第 16 章第 1 集 `tauri add updater` 加的 `tauri-plugin-updater`，不用動。
 - 第 16 章第 2 集的私鑰 `~/.tauri/tauri-app.key` 與你設的密碼。
 
-### 設定檔改兩處
+### 設定檔改三處
+
+下面只列 `src-tauri/tauri.conf.json` 裡跟這集有關的欄位，其他不動，`pubkey` 是你自己那把公鑰的內容：
 
 ```json,ignore
 "version": "1.0.0",
@@ -29,7 +31,7 @@
 }
 ```
 
-`version` 設回 `1.0.0`，當成第一個公開的版本。`endpoints` 換成 GitHub Release 的網址（第 5 集說它怎麼來），也拿掉第 16 章的 `dangerousInsecureTransportProtocol`，GitHub 是 `https`。這一行現在就要設：App 問哪裡更新，是編譯時就寫進去的，已經發出去的版本改不了。
+`version` 設回 `1.0.0`，當成第一個公開的版本。`endpoints` 換成 GitHub Release 的網址（第 5 集說它怎麼來），也拿掉第 16 章的 `dangerousInsecureTransportProtocol`，GitHub 是 `https`。`endpoints` 現在就要設：App 問哪裡更新，是編譯時就寫進去的，已經發出去的版本改不了。
 
 ### 金鑰要放進 secret
 
@@ -48,6 +50,8 @@ CI 的 runner 每次都是新的，你電腦上的私鑰檔不在上面，而私
 
 ```text
     Finished 2 bundles at:
+        /Users/runner/work/tauri-app/tauri-app/src-tauri/target/release/bundle/macos/tauri-app.app (5.88 MiB)
+        /Users/runner/work/tauri-app/tauri-app/src-tauri/target/release/bundle/dmg/tauri-app_1.0.0_aarch64.dmg (2.83 MiB)
         /Users/runner/work/tauri-app/tauri-app/src-tauri/target/release/bundle/macos/tauri-app.app.tar.gz (updater) (2.83 MiB)
 
 failed to decode secret key: incorrect updater private key password: Missing comment in secret key
@@ -94,7 +98,7 @@ macOS 簽 `.app.tar.gz`，Windows 簽 MSI 與 NSIS 的安裝檔（2 個），Lin
 
 這一段沒有跑。我們沒有 Apple Developer 帳號，也沒有 Windows 憑證，下面是依 tauri-bundler 2.10.5 與 tauri-macos-sign 2.4.3 的原始碼整理的。
 
-**macOS。** bundler 自己會把憑證匯進鑰匙圈，不需要在 workflow 裡手動用 `security` 指令。只要 `APPLE_CERTIFICATE`（`.p12` 檔的 base64）與 `APPLE_CERTIFICATE_PASSWORD` 兩個都有設，它就建一個臨時鑰匙圈、匯入憑證，用完刪掉。再加上第 16 章第 5 集的公證帳密，env 會長這樣：
+**macOS。** bundler 自己會把憑證匯進鑰匙圈，不需要在 workflow 裡手動用 `security` 指令。只要 `APPLE_CERTIFICATE`（`.p12` 檔的 base64）與 `APPLE_CERTIFICATE_PASSWORD` 兩個都有設，它就建一個臨時鑰匙圈、匯入憑證，用完刪掉。再加上第 16 章第 5 集的公證帳密，`env` 會長這樣：
 
 ```yaml
         env:
@@ -117,7 +121,7 @@ macOS 簽 `.app.tar.gz`，Windows 簽 MSI 與 NSIS 的安裝檔（2 個），Lin
 - 實測：更新檔簽章在 macOS、Linux、Windows 三個 runner 上，沒設 secret 的失敗與設好之後的成功。runner、tauri-action 版本同第 2 集；各 job 3 分 46 秒（macOS）、5 分 53 秒（Linux）、5 分 46 秒（Windows）。
 - 同一份程式碼編譯的時間差很多：macOS 編譯，第 1 集是 6 分 56 秒，這次是 2 分 52 秒。我們沒有加快取，不知道原因。
 - 實測用的是另外替示範 repo 產生的一次性金鑰，不是第 16 章那把，做法相同。
-- 沒測：網頁介面設 secret、互動輸入的 `gh secret set`、所有憑證相關的設定。
+- 沒測：網頁介面設 secret、互動輸入的 `gh secret set`、所有憑證相關的設定（上面那段 `APPLE_*` 的 `env` 沒有在 workflow 裡跑過）。
 
 ## 重點整理
 

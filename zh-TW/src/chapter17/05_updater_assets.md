@@ -6,7 +6,13 @@
 
 ## 正文
 
-這一集接著第 4 集，沒有新的檔案要改，用的是第 4 集的 `release.yml`、`tauri.conf.json` 與第 16 章第 4 集的 `lib.rs`。最後要發 1.1.0，只會把 `tauri.conf.json` 的 `version` 改成 `1.1.0`。
+這一集接著第 4 集，沒有新的檔案要改。從前面帶過來的檔案：
+
+- `.github/workflows/release.yml`：第 4 集那份。
+- `src-tauri/src/lib.rs`：第 16 章第 4 集那一整份。
+- `src-tauri/tauri.conf.json`：第 4 集改好的那份。最後要發 1.1.0，只會把 `version` 改成 `1.1.0`。
+- `src-tauri/Cargo.toml`：第 16 章第 1 集加了 `tauri-plugin-updater` 的那份。
+- 第 4 集設好的兩個 secret：`TAURI_SIGNING_PRIVATE_KEY` 與 `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`。
 
 ### release 裡多了什麼
 
@@ -110,7 +116,7 @@ App 去 GitHub 問過，`latest.json` 說最新是 1.0.0，沒有新版。接著
 共下載 2963513 bytes，安裝完成，重新啟動
 ```
 
-`plutil -extract CFBundleShortVersionString raw -o - tauri-app.app/Contents/Info.plist` 先前讀到 `1.0.0`，更新之後是 `1.1.0`，`.app` 被換掉了。一個從 CI 做出來、經 GitHub Release 發佈的版本，更新成下一個 CI 發佈的版本，簽章驗過。
+更新之後，`plutil -extract CFBundleShortVersionString raw -o - tauri-app.app/Contents/Info.plist` 讀到 `1.1.0`；從同一個 `.app.tar.gz` 重新解開的 `.app` 讀到的是 `1.0.0`。`.app` 被換掉了。一個從 CI 做出來、經 GitHub Release 發佈的版本，更新成下一個 CI 發佈的版本，簽章驗過。
 
 ### 這集實測了什麼
 
