@@ -2,7 +2,7 @@
 
 ## 本集目標
 
-知道 Windows 上的 `npm run tauri build` 怎麼替安裝檔簽章：`tauri.conf.json` 要填哪些欄位、打包時哪些檔案會被簽、不用 `signtool` 時怎麼換成自己的簽章指令，以及付費憑證從申請到用上的大致流程。
+知道 Windows 上的 `npm run tauri build` 怎麼替安裝檔簽章：要填哪些欄位，打包時哪些檔案會被簽。也會講不用 `signtool` 時怎麼換成自己的簽章指令，以及付費憑證從申請到用上的大致流程。
 
 ## 正文
 
@@ -10,7 +10,7 @@
 
 跟第 15 章第 5 集一樣，我們沒有 Windows 機器，也沒有任何簽章憑證，所以這一集沒有貼任何打包的輸出。你要照著做，需要一台 Windows 和一張真的憑證。
 
-下面的欄位、簽哪些檔案、簽的順序，都是對照 Tauri CLI 2.12 內建的 tauri-bundler 2.10 原始碼（`src/bundle/windows/` 的 `sign.rs`、`nsis/mod.rs`、`msi/mod.rs`，加上 `settings.rs`）和 CLI 的設定 schema 查出來的。原始碼查不到的說法，我們會當場標出來。
+下面的欄位、簽哪些檔案、簽的順序，都是對照 Tauri CLI 2.12 內建的 tauri-bundler 2.10 原始碼和 CLI 的設定 schema 查出來的。原始碼查不到的說法，我們會當場標出來。
 
 ### 簽章在做什麼
 
@@ -49,17 +49,17 @@ Tauri 做的事單純得多：打包時，替每個該簽的檔案呼叫一次�
 
 不是只有最後的安裝檔。從原始碼數得出來的有：
 
-- **app 的執行檔**：每一種安裝檔各簽一次。原始碼的註解說明了原因：bundler 會先改寫執行檔、寫進打包類型，改過的檔案要重簽，所以簽章排在改寫之後。專案裡其他的執行檔目標，則在打包前就簽好。
+- **app 的執行檔**：每一種安裝檔各簽一次。原因是 bundler 會先改寫執行檔、寫進打包類型，改過的檔案要重簽，所以簽章排在改寫之後。專案裡其他的執行檔目標，則在打包前就簽好。
 - **`bundle.resources` 裡的 `.exe` 與 `.dll`**（第 15 章第 7 集）：只有這兩種副檔名才簽。在 Windows 上，bundler 先用 `signtool verify /pa` 檢查，已經簽過的就跳過。
 - **安裝檔本身**：`.msi` 與 `-setup.exe`。這就是第 15 章第 5 集預告的安裝檔簽章。
 - **NSIS 的 uninstaller**：uninstaller 是 `makensis` 打包時才做出來的，所以 bundler 把整條簽章指令（路徑的位置先寫成 `%1`）交給 `makensis` 的 `!uninstfinalize`，由 NSIS 在做好之後執行。
 - **bundler 自己帶的 DLL**：NSIS 的外掛 DLL、WiX 的擴充 DLL。bundler 先複製一份再簽，不動原本的工具資料夾。MSI 還會把輸出資料夾（`target/release`）裡、沒列在資源檔的 `.dll` 一併簽掉。
 
-跟簽章有關的旗標是 `--no-sign`：`npm run tauri build -- --no-sign` 會跳過上面全部的簽章，只印警告。它也會連第 2 集的更新檔簽章一起跳過（`tauri-cli` 的 `src/bundle.rs`）。更新檔簽章是另一把金鑰簽的另一種簽章：CLI 等 bundler 把安裝檔與 Windows 簽章都做完，才替成品簽 `.sig`，所以 `.sig` 簽的是已經帶著 Windows 簽章的安裝檔。
+跟簽章有關的旗標是 `--no-sign`：`npm run tauri build -- --no-sign` 會跳過上面全部的簽章，只印警告。它也會連第 2 集的更新檔簽章一起跳過。更新檔簽章是另一把金鑰簽的另一種簽章：CLI 等 bundler 把安裝檔與 Windows 簽章都做完，才替成品簽 `.sig`，所以 `.sig` 簽的是已經帶著 Windows 簽章的安裝檔。
 
 ### 不用 `signtool`：`signCommand`
 
-`signtool` 只有 Windows 有。想用別的工具，像雲端簽章服務提供的命令列程式，或是交叉打包時在別的系統上跑的簽章工具（`settings.rs` 的註解舉的例子是 `osslsigncode`），就改設 `signCommand`。下面的 `sign-cli` 是原始碼註解裡的示範名字，不是真的工具：
+`signtool` 只有 Windows 有。想用別的工具，像雲端簽章服務提供的命令列程式，或是交叉打包時在別的系統上跑的簽章工具（例如 `osslsigncode`），就改設 `signCommand`。下面的 `sign-cli` 是示範用的名字，不是真的工具：
 
 ```json,ignore
 {
@@ -74,7 +74,7 @@ Tauri 做的事單純得多：打包時，替每個該簽的檔案呼叫一次�
 }
 ```
 
-規則都在 `sign.rs` 與 CLI 的 `helpers/config.rs`：
+規則如下：
 
 - 每個要簽的檔案，各執行一次這個指令。內容剛好是 `%1` 的那個參數，換成檔案路徑；其他參數照原樣傳過去，只有一個例外：如果參數是一個已經存在的相對路徑，會被換成絕對路徑，因為 NSIS 簽 uninstaller 時的工作目錄不一樣。
 - `signCommand` 也可以寫成一個字串，如 `"sign-cli --arg1 --arg2 %1"`。Tauri 只用單一空格去切，所以參數裡有空白就得用上面的物件寫法。
@@ -84,7 +84,7 @@ Tauri 做的事單純得多：打包時，替每個該簽的檔案呼叫一次�
 
 ### 在 Windows 以外的機器上
 
-預設的 `signtool` 只在 Windows 上存在。bundler 能在別的系統上交叉打出 NSIS 安裝檔（原始碼的註解提到 Linux 上用 `cargo-xwin`，打包時也會警告交叉編譯還是實驗性的），這本書不展開，但這種情況有一個容易踩到的地方：只設 `certificateThumbprint`，bundler 不報錯，也不會簽，因為 `sign()` 在非 Windows 上沒有自訂指令時直接回傳成功。「預設只支援 Windows 主機」那行警告，只在兩個欄位都沒設時才出現。要在別的系統上簽，一定得設 `signCommand`。這一點我們也只讀了原始碼。
+預設的 `signtool` 只在 Windows 上存在。bundler 能在別的系統上交叉打出 NSIS 安裝檔（依註解是在 Linux 上用 `cargo-xwin`，打包時也會警告交叉編譯還是實驗性的），這本書不展開，但這種情況有一個容易踩到的地方：只設 `certificateThumbprint`，bundler 不報錯，也不會簽，因為在非 Windows 上，沒有 `signCommand` 的話 bundler 直接略過簽章、回報成功。「預設只支援 Windows 主機」那行警告，只在兩個欄位都沒設時才出現。要在別的系統上簽，一定得設 `signCommand`。這一點我們也只讀了原始碼。
 
 ### 付費憑證的流程
 
