@@ -34,7 +34,7 @@ _Avoid_: 樣板專案、boilerplate
 
 原則：跟 Tauri、Rust、Web 平台 API 名稱相同的詞保留英文；其他翻成台灣用語，第一次出現時附英文。
 
-保留英文：command、plugin、capability、permission、scope、set（permission 的）、WebView、IPC、CSP、ACL、XSS、isolation、hook、label（視窗的）、`AppHandle`、`State`、`Channel`、`invoke`、`emit`、`listen`、payload、DOM、HTML、CSS、TypeScript、JavaScript、npm、Vite、crate、serde、JSON、AppImage、MSI、NSIS、APK、AAB、IPA、tray（只在 API 名稱裡，正文寫「系統匣」）。
+保留英文：command、plugin、capability、permission、scope、set（permission 的）、WebView、IPC、CSP、ACL、XSS、isolation、hook、label（視窗的）、`AppHandle`、`State`、`Channel`、`invoke`、`emit`、`listen`、payload、DOM、HTML、CSS、TypeScript、JavaScript、npm、Vite、crate、serde、JSON、AppImage、MSI、NSIS、deb、rpm、WiX、WebView2、bootstrapper、APK、AAB、IPA、tray（只在 API 名稱裡，正文寫「系統匣」）。
 
 | 書中用語 | 英文 | 不要用 |
 | --- | --- | --- |
@@ -54,6 +54,9 @@ _Avoid_: 樣板專案、boilerplate
 | 熱重載 | hot reload | 熱更新 |
 | 打包 | bundle | 捆綁 |
 | 安裝檔 | installer | 安裝包 |
+| 圖示（App 的） | icon | 圖標 |
+| 磁碟映像檔（`.dmg`） | disk image | 光碟映像、映像檔案 |
+| 開發者工具 | developer tools（devtools） | 開發人員工具、控制台（那是 Console 分頁） |
 | 自動更新 | auto update | 熱更新 |
 | 程式碼簽章 | code signing | 代碼簽名 |
 | 公證 | notarization（macOS） | 認證 |
