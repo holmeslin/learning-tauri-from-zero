@@ -35,16 +35,11 @@
 
 CI 的 runner 每次都是新的，你電腦上的私鑰檔不在上面，而私鑰不能進 Git（第 16 章第 2 集）。GitHub 的 secret 是存在 repo 設定裡的加密值，設好之後看不到內容，workflow 用 `${{ secrets.名字 }}` 取用，印在 log 裡會被遮成 `***`。
 
-tauri-action 那個 step 要把 secret 交給 Tauri CLI，用第 16 章說過的兩個環境變數：
+要把 secret 交給 Tauri CLI，用第 16 章說過的兩個環境變數。在第 3 集的 `release.yml`，tauri-action 那個 step 的 `env` 裡，`GITHUB_TOKEN` 那行下面加這兩行（縮排跟它一樣），其他都不動：
 
 ```yaml
-      - uses: tauri-apps/tauri-action@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
-        with:
-          # 其餘跟第 3 集一樣
 ```
 
 ### 沒設 secret 會怎樣

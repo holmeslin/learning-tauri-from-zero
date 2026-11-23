@@ -22,7 +22,7 @@
 
 `matrix.os` 有三個值，GitHub 就把這個 job 展開成三個，各自在一台 runner 上同時跑，`${{ matrix.os }}` 換成那一個的值。`fail-fast` 預設是 `true`：一個 job 失敗，其他還沒跑完的會被取消（官方文件的說法）。我們要看每個平台自己的結果，所以關掉。
 
-Linux 選 `ubuntu-22.04`，不選 `ubuntu-latest`，因為 `-latest` 會在 GitHub 換映像時跟著換，打包的環境就變了。我們沒有試過別的 Ubuntu 版本。
+Linux 選 `ubuntu-22.04`，是照 tauri-action 範例的寫法；`ubuntu-latest` 現在是 24.04，這兩個以外的 Ubuntu 版本，我們都沒有試過。
 
 ### 先不裝套件，看會怎樣
 
@@ -51,7 +51,9 @@ error: failed to run custom build command for `gdk-sys v0.18.2`
 
 ### 補上 Linux 的套件
 
-第 1 章第 2 集那份 `apt` 清單裡，`build-essential`、`curl`、`wget`、`file`、`libssl-dev` 不用裝：我們只裝下面四個，編譯與三種安裝檔都過了。`.github/workflows/release.yml`：
+第 1 章第 2 集那份 `apt` 清單裡，`build-essential`、`curl`、`wget`、`file`、`libssl-dev` 不用裝：我們只裝下面四個，編譯與三種安裝檔都過了。
+
+`.github/workflows/release.yml`：
 
 ```yaml
 name: release

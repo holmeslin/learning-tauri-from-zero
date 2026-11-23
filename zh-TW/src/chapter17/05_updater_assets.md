@@ -116,7 +116,7 @@ App 去 GitHub 問過，`latest.json` 說最新是 1.0.0，沒有新版。接著
 
 - runner 與 tauri-action 版本同第 2 集，updater plugin 2.14.1。1.0.0 的 workflow 5 分 57 秒（第 4 集），1.1.0 這次 8 分 34 秒（macOS 6 分 35 秒、Linux 8 分 24 秒、Windows 8 分 29 秒）。
 - 實際更新只在 macOS（Apple Silicon）上做，`.app` 放在資料夾裡從終端機啟動，repo 是公開的。Windows 與 Linux 的 `latest.json` 內容我們看了，但沒有在那兩個系統上更新過。
-- 沒測：私有 repo（`latest.json` 網址要登入，App 拿不到）、`updaterJsonPreferNsis`、在網頁介面發佈草稿、下載來的 `.app` 被 Gatekeeper 擋下的情況。
+- 沒測：私有 repo、`updaterJsonPreferNsis`、在網頁介面發佈草稿、下載來的 `.app` 被 Gatekeeper 擋下的情況。
 
 ## 重點整理
 

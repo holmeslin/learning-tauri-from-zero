@@ -137,7 +137,7 @@ tauri-app_0.1.0_aarch64.dmg
 
 - runner 是 `macos-latest`，這次是 macOS 26 的 arm64 映像檔 `macos-26-arm64`（版本 20261117.0516.1）。setup-node 裝到 Node v26.13.1。
 - tauri-action 是 v1.0.0，Tauri CLI 是 lock 檔鎖的 2.12.5。整個 job 8 分 6 秒。
-- 沒測：私有 repo、GitHub 網頁介面上手動觸發（我們只用 `gh`）、`gh repo create` 那一行（示範的 repo 是用同樣的指令建的，我們沒有逐字重跑）。
+- 沒測：私有 repo、GitHub 網頁介面上手動觸發（我們只用 `gh`）、`gh repo create` 那一行（我們沒有逐字跑過）。
 
 ## 重點整理
 
