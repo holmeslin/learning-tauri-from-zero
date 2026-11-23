@@ -114,7 +114,7 @@ VM 沒有螢幕，我們另外裝了虛擬畫面工具 `xvfb`，用 `xvfb-run` �
 - Fedora、openSUSE 系列的使用者：給 `.rpm`。我們沒有在這些發行版上試過安裝。
 - 不確定使用者用哪個發行版，或不想管他們的系統裝了什麼：給 `.AppImage`，代價是檔案大了三十幾倍。
 
-安裝檔本身的簽章，tauri-bundler 2.10 的原始碼裡只有 rpm 有：設了環境變數 `TAURI_SIGNING_RPM_KEY`（PGP 私鑰的內容），打包 rpm 時就會簽，要密碼的話另設 `TAURI_SIGNING_RPM_KEY_PASSPHRASE`；deb 與 AppImage 沒有簽章的步驟。這一點只讀了原始碼，沒有試過。
+Linux 安裝檔的簽章，本書不介紹。
 
 ## 重點整理
 

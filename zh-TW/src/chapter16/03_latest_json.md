@@ -6,7 +6,7 @@
 
 ## 正文
 
-這一集接著上一集的專案。上一集停在 `1.0.0` 打包完成，現在要準備「下一個版本」。
+這一集接著上一集的專案。帶過來的檔案是 `src-tauri/tauri.conf.json`（有 `pubkey`、`createUpdaterArtifacts`，`version` 是 `1.0.0`）、第 1 集的 `src-tauri/src/lib.rs`，加上金鑰與環境變數。上一集停在 `1.0.0` 打包完成，現在要準備「下一個版本」。
 
 ### 更新資訊檔長什麼樣
 
@@ -14,7 +14,7 @@ App 去問的網址，要回一份 JSON。檔名叫什麼 plugin 不在乎，慣
 
 | 欄位 | 意思 |
 | --- | --- |
-| `version` | 最新版的版本號。要比 App 目前的版本新（semver 比較）才算有更新；可以有 `v` 開頭。 |
+| `version` | 最新版的版本號。要比 App 目前的版本新（照語意化版本比較）才算有更新；可以有 `v` 開頭。 |
 | `notes` | 更新說明，選填。 |
 | `pub_date` | 發佈時間，選填，要是 RFC 3339 格式，像 `2026-11-23T03:00:00Z`。 |
 | `platforms` | 各平台的下載資訊，key 是 `作業系統-架構`。 |
@@ -22,8 +22,6 @@ App 去問的網址，要回一份 JSON。檔名叫什麼 plugin 不在乎，慣
 | `signature`（在平台底下） | `.sig` 檔的**內容**，不是檔案路徑。 |
 
 macOS 的作業系統叫 `darwin`，不是 `macos`：Apple Silicon 是 `darwin-aarch64`，Intel 是 `darwin-x86_64`；Windows 與 Linux 是 `windows-x86_64`、`linux-x86_64`。key 後面還可以加安裝類型，像 `darwin-aarch64-app`，plugin 會先找有加的，找不到再找沒加的。這些是依原始碼整理的，我們只用過 `darwin-aarch64`。
-
-更新資訊檔也可以由伺服器動態產生：網址裡寫 `{{current_version}}`、`{{target}}`、`{{arch}}`，plugin 會換成目前的版本、系統與架構；伺服器直接回單一平台的 `version`、`url`、`signature`（不用 `platforms`），沒有新版就回 `204`。這同樣是讀原始碼整理的，沒有試。這本書用最簡單的做法：一份靜態檔案。
 
 ### 做出 1.1.0 的更新檔
 

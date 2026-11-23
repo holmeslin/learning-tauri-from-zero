@@ -120,25 +120,24 @@ src-tauri/target/release/bundle/macos/tauri-app.app: rejected
      0 valid identities found
 ```
 
-下面是讀 tauri-bundler 2.10.5 與它用的 tauri-macos-sign 2.4.3 原始碼整理的。
+有帳號的話，大致的流程如下，我們每一步都沒做過，細節以 Apple 的文件為準：
 
-**簽章用的憑證。** `signingIdentity` 填鑰匙圈（keychain）裡那張憑證的名稱，或設環境變數 `APPLE_SIGNING_IDENTITY`；兩邊都有，環境變數優先。沒有鑰匙圈的環境（像 CI）改設 `APPLE_CERTIFICATE`（`.p12` 憑證的 base64）與 `APPLE_CERTIFICATE_PASSWORD`，bundler 會建一個暫時的鑰匙圈匯入，打包完刪掉。怎麼放進 CI，第 17 章會正式介紹。
+1. 加入 Apple Developer Program，申請 **Developer ID Application** 憑證，裝進鑰匙圈（keychain），這是簽章用的憑證。
+2. 準備公證的帳密，二選一：Apple ID 的 **App 專用密碼**，或 App Store Connect 的 **API 金鑰**（一個 `.p8` 檔）。
+3. 把憑證名稱與帳密交給 `tauri build`，由它簽章、公證、貼票。
 
-**公證用的帳密。** 兩組擇一，每組要設齊：
+第 3 步是依 tauri-bundler 2.10 原始碼整理的。`signingIdentity` 填鑰匙圈裡那張憑證的名稱，或設環境變數 `APPLE_SIGNING_IDENTITY`，兩邊都有時環境變數優先。沒有鑰匙圈的環境（像 CI），bundler 也能從環境變數匯入憑證，第 17 章會正式介紹。公證的帳密是兩組擇一，每組要設齊：
 
 | 做法 | 環境變數 |
 | --- | --- |
 | Apple ID | `APPLE_ID`、`APPLE_PASSWORD`（App 專用密碼）、`APPLE_TEAM_ID` |
 | API 金鑰 | `APPLE_API_KEY`、`APPLE_API_ISSUER`、`APPLE_API_KEY_PATH`（`.p8` 檔，可省略） |
 
-有 `APPLE_ID` 與 `APPLE_PASSWORD` 卻沒有 `APPLE_TEAM_ID`，bundler 直接報錯，不是警告。沒設 `APPLE_API_KEY_PATH` 的話，bundler 會到 `./private_keys`、`~/private_keys`、`~/.private_keys` 與 `~/.appstoreconnect/private_keys` 找 `AuthKey_<APPLE_API_KEY>.p8`。
-
-**bundler 的順序。**
+有 `APPLE_ID` 與 `APPLE_PASSWORD` 卻沒有 `APPLE_TEAM_ID`，bundler 直接報錯，不是警告。沒設 `APPLE_API_KEY_PATH` 的話，bundler 會到 `./private_keys`、`~/private_keys`、`~/.private_keys` 與 `~/.appstoreconnect/private_keys` 找 `AuthKey_<APPLE_API_KEY>.p8`。打包時的順序：
 
 - 簽章：framework 與 sidecar 先，`.app` 最後；簽之前先跑 `xattr -crs` 清掉擴充屬性。`hardenedRuntime` 與 `entitlements`（plist 檔路徑）會傳給 `codesign`，這集不展開。
-- 公證：`ditto` 把 `.app` 壓成 zip，`xcrun notarytool submit --wait` 送出；狀態是 `Accepted` 才用 `xcrun stapler staple` 貼票，不是的話，錯誤訊息會附上 `notarytool log`。
-- `tauri build --skip-stapling` 送出就結束，不等結果也不貼票。原始碼註解說第一次公證可能要好幾個小時，之後建議關掉。
-- 公證只送 `.app`；`.dmg` 會簽章（`signingIdentity` 是 `"-"` 時例外，`dmg/mod.rs` 會跳過），但 bundler 沒有另外替它送公證。這次只打 `app`，`.dmg` 的部分沒有跑。
+- 公證：`ditto` 把 `.app` 壓成 zip，`xcrun notarytool submit --wait` 送出；狀態是 `Accepted` 才用 `xcrun stapler staple` 貼票，不是的話，錯誤訊息會附上 `notarytool log`。`tauri build --skip-stapling` 送出就結束，不等結果也不貼票；第一次公證可能要好幾個小時，之後建議關掉。
+- 公證只送 `.app`；`.dmg` 會簽章（`signingIdentity` 是 `"-"` 時例外），但 bundler 沒有另外替它送公證。這次只打 `app`，`.dmg` 的部分沒有跑。
 
 ## 重點整理
 

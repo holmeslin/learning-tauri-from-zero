@@ -6,7 +6,7 @@
 
 ## 正文
 
-這一集接著上一集的專案：金鑰、`pubkey`、`createUpdaterArtifacts` 都設好了，`~/update-server` 也有伺服器在放。
+這一集接著上一集的專案。帶過來的檔案是 `src-tauri/tauri.conf.json`（金鑰、`pubkey`、`createUpdaterArtifacts` 都設好了），`~/update-server` 也有伺服器在放；`src-tauri/src/lib.rs` 下面整份換掉。
 
 ### 設定 `endpoints`
 
@@ -42,7 +42,7 @@ fn greet(name: &str) -> String {
 }
 
 #[cfg(desktop)]
-async fn update(app: AppHandle) -> tauri_plugin_updater::Result<()> {
+async fn check_for_update(app: AppHandle) -> tauri_plugin_updater::Result<()> {
     let Some(update) = app.updater()?.check().await? else {
         println!("已經是最新版");
         return Ok(());
@@ -71,7 +71,7 @@ pub fn run() {
                     .plugin(tauri_plugin_updater::Builder::new().build())?;
                 let handle = app.handle().clone();
                 tauri::async_runtime::spawn(async move {
-                    if let Err(error) = update(handle).await {
+                    if let Err(error) = check_for_update(handle).await {
                         eprintln!("更新失敗：{error}");
                     }
                 });
@@ -85,10 +85,10 @@ pub fn run() {
 ```
 
 - `use tauri_plugin_updater::UpdaterExt` 之後才有 `app.updater()`，跟 `GlobalShortcutExt` 同一種寫法。
-- `check().await?` 回傳 `Option<Update>`：`None` 是沒有新版（版本沒有比目前新，或伺服器回 `204`），`Some` 就是有。`Update` 帶著 `version`、`current_version`，還有 `body`（`notes`）與 `date`（`pub_date`）。
+- `check().await?` 回傳 `Option<Update>`：`None` 是沒有新版（版本沒有比目前新），`Some` 就是有。`Update` 帶著 `version`、`current_version`，還有 `body`（`notes`）與 `date`（`pub_date`）。
 - `download_and_install` 收兩個函式：每收到一塊呼叫一次的 `(這塊的位元組數, 總大小)`，跟下載完成時呼叫的。它先驗簽章，驗不過不安裝；macOS 是解開 `.tar.gz`、換掉原本的 `.app`。
-- `app.restart()` 不會回來。macOS 與 Linux 安裝完要自己重啟；Windows 的安裝程式會先把 App 關掉，所以走不到這一行（Windows 這部分是讀原始碼，沒有試）。
-- `setup` 不是 `async`，網路的事用 `tauri::async_runtime::spawn` 丟到背景，視窗不用等。它跟第 4 章第 3 集的 `tauri::async_runtime::Mutex` 是同一個 async runtime。
+- `AppHandle::restart()` 是 Tauri 內建的：結束目前的行程，再開一個新的。它的回傳型別是 `!`，不會回來，所以函式最後不用再寫 `Ok(())`。macOS 與 Linux 安裝完要自己呼叫；Windows 的安裝程式會先把 App 關掉，所以走不到這一行（Windows 這部分是讀原始碼，沒有試）。
+- `tauri::async_runtime::spawn` 把一個 `async` 區塊丟到 Tauri 的 async runtime 在背景跑，不會卡住呼叫它的地方。`setup` 不是 `async`，網路的事丟進去，視窗就不用等。這個 runtime 跟第 4 章第 3 集的 `tauri::async_runtime::Mutex` 是同一個。
 - `println!` 只是為了看流程。真的 App 通常會先問使用者要不要更新，可以用第 7 章第 4 集的 dialog。
 
 ### 打包兩個版本
@@ -106,6 +106,8 @@ pub fn run() {
 ```bash
 ~/update-test/tauri-app.app/Contents/MacOS/tauri-app
 ```
+
+`~/update-test/tauri-app.app/Contents/MacOS/tauri-app` 的輸出：
 
 ```text
 目前版本 1.0.0
@@ -126,7 +128,7 @@ pub fn run() {
 
 重開的 1.1.0 沒有輸出在終端機：依原始碼，macOS 的 `restart()` 用 `open -n -g` 重新打開 `.app`，新行程的輸出接到 `/dev/null`。所以「重開成 1.1.0」是從第三個請求、`Info.plist` 與 `ps` 看到新的行程在跑確認的，我們沒有去看視窗。
 
-簽章對不上會怎樣？把 `latest.json` 的 `version` 改成 `1.2.0`（更新檔還是 1.1.0 簽的），用更新好的 1.1.0 再跑一次：
+簽章對不上會怎樣？把 `latest.json` 的 `version` 改成 `1.2.0`（更新檔還是 1.1.0 簽的），用更新好的 1.1.0 再跑一次 `~/update-test/tauri-app.app/Contents/MacOS/tauri-app`，輸出：
 
 ```text
 目前版本 1.1.0

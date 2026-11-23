@@ -6,7 +6,7 @@
 
 ## 正文
 
-這一集接著上一集的專案，不重新開始。
+這一集接著上一集的專案，不重新開始。從第 1 集帶過來的檔案有 `src-tauri/Cargo.toml`、`src-tauri/capabilities/desktop.json`、`package.json`（都是 `tauri add` 改的）、`src-tauri/src/lib.rs`（註冊了 updater）與 `src-tauri/tauri.conf.json`（`plugins.updater` 已由 `tauri add` 建好），下面只改 `tauri.conf.json`。
 
 ### 私鑰簽，公鑰驗
 
@@ -61,7 +61,7 @@ dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBr
 
 ### 把公鑰與開關寫進設定
 
-在 `tauri.conf.json` 做三件事。`version` 改成 `1.0.0`，當作我們要發出去的第一版（第 15 章第 3 集說過版本號要是 semver）；`bundle` 多一個 `createUpdaterArtifacts`，要求打包時順便做更新檔；`plugins.updater.pubkey` 貼上整個 `.key.pub` 檔的內容，是一整行，不是檔案路徑：
+在 `tauri.conf.json` 做三件事。`version` 改成 `1.0.0`，當作我們要發出去的第一版（第 15 章第 3 集說過版本號要是語意化版本）；`bundle` 多一個 `createUpdaterArtifacts`，要求打包時順便做更新檔；`plugins.updater.pubkey` 貼上整個 `.key.pub` 檔的內容，是一整行，不是檔案路徑：
 
 ```json,ignore
 "version": "1.0.0",
@@ -137,6 +137,6 @@ tauri-app.app.tar.gz.sig
 
 - 更新簽章用一對金鑰：私鑰打包時簽章，公鑰寫進 `plugins.updater.pubkey` 跟著 App 發出去。
 - `npm run tauri signer generate -- -w <路徑>` 產生金鑰，私鑰用密碼加密；私鑰與密碼不能進 Git、不能弄丟。
-- 設定要三處：`bundle.createUpdaterArtifacts: true`、`plugins.updater.pubkey`，版本號是 semver。
+- 設定要三處：`bundle.createUpdaterArtifacts: true`、`plugins.updater.pubkey`，版本號是語意化版本。
 - 打包時用環境變數 `TAURI_SIGNING_PRIVATE_KEY`（路徑或內容）與 `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` 提供私鑰，沒設就會在簽章那步失敗。
 - macOS 打包出 `.app.tar.gz` 加 `.sig`。
