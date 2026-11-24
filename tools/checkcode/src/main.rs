@@ -193,10 +193,8 @@ fn copy_dir(from: &Path, to: &Path) -> std::io::Result<()> {
     Ok(())
 }
 
-/// 用 `--locked`：書中用到的 crate 都要先加進範本並鎖版本。
-/// 例外：一集自己替換了 `src-tauri/Cargo.toml`（例如打開 `isolation` feature，
-/// 範本不能預先打開，tauri-build 會檢查 feature 與 `tauri.conf.json` 一致），
-/// 範本的 `Cargo.lock` 對不上，改讓 cargo 更新 work/ 裡那一份。
+/// 預設用 `--locked`；一集貼了 `src-tauri/Cargo.toml` 就不加。
+/// 理由見 `docs/style-guide.md` 的「程式碼區塊」。
 fn use_locked(files: &BTreeMap<String, String>) -> bool {
     !files.contains_key("src-tauri/Cargo.toml")
 }
@@ -441,7 +439,10 @@ mod tests {
         let mut files = BTreeMap::new();
         files.insert("src-tauri/src/lib.rs".to_string(), String::new());
         assert!(use_locked(&files));
-        files.insert("src-tauri/Cargo.toml".to_string(), String::new());
-        assert!(!use_locked(&files));
+        // 不管內容是什麼（devtools、isolation…），貼了 Cargo.toml 就不加 --locked。
+        for toml in ["features = [\"devtools\"]", "features = [\"isolation\"]"] {
+            files.insert("src-tauri/Cargo.toml".to_string(), toml.to_string());
+            assert!(!use_locked(&files));
+        }
     }
 }

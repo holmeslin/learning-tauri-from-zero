@@ -518,7 +518,7 @@ cat ~/Library/LaunchAgents/tauri-app.plist
 
 ### 先知道這些再試
 
-- `dev` 模式下勾選，登記進去的是 `src-tauri/target/debug/tauri-app` 這個開發版執行檔的路徑，不是打包好的 App。試完請把勾選框取消，不然下次登入，系統會去找這個路徑。第 15 章打包之後，登記的才會是安裝好的 App。
+- `dev` 模式下勾選，登記進去的是 `src-tauri/target/debug/tauri-app` 這個開發版執行檔的路徑，不是打包好的 App。試完請把勾選框取消，不然下次登入，系統會去找這個路徑。第 15 章打包之後，登記的會換成 `.app/Contents/MacOS/` 底下那個執行檔的路徑，不是 `.app` 資料夾（第 15 章第 4 集讀 autostart plugin 的原始碼確認過）。
 - 登記的名稱用 `tauri.conf.json` 的 `productName`（plugin 的 `Builder` 有 `app_name` 可以改）。
 - 在 macOS，LaunchAgent 的「有沒有開」就是那個 plist 檔在不在。使用者手動把它刪掉，`isEnabled()` 就變成 `false`，所以每次都要問，不要相信自己記的狀態。
 
