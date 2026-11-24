@@ -14,7 +14,7 @@
 - `name`：這種檔案的名稱。
 - `description`：說明文字，只有 Windows 會顯示（檔案總管「類型」那一欄）。
 - `role`：App 對這種檔案的角色，`Editor` 是會修改它，`Viewer` 是只看。只有 macOS 會用，寫進 `Info.plist`。
-- `mimeType`：MIME 類型，Markdown 是 `text/markdown`。Linux 會把它寫進 `.desktop` 檔的 `MimeType=`，macOS 寫進 `Info.plist`，Windows 用不到。
+- `mimeType`：MIME 類型，Markdown 是 `text/markdown`。Linux 會把它寫進 `.desktop` 檔的 `MimeType=`；macOS 的 `Info.plist` 裡沒有它（第 15 章第 4 集打包後實際看過），Windows 也用不到。
 
 同一份設定，各平台只讀自己用得到的欄位，其餘的會被忽略（`tauri.conf.json` 的 schema 在每個欄位的說明裡都標了適用的平台）。這份設定是打包工具讀的，所以 `tauri dev` 跑的執行檔不會被登記進系統，雙擊 `.md` 檔不會找到它。打包是第 15 章的事，所以這一集分兩半：設定與程式現在就寫好，dev 模式用命令列測；等第 15 章打包出安裝檔，才能真的用 Finder 或檔案總管雙擊。
 
@@ -22,7 +22,7 @@
 
 作業系統把檔案交給 App 的方式不只一種：
 
-- **命令列參數**：Windows 與 Linux 雙擊 `.md` 檔，是用 `App 路徑 檔案路徑` 的方式啟動 App，檔案路徑在 `std::env::args()` 裡。這是我們查原始碼整理的：Windows 的 NSIS 與 MSI 安裝檔登記的指令是 `"App 路徑" "%1"`，`%1` 是被雙擊的檔案。Linux 靠安裝檔裡的 `.desktop` 檔，打包工具（Tauri CLI 2.12 內建的 tauri-bundler 2.10）產生的 `Exec=` 那一行只有執行檔的名稱，沒有 `%F`、`%U` 這種「把檔案交給程式」的欄位碼（field code）。遇到這種沒有欄位碼的 `.desktop`，GNOME 底層的 GLib 會自己把檔案接在後面，當成 `%f` 處理（它的原始碼註解寫著 KDE 也是這樣）。傳進來的是一般路徑，不是 `file://` 網址，所以下面的 `file_arg` 不用改。別的桌面環境的啟動器怎麼做，我們沒有查；Linux 這一段也沒有實測。如果已經有一個 App 在跑，又被啟動了第二個行程，就是第 8 章第 7 集的 single-instance：第二個行程把參數交給第一個，自己結束，參數會出現在 `init` 函式的 `args`。
+- **命令列參數**：Windows 與 Linux 雙擊 `.md` 檔，是用 `App 路徑 檔案路徑` 的方式啟動 App，檔案路徑在 `std::env::args()` 裡。這是依原始碼整理的：Windows 的 NSIS 與 MSI 安裝檔登記的指令是 `"App 路徑" "%1"`，`%1` 是被雙擊的檔案。Linux 靠安裝檔裡的 `.desktop` 檔，打包工具（Tauri CLI 2.12 內建的 tauri-bundler 2.10）產生的 `Exec=` 那一行只有執行檔的名稱，沒有 `%F`、`%U` 這種「把檔案交給程式」的欄位碼（field code）。遇到這種沒有欄位碼的 `.desktop`，GNOME 底層的 GLib 會自己把檔案接在後面，當成 `%f` 處理（它的原始碼註解寫著 KDE 也是這樣）。傳進來的是一般路徑，不是 `file://` 網址，所以下面的 `file_arg` 不用改。別的桌面環境的啟動器怎麼做，我們沒有查；Linux 這一段也沒有實測。如果已經有一個 App 在跑，又被啟動了第二個行程，就是第 8 章第 7 集的 single-instance：第二個行程把參數交給第一個，自己結束，參數會出現在 `init` 函式的 `args`。
 - **`RunEvent::Opened`**：macOS 不靠命令列參數，而是向 App 送一個「請開啟這些檔案」的事件，Tauri 把它變成 `RunEvent::Opened { urls }`，`urls` 是 `file://` 開頭的網址陣列。
 
 三個入口（啟動參數、第二個行程、`Opened`），要的都是同一件事：把路徑交給前端去開。

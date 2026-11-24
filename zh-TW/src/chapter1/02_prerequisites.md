@@ -73,7 +73,7 @@ sudo apt install libwebkit2gtk-4.1-dev \
 
 ### Node.js
 
-到 <https://nodejs.org> 安裝 LTS 版本。本書用的 Vite 要求 Node.js 20.19 以上（20 系列）或 22.12 以上，裝最新的 LTS 就符合。裝好確認：
+到 <https://nodejs.org> 安裝目前的 LTS 版本。本書用到的工具裡，要求最高的是第 9 章的測試工具：Node.js 22 系列 22.22.2 以上、24 系列 24.15.0 以上，或 26 以上，裝目前的 LTS 就符合。裝好確認：
 
 ```bash
 node -v
@@ -87,7 +87,7 @@ v26.5.0
 11.17.0
 ```
 
-你的版本號碼不一樣沒關係，只要 `node` 是 LTS 版本就好。
+你的版本號碼不一樣沒關係，只要 `node` 是目前的 LTS 版本就好。
 
 ### 確認 Rust
 
@@ -109,5 +109,5 @@ cargo 1.99.1 (5f94df478 2026-08-27)
 
 - 要準備系統工具、Rust、Node.js 三樣，Tauri 本身不用另外安裝。
 - macOS 執行 `xcode-select --install`；Windows 裝 C++ Build Tools，確認 WebView2 與 MSVC 版的 Rust；Linux 用套件管理工具裝 WebKitGTK 等函式庫。
-- Node.js 用 LTS 版本，用 `node -v` 和 `npm -v` 確認。
+- Node.js 用目前的 LTS 版本，用 `node -v` 和 `npm -v` 確認。
 - Rust 用 `rustc --version` 確認，本書以 1.99 為準。

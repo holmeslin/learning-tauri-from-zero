@@ -193,10 +193,8 @@ fn copy_dir(from: &Path, to: &Path) -> std::io::Result<()> {
     Ok(())
 }
 
-/// 用 `--locked`：書中用到的 crate 都要先加進範本並鎖版本。
-/// 例外：一集自己替換了 `src-tauri/Cargo.toml`（例如打開 `isolation` feature，
-/// 範本不能預先打開，tauri-build 會檢查 feature 與 `tauri.conf.json` 一致），
-/// 範本的 `Cargo.lock` 對不上，改讓 cargo 更新 work/ 裡那一份。
+/// 預設用 `--locked`；一集貼了 `src-tauri/Cargo.toml` 就不加。
+/// 理由見 `docs/style-guide.md` 的「程式碼區塊」。
 fn use_locked(files: &BTreeMap<String, String>) -> bool {
     !files.contains_key("src-tauri/Cargo.toml")
 }
@@ -440,8 +438,19 @@ mod tests {
     fn locked_unless_cargo_toml_replaced() {
         let mut files = BTreeMap::new();
         files.insert("src-tauri/src/lib.rs".to_string(), String::new());
-        assert!(use_locked(&files));
-        files.insert("src-tauri/Cargo.toml".to_string(), String::new());
-        assert!(!use_locked(&files));
+        assert!(use_locked(&files), "沒貼 Cargo.toml 時要加 --locked");
+
+        files.insert("src-tauri/tauri.conf.json".to_string(), String::new());
+        assert!(use_locked(&files), "貼了別的設定檔不影響，仍要加 --locked");
+
+        // 只看有沒有貼這個檔，不看內容（devtools、isolation 都一樣）。
+        files.insert(
+            "src-tauri/Cargo.toml".to_string(),
+            "features = [\"devtools\"]".to_string(),
+        );
+        assert!(
+            !use_locked(&files),
+            "貼了 src-tauri/Cargo.toml 就不加 --locked"
+        );
     }
 }

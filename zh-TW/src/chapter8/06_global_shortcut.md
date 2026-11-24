@@ -133,7 +133,7 @@ Failed to setup app: error encountered during setup hook: Couldn't recognize "Co
 ### 不同平台
 
 - Linux 只支援 X11，不支援 Wayland。
-- 這一集只在 macOS 實測，Windows 與 Linux 依文件整理。
+- 這一集只在 macOS 實測，Windows 與 Linux 依 Tauri 文件整理。
 
 ## 重點整理
 

@@ -174,6 +174,8 @@ fn toggle_main_window(app: &AppHandle) -> tauri::Result<()> {
 
 fn open_settings_window(app: &AppHandle) -> tauri::Result<()> {
     if let Some(window) = app.get_webview_window("settings") {
+        window.show()?;
+        window.unminimize()?;
         return window.set_focus();
     }
     WebviewWindowBuilder::new(app, "settings", WebviewUrl::App("index.html".into()))
@@ -486,7 +488,7 @@ cat "$HOME/Library/Application Support/tw.example.tauri-app/settings.json"
 
 ### 不同平台
 
-- 設定檔的位置依平台而定：macOS 是 `~/Library/Application Support/<identifier>/`，其他平台第 7 章第 6 集說過各自的 app 資料夾。
+- 設定檔的位置依平台而定：macOS 是 `~/Library/Application Support/<identifier>/`，其他平台第 7 章第 6 集說過各自的 App 資料夾。
 - 這一集只在 macOS 實測，Windows 與 Linux 依 Tauri 文件整理。
 
 ## 重點整理

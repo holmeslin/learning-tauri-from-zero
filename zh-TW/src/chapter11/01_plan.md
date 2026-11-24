@@ -38,7 +38,7 @@ CREATE TABLE todos (
 
 三個欄位：
 
-- `id`：每一列的編號，是這張表的主鍵（primary key）。`INTEGER PRIMARY KEY` 會自動編號：新增時不給值，SQLite 就用「目前最大的編號加一」。之後要改或刪某一則，都靠 `id` 指定。
+- `id`：每一列的編號，是這張資料表的主鍵（primary key）。`INTEGER PRIMARY KEY` 會自動編號：新增時不給值，SQLite 就用「目前最大的編號加一」。之後要改或刪某一則，都靠 `id` 指定。
 - `title`：待辦的文字。`TEXT` 是文字型別，`NOT NULL` 表示一定要有值。SQL 的 `NULL` 是「沒有值」，角色跟 Rust 的 `None` 差不多。
 - `done`：有沒有完成。SQLite 沒有獨立的布林型別，慣例用整數：`0` 是還沒完成，`1` 是完成。`DEFAULT 0` 讓新增時可以不寫它。
 
@@ -53,12 +53,12 @@ UPDATE todos SET done = 1 WHERE id = 2;
 DELETE FROM todos WHERE id = 1;
 ```
 
-- `INSERT INTO 表 (欄位) VALUES (值)`：新增一列。沒列出的欄位（`id`、`done`）由 SQLite 補上。
-- `SELECT 欄位 FROM 表 ORDER BY 欄位`：讀出資料列，這裡依 `id` 由小到大排。
-- `UPDATE 表 SET 欄位 = 值 WHERE 條件`：修改符合條件的列。
-- `DELETE FROM 表 WHERE 條件`：刪除符合條件的列。
+- `INSERT INTO 資料表 (欄位) VALUES (值)`：新增一列。沒列出的欄位（`id`、`done`）由 SQLite 補上。
+- `SELECT 欄位 FROM 資料表 ORDER BY 欄位`：讀出一列一列的資料，這裡依 `id` 由小到大排。
+- `UPDATE 資料表 SET 欄位 = 值 WHERE 條件`：修改符合條件的列。
+- `DELETE FROM 資料表 WHERE 條件`：刪除符合條件的列。
 
-`UPDATE` 與 `DELETE` 後面的 `WHERE` 不能忘：沒寫條件，整張表的每一列都會被改掉、刪掉。
+`UPDATE` 與 `DELETE` 後面的 `WHERE` 不能忘：沒寫條件，整張資料表的每一列都會被改掉、刪掉。
 
 macOS 內建 `sqlite3` 指令，可以拿來試試看；沒有這個指令的話，跳過這一段也沒關係，下一集會在 Rust 裡跑同樣的 SQL。`:memory:` 是特殊的資料庫名稱，資料只放在記憶體裡，指令結束就消失，不會留下任何檔案：
 
@@ -95,7 +95,7 @@ id    title     done
  2  寫第 11 章     1
 ```
 
-三次 `SELECT` 各印一張表：新增兩列之後有兩列；`UPDATE` 之後第二列的 `done` 變成 `1`；`DELETE` 之後第一列不見了，第二列的 `id` 還是 `2`，不會重新編號。
+三次 `SELECT` 各印一張資料表：新增兩列之後有兩列；`UPDATE` 之後第二列的 `done` 變成 `1`；`DELETE` 之後第一列不見了，第二列的 `id` 還是 `2`，不會重新編號。
 
 ### 程式怎麼分工
 

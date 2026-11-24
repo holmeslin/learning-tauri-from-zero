@@ -150,7 +150,16 @@ referenced by: capability: default, permission: allow-set-title
 
 ### 只啟用想要的 capability
 
-`capabilities/` 底下的每個檔案預設都生效，包括你忘了刪的、複製來試試看的。想自己掌控，就在 `tauri.conf.json` 的 `app.security` 加一行 `"capabilities": ["default", "popup"]`，列出要用的 `identifier`，沒列到的檔案不生效。行為不變，兩個視窗還是都能改標題；把 `"popup"` 拿掉再存檔，`popup.json` 就失效，`popup-1` 又會被擋，訊息跟上面一樣。
+`capabilities/` 底下的每個檔案預設都生效，包括你忘了刪的、複製來試試看的。想自己掌控，就在 `tauri.conf.json` 的 `app.security` 加上 `capabilities`，列出要用的 `identifier`，沒列到的檔案不生效（`tauri.conf.json` 其他部分照範本，`csp` 還是 `null`）：
+
+```json,ignore
+"security": {
+  "csp": null,
+  "capabilities": ["default", "popup"]
+}
+```
+
+這一段只是試試看，不是本集最後的狀態，本集貼出來的檔案以前面為準。行為不變，兩個視窗還是都能改標題；把 `"popup"` 拿掉再存檔，`popup.json` 就失效，`popup-1` 又會被擋，訊息跟上面一樣。
 
 ## 重點整理
 

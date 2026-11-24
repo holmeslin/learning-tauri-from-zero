@@ -1,4 +1,4 @@
-# 在 app 裡檢查與安裝更新
+# 在 App 裡檢查與安裝更新
 
 ## 本集目標
 
@@ -87,8 +87,8 @@ pub fn run() {
 - `use tauri_plugin_updater::UpdaterExt` 之後才有 `app.updater()`，跟 `GlobalShortcutExt` 同一種寫法。
 - `check().await?` 回傳 `Option<Update>`：`None` 是沒有新版（版本沒有比目前新），`Some` 就是有。`Update` 帶著 `version`、`current_version`，還有 `body`（`notes`）與 `date`（`pub_date`）。
 - `download_and_install` 收兩個函式：每收到一塊呼叫一次的 `(這塊的位元組數, 總大小)`，跟下載完成時呼叫的。它先驗簽章，驗不過不安裝；macOS 是解開 `.tar.gz`、換掉原本的 `.app`。
-- `AppHandle::restart()` 是 Tauri 內建的：結束目前的行程，再開一個新的。它的回傳型別是 `!`，不會回來，所以函式最後不用再寫 `Ok(())`。macOS 與 Linux 安裝完要自己呼叫；Windows 的安裝程式會先把 App 關掉，所以走不到這一行（Windows 這部分是讀原始碼，沒有試）。
-- `tauri::async_runtime::spawn` 把一個 `async` 區塊丟到 Tauri 的 async runtime 在背景跑，不會卡住呼叫它的地方。`setup` 不是 `async`，網路的事丟進去，視窗就不用等。這個 runtime 跟第 4 章第 3 集的 `tauri::async_runtime::Mutex` 是同一個。
+- `AppHandle::restart()` 是 Tauri 內建的：結束目前的行程，再開一個新的。它的回傳型別是 `!`，不會回來，所以函式最後不用再寫 `Ok(())`。macOS 與 Linux 安裝完要自己呼叫；Windows 的安裝程式會先把 App 關掉，所以走不到這一行（Windows 這部分依 updater plugin 的原始碼整理，沒有試）。
+- `tauri::async_runtime::spawn` 把一個 `async` 區塊丟到 Tauri 的非同步執行環境（tokio）在背景跑，不會卡住呼叫它的地方。`setup` 不是 `async`，網路的事丟進去，視窗就不用等。這個執行環境跟第 4 章第 3 集的 `tauri::async_runtime::Mutex` 是同一個。
 - `println!` 只是為了看流程。真的 App 通常會先問使用者要不要更新，可以用第 7 章第 4 集的 dialog。
 
 ### 打包兩個版本

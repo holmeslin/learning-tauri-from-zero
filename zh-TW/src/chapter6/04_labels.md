@@ -14,7 +14,7 @@
 
 ### 用 label 找視窗
 
-`Manager` 的 `get_webview_window(label)` 回傳 `Option<WebviewWindow>`：有這個視窗就是 `Some`。找到的話，用 `set_focus()` 把它拉到最前面，不用再建一個：
+`Manager` 的 `get_webview_window(label)` 回傳 `Option<WebviewWindow>`：有這個視窗就是 `Some`。找到的話，把它叫回最前面，不用再建一個：
 
 `src-tauri/src/lib.rs`：
 
@@ -24,6 +24,8 @@ use tauri::{AppHandle, Manager, WebviewUrl, WebviewWindowBuilder};
 #[tauri::command]
 async fn open_window(app: AppHandle, label: String) -> tauri::Result<()> {
     if let Some(window) = app.get_webview_window(&label) {
+        window.show()?;
+        window.unminimize()?;
         return window.set_focus();
     }
     WebviewWindowBuilder::new(&app, &label, WebviewUrl::App("index.html".into()))
@@ -44,6 +46,8 @@ pub fn run() {
 ```
 
 `get_webview_window` 定義在 `Manager` 上，要先 `use`，跟第 4 章第 4 集一樣。
+
+叫回視窗要三個一起用：`show()` 讓藏起來的視窗現身（第 13 章會正式介紹），`unminimize()` 還原最小化的視窗，最後 `set_focus()` 拉到最前面。依 Tauri 底層視窗函式庫 tao 的原始碼，macOS 上 `set_focus()` 碰到隱藏或最小化的視窗什麼都不做，所以三個都要。
 
 前端用一個輸入框填 label，按下按鈕就呼叫 `open_window`。每個視窗載入時，也把自己的 label 寫在畫面上：
 
@@ -128,4 +132,4 @@ formEl?.addEventListener("submit", async (event) => {
 
 - label 只能用字母、數字（非 ASCII 的字母也算）與 `-`、`/`、`:`、`_`，其他字元會讓 `build()` 回傳 `Err`。
 - label 是視窗的唯一名字：跟已開的視窗同名，`build()` 一樣回傳 `Err`。
-- `app.get_webview_window(label)` 回傳 `Option<WebviewWindow>`，要先 `use tauri::Manager`；找到就 `set_focus()`，不要重複建。
+- `app.get_webview_window(label)` 回傳 `Option<WebviewWindow>`，要先 `use tauri::Manager`；找到就 `show()`、`unminimize()`、`set_focus()` 叫回來，不要重複建。

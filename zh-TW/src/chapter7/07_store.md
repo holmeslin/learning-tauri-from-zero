@@ -2,13 +2,13 @@
 
 ## 本集目標
 
-學會用 store plugin 把設定存成一個檔案，下次開 app 還讀得到，並知道 `autoSave` 與 `save()` 的差別。
+學會用 store plugin 把設定存成一個檔案，下次開 App 還讀得到，並知道 `autoSave` 與 `save()` 的差別。
 
 ## 正文
 
 ### 一個會存檔的 key-value 表
 
-設定這類小資料（暱稱、主題、上次開的檔案），不需要資料庫。store plugin 給你一張 key-value 表：`set` 存、`get` 取，內容存成 JSON 檔，放在 app 資料夾（第 6 集）。
+設定這類小資料（暱稱、主題、上次開的檔案），不需要資料庫。store plugin 給你一張 key-value 表：`set` 存、`get` 取，內容存成 JSON 檔，放在 App 資料夾（第 6 集）。
 
 ### 範例：記住暱稱
 
@@ -129,9 +129,9 @@ showSaved();
 cat "$HOME/Library/Application Support/tw.example.tauri-app/settings.json"
 ```
 
-按 `Ctrl+C` 結束 `npm run tauri dev`，再執行一次，段落一開始就寫「暱稱：Ada」：資料在檔案裡，app 重開也在。
+按 `Ctrl+C` 結束 `npm run tauri dev`，再執行一次，段落一開始就寫「暱稱：Ada」：資料在檔案裡，App 重開也在。
 
-`load("settings.json")` 的路徑從 app 資料夾（第 6 集）算起。檔案與資料夾在第一次 `set` 之後才出現，資料夾由 plugin 自己建，不用先 `mkdir`。同一個檔名再 `load` 一次，拿到的是同一張表，所以範例在需要的地方各 `load` 一次。`get<string>("name")` 的 `<string>` 是告訴 TypeScript 值的型別；找不到這個 key 會得到 `undefined`，所以範例用 `if (saved)` 檢查。
+`load("settings.json")` 的路徑從 App 資料夾（第 6 集）算起。檔案與資料夾在第一次 `set` 之後才出現，資料夾由 plugin 自己建，不用先 `mkdir`。同一個檔名再 `load` 一次，拿到的是同一張表，所以範例在需要的地方各 `load` 一次。`get<string>("name")` 的 `<string>` 是告訴 TypeScript 值的型別；找不到這個 key 會得到 `undefined`，所以範例用 `if (saved)` 檢查。
 
 ### `autoSave` 與 `save()`
 
@@ -145,6 +145,6 @@ await store.save();
 
 ## 重點整理
 
-- store 是一張會存成 JSON 檔的 key-value 表，檔案放在 app 資料夾；Rust 端用 `tauri_plugin_store::Builder::new().build()` 註冊，permission 是 `store:default`。
+- store 是一張會存成 JSON 檔的 key-value 表，檔案放在 App 資料夾；Rust 端用 `tauri_plugin_store::Builder::new().build()` 註冊，permission 是 `store:default`。
 - `load("檔名")` 取得 store，`get<T>(key)` 讀（沒有就是 `undefined`），`set(key, value)` 寫。
 - 預設的 `autoSave` 在修改後 100 毫秒自動存檔；用 `{ autoSave: false }` 關掉之後，要自己呼叫 `save()`。

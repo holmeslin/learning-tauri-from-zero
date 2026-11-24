@@ -10,6 +10,8 @@
 
 第 1 集看到的缺口是：plugin 與 core 的 command 沒被放行就不能呼叫，自己寫的 command 卻誰都能呼叫（第 3 章第 1 集也提過）。開關是：App 只要有任何一項自己的 permission，Tauri 就會檢查 App 的每一個 command，它們從此跟 plugin 的 command 一樣，要被放行才呼叫得到。最直接的做法是在 `build.rs` 列出 command，讓 Tauri 替它們產生 permission。
 
+這集分三步：先讓 command 要被放行（`build.rs`），再讓 command 拿到 scope（`CommandScope`），最後把 command 與 scope 寫成一項 permission（`permissions/*.toml`）。
+
 這集的例子是 `write_note`：前端給檔名和內容，Rust 在 App 資料夾裡寫檔，是第 12 章那兩個檔案 command 的縮小版。
 
 `src-tauri/src/lib.rs`：
@@ -136,13 +138,23 @@ fn main() {
 出錯了：write_note not allowed. Permissions associated with this command: allow-write-note
 ```
 
-從現在起，App 的 command 都要列進 `commands`，沒列的，不管有沒有放進 `generate_handler!`，前端一律呼叫不到，只會得到 `not allowed. Command not found`。這兩則都是開發模式的訊息，打包版只有 `Command write_note not allowed by ACL`。
+從現在起，App 的 command 都要列進 `commands`，沒列的，不管有沒有放進 `generate_handler!`，前端一律呼叫不到。我們試過：把範本的 `greet` 放回 `generate_handler![greet, write_note]`，`build.rs` 仍只列 `write_note`，在頁面呼叫 `invoke("greet", { name: "x" })`。Promise 被拒絕，錯誤訊息是：
+
+```text
+greet not allowed. Command not found
+```
+
+不放進 `generate_handler!` 也是同一句。這是前端的 Promise 收到的錯誤，不是 `tauri dev` 的輸出，終端機沒有這則訊息。想自己看，在開發者工具的 Console 呼叫 `window.__TAURI__.core.invoke("greet", { name: "x" })` 就行（範本的 `withGlobalTauri` 是 `true`）。`write_note` 與 `greet` 這兩則都是開發模式的訊息，打包版只有 `Command write_note not allowed by ACL` 這種。
 
 ### scope 由 command 自己檢查
 
 把 `allow-write-note` 放進 capability，`write_note` 就呼叫得到了，但它會回「這個 command 沒有設定 scope」，這是 `write_note` 自己回的，不是 Tauri 擋的。`allow-write-note` 只有 command、沒有 scope。第 3 集看到 fs plugin 遇到這種情況一律擋下，那是 fs plugin 自己的決定。
 
 Tauri 對 scope 做的事只有一件：把 capability 與 permission 裡寫的 `allow`、`deny` 收集起來，從 `CommandScope<T>` 參數交給 command。`T` 是你自己定義的型別，能用 serde 讀就行，這裡的 `DirScope` 對應 scope 裡每一項 `{ "dir": "notes" }`。要怎麼比對，完全由 command 決定。
+
+`CommandScope<T>` 只有掛在這個 command 的 permission 上的 scope。沒有 command 的 permission 帶的是全域 scope（第 3 集），要用另一個參數 `GlobalScope<T>` 另外取。
+
+第 3 集的「兩種 scope 加在一起」是 fs plugin 的做法：它兩個都取，自己合併，Tauri 不會替你合併。依 tauri 2.12.6 與 tauri-utils 2.10.3 的原始碼整理，只有 `dir = "global"`、沒有 command 的 permission 會進全域 scope，不會出現在 `CommandScope` 裡，所以只收 `CommandScope` 的 `write_note` 不會因此放行 `global/x.txt`。自己的 command 想要兩種都算，就得兩個參數都取、自己合併。
 
 這集的做法是實作 `ScopeObjectMatch`：`DirScope` 說明「輸入的路徑在不在我這個資料夾底下」，`scope.matches(路徑)` 就會做完整的判斷：路徑不能符合任何一項 `deny`，而且要符合某一項 `allow`。有兩個地方要自己補：
 
@@ -201,10 +213,14 @@ dir = "notes/private"
 
 ### 回到第 12 章
 
-第 12 章的 `read_file`、`write_file` 也能這樣收緊。它們吃的路徑是使用者用對話框挑的，或作業系統雙擊檔案時交來的（第 12 章第 1 集），位置不固定，沒辦法像這集一樣限定一個資料夾；能限制的是檔案的種類。做法是：把兩個 command 列進 `build.rs`，capability 只給 `main` 視窗，scope 的每一項改成 `{ "ext": "md" }` 這樣的副檔名，`matches` 改成比對 `Path::extension`。這樣就算前端被別人控制，也只能讀寫 Markdown 檔，碰不到使用者放在別處的私鑰、設定檔。
+第 12 章的 `read_file`、`write_file` 吃任何路徑（第 12 章第 1 集），也該收緊，但沒辦法像這集一樣限定一個資料夾：路徑是使用者用對話框挑的，或作業系統雙擊檔案時交來的，位置不固定。
+
+第一個想到的是限制副檔名：scope 的每一項寫 `{ "ext": "md" }`，`matches` 改成比對 `Path::extension`。這擋不了多少。任何位置的 `*.md` 都過關；`x.md` 如果是指向私鑰的符號連結（symlink），`read_to_string` 會跟著連過去；`.MD` 算不算，也得自己決定。副檔名是命名習慣，不是信任界線。
+
+比較對的方向是反過來：Rust 端只收「對話框或作業系統交來的路徑」。對話框由 Rust 端自己彈出來（dialog plugin 在 Rust 端也有選檔案的 API），選到的路徑、啟動參數與 `Opened` 交來的路徑（第 12 章第 7 集），都先記在 Rust 端的狀態裡；`read_file`、`write_file` 只認記下來的，前端不能自己編一個路徑。這樣就算前端被別人控制，也只能碰使用者真的選過、交給 App 的檔案。這要改的地方不少，本書沒有改第 12 章的程式，留給你當練習。
 
 ## 重點整理
 
 - 自己的 command 預設不受 ACL 管；App 一有自己的 permission，所有 command 都要被放行才能呼叫。`build.rs` 的 `AppManifest::commands` 會替列出的 command 產生 `allow-<command>` 與 `deny-<command>`，沒列的就沒有 permission 可放行。
 - App 自己的 permission 在 capability 裡不加前綴；用 `permissions/*.toml` 的 `[[permission]]` 可以把 command 與 scope 綁成一項。
-- Tauri 只負責把 scope 交給 command（`CommandScope<T>`），比對由你寫。`allow` 為空時 `matches` 是 `true`，要自己先擋，路徑也要先清乾淨。
+- Tauri 只負責把 scope 交給 command（`CommandScope<T>`；全域 scope 要用 `GlobalScope<T>` 另外取，不會自動合併），比對由你寫。`allow` 為空時 `matches` 是 `true`，要自己先擋，路徑也要先清乾淨。

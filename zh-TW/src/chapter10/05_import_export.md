@@ -114,7 +114,7 @@ export async function exportNote(note: Note): Promise<string | null> {
 }
 ```
 
-這兩個函式碰的檔案是使用者自己挑的，不在 app 資料夾裡，卻沒有另外設定 scope。`writeTextFile` 這個函式已經被 `fs:allow-appdata-write-recursive` 放行了；至於路徑，經由 `open()`、`save()` 選出來的，plugin 會自動加進 fs 的 scope（第 7 章第 5 集）。`readTextFile` 的 permission 在 `fs:default` 裡。
+這兩個函式碰的檔案是使用者自己挑的，不在 App 資料夾裡，卻沒有另外設定 scope。`writeTextFile` 這個函式已經被 `fs:allow-appdata-write-recursive` 放行了；至於路徑，經由 `open()`、`save()` 選出來的，plugin 會自動加進 fs 的 scope（第 7 章第 5 集）。`readTextFile` 的 permission 在 `fs:default` 裡。
 
 ### 接上按鈕與狀態列
 
@@ -318,6 +318,6 @@ start();
 ## 重點整理
 
 - `save()` 與 `open()` 都回傳路徑，取消是 `null`；`save()` 不寫檔案，要自己 `writeTextFile`。
-- 使用者挑的檔案不在 app 資料夾，但 dialog 選出來的路徑會自動進 fs 的 scope；函式的 permission 還是要放行。
+- 使用者挑的檔案不在 App 資料夾，但 dialog 選出來的路徑會自動進 fs 的 scope；函式的 permission 還是要放行。
 - `basename(路徑, ".md")` 取出去掉副檔名的檔名，各平台的路徑分隔符號都能處理。
 - 匯入的筆記跟新增一樣：放進陣列、選起來、存檔；成功的結果用狀態列告訴使用者。

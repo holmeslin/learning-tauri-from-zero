@@ -261,7 +261,7 @@ pub fn run() {
 
 ### 資料庫檔案在哪
 
-第一次啟動時，`setup` 建了資料夾、資料庫檔案和 `todos` 資料表。檔案就在 app 資料夾裡（macOS 的路徑，其他平台用 `appDataDir()` 查，第 7 章第 6 集）：
+第一次啟動時，`setup` 建了資料夾、資料庫檔案和 `todos` 資料表。檔案就在 App 資料夾裡（macOS 的路徑，其他平台用 `appDataDir()` 查，第 7 章第 6 集）：
 
 ```bash
 ls "$HOME/Library/Application Support/tw.example.tauri-app"
