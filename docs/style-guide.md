@@ -73,7 +73,10 @@
 - `yaml` 區塊（像 `.github/workflows/release.yml`）不用加 `ignore`。有路徑標籤的 yaml 是完整檔案，checkcode 會把它放進專案，但不檢查內容。貼 CI 的 log 時，標籤不要用上面會驗證的指令名稱（像「`npm run tauri build` 的輸出」），改寫成「某個 step 的 log」。
 - 不使用 mdBook 的隱藏行，程式碼全部給讀者看。
 - 用到範本沒有的 crate 或 npm 套件時，先把它加進 `tools/checkcode/template`（`Cargo.toml`、`package.json`，並更新 `Cargo.lock`、`package-lock.json`），書中的版本要跟範本一致。
-- 例外：有些 feature 不能預先加進範本，例如 `tauri` 與 `tauri-build` 的 `isolation`（tauri-build 要求 `Cargo.toml` 的 feature 跟 `tauri.conf.json` 的設定一致，範本打開了，其他集就會失敗）。這種集要用路徑標籤貼出完整的 `src-tauri/Cargo.toml`；`tools/checkcode` 看到這個檔案，就不用 `--locked`，讓 cargo 更新工作目錄裡的 `Cargo.lock`。
+- 例外：有些 feature 不能預先加進範本，例如 `tauri` 與 `tauri-build` 的 `isolation`（`tauri-build` 要求 `Cargo.toml` 的 feature 跟 `tauri.conf.json` 的設定一致，範本打開了，其他集就會失敗）。這種集要用路徑標籤貼出完整的 `src-tauri/Cargo.toml`，`tools/checkcode` 看到這個檔案，就不加 `--locked`。目前是第 14 章第 6 集（`isolation`）與第 15 章第 1 集（`devtools`）。這個例外有三件事：
+  - **基準**：貼的是剛建好的專案那份 `Cargo.toml`（`tauri`、`tauri-build`、`tauri-plugin-opener`、`serde`、`serde_json`），只改那一集要講的 feature。
+  - **跟起始專案的關係**：起始專案是 `tools/checkcode/template/`，它的 `Cargo.toml` 已經裝好全書用到的 crate，`Cargo.lock` 鎖住版本。路徑標籤貼的是完整檔案，會整份換掉範本的，所以這一集的依賴只有貼出來的這些，跟範本不同。
+  - **代價**：依賴不同，`Cargo.lock` 就一定要改，連只剪掉用不到的 crate 也一樣（第 15 章第 1 集沒有新 crate，仍要剪掉範本多出來的），所以不能用 `--locked`，由 cargo 更新工作目錄裡的 `Cargo.lock`。lock 裡已有的 crate 維持原版本，只有 lock 沒有的 crate（`isolation` 多出來的加密相關 crate）會重新解析：版本會浮動，而且需要網路。這幾集也不再檢查「用到的 crate 有沒有先加進範本」。
 - 打包與 CI（第 15～17 章）的指令輸出無法自動驗證，要自己實際跑過再貼（CI 的輸出要來自真的在 GitHub Actions 跑過的那次），並在 PR 說明是在哪個平台跑的。沒跑過的 yaml 片段，要在該集的「這集實測了什麼」寫明。
 - 第 18 章（行動裝置）的指令都沒有跑過：不貼輸出，也不寫成檢查點的樣子。每集的「這集實測了什麼」要寫明行動裝置的指令都沒有跑過、內容依據什麼查證，PR 說明也要寫沒跑過（見 `docs/outline.md` 第 18 章的邊界）。
 
