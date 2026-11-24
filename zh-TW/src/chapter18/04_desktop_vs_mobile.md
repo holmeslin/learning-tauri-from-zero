@@ -128,7 +128,9 @@ capability 沒寫 `platforms` 就是所有平台都適用（第 14 章第 2 集�
 
 第 7 章第 8 集說過，桌面版的 notification 不會問：`isPermissionGranted()` 一律是 `true`，`requestPermission()` 一律是 `"granted"`。手機版會真的問。
 
-依 plugin 的原始碼，Rust 端的 `request_permission()` 在桌面直接回傳已允許。Android 上是向系統要 `POST_NOTIFICATIONS` 這個權限，而且只有 Android 13（API 33）以上才會跳出詢問；更舊的版本不問，直接回報通知有沒有開。iOS 用 `UNUserNotificationCenter` 的 `requestAuthorization` 向系統要授權，其他細節沒有查證。
+依 plugin 的原始碼，Rust 端的 `request_permission()` 在桌面直接回傳已允許。Android 上是向系統要 `POST_NOTIFICATIONS` 這個權限，而且只有 Android 13（API 33）以上才會跳出詢問；更舊的版本不問，直接回報通知有沒有開。
+
+iOS 用 `UNUserNotificationCenter` 的 `requestAuthorization` 向系統要授權，其他細節沒有查證。
 
 那一集的寫法本來就是先問、被拒就不送，所以兩邊通用，不用改。
 

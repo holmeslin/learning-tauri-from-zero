@@ -101,7 +101,7 @@ iOS 這邊，`tauri ios init` 會檢查 XcodeGen（產生 Xcode 專案）與 lib
 - 依據：Tauri 官方 Prerequisites 頁面的「Configure for Mobile Targets」，以及 tauri-cli 2.12.5 與 cargo-mobile2 0.22.5 的原始碼。
 - 原始碼那一節（CLI 自己會補的部分），只讀了程式，沒有驗證它實際跑起來的行為。
 - `adb`、NDK 與 `sdkmanager` 的說明查過原始碼。SDK Platform 與 Build-Tools 的說明是 Android 的一般知識，沒有查證。
-- `xcode-select` 那一步只讀了 cargo-mobile2 的原始碼，沒有跑過；Command Line Tools 還在用時，Xcode 的工具實際會出什麼錯，沒有查證。
+- `xcode-select` 那一步官方文件沒寫，只讀了 cargo-mobile2 的原始碼，沒有跑過；Command Line Tools 還在用時，Xcode 的工具實際會出什麼錯，沒有查證。
 - Android Studio 與 Xcode 的版本、選單位置與畫面，沒有查證。
 
 ## 重點整理
