@@ -84,7 +84,7 @@ Tauri 做的事單純得多：打包時，替每個該簽的檔案呼叫一次�
 
 ### 在 Windows 以外的機器上
 
-預設的 `signtool` 只在 Windows 上存在。bundler 能在別的系統上交叉打出 NSIS 安裝檔（依註解是在 Linux 上用 `cargo-xwin`，打包時也會警告交叉編譯還是實驗性的），這本書不展開，但這種情況有一個容易踩到的地方：只設 `certificateThumbprint`，bundler 不報錯，也不會簽，因為在非 Windows 上，沒有 `signCommand` 的話 bundler 直接略過簽章、回報成功。「預設只支援 Windows 主機」那行警告，只在兩個欄位都沒設時才出現。要在別的系統上簽，一定得設 `signCommand`。這一點我們也只讀了原始碼。
+預設的 `signtool` 只在 Windows 上存在。bundler 能在別的系統上交叉打出 NSIS 安裝檔（依註解是在 Linux 上用 `cargo-xwin`，打包時也會警告交叉編譯還是實驗性的），這本書不展開，但這種情況有一個容易踩到的地方：只設 `certificateThumbprint`，bundler 不報錯，也不會簽，因為在非 Windows 上，沒有 `signCommand` 的話 bundler 直接略過簽章、回報成功。「預設只支援 Windows 主機」那行警告，只在兩個欄位都沒設時才出現。要在別的系統上簽，一定得設 `signCommand`。這一點我們也只依 tauri-bundler 的原始碼整理，沒有試過。
 
 ### 付費憑證的流程
 

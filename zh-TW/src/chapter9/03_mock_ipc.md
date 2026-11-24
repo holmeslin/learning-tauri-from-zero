@@ -16,7 +16,7 @@
 npm install -D vitest jsdom
 ```
 
-`-D` 把它們記在 `package.json` 的 `devDependencies`，只在開發時用，像 Cargo 的 `[dev-dependencies]`。本書用 vitest 5.1 與 jsdom 31，它們要求 Node.js 22.22.2、24.15.0 或 26 以上；照本書的慣例用目前的 LTS 就符合，`node -v` 可以看版本。
+`-D` 把它們記在 `package.json` 的 `devDependencies`，只在開發時用，像 Cargo 的 `[dev-dependencies]`。本書用 vitest 5.1 與 jsdom 31，它們要求 Node.js 22 系列 22.22.2 以上、24 系列 24.15.0 以上，或 26 以上；照本書的慣例用目前的 LTS 就符合，`node -v` 可以看版本。
 
 ### 把呼叫 Rust 的程式獨立出來
 

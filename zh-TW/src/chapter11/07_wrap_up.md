@@ -618,7 +618,7 @@ dist/assets/index-TxbkJYEi.js   3.17 kB │ gzip: 1.46 kB
 ### 還能怎麼改
 
 - 標題建立之後不能編輯，也不能排序或篩選。這些都是 SQL 的事：`UPDATE` 改標題，`ORDER BY`、`WHERE` 排序與篩選。
-- 刪除沒有確認，也不能復原。可以多加一個欄位標記「已刪除」，不真的刪掉列。
+- 刪除沒有確認，也不能復原。可以多加一個欄位標記「已刪除」，不真的刪掉那一列。
 - 範本附的 opener plugin 這個專案沒用到，可以從 `lib.rs` 與 `capabilities/default.json` 拿掉；permission 與 capability 第 14 章會正式介紹。
 - 做成安裝檔給別人用，第 15 章會正式介紹。
 

@@ -13,7 +13,7 @@
 - 在視窗上按右鍵，選「Inspect Element」。選項的文字依平台與系統語言而不同，找名字裡有 Inspect 或「檢查」的那一個。
 - 按快捷鍵：macOS 是 `Command + Option + I`，Windows 與 Linux 是 `Ctrl + Shift + I`。
 
-這就是網頁開發者每天在用的那一套，只是它來自各平台的 WebView：macOS 是 Safari 的 Web Inspector，Windows 是 Edge 的開發者工具，Linux 是 WebKit 的 inspector。第 1 集說過引擎因平台而異，所以三個平台上的介面長得不太一樣，但功能大同小異。
+這就是網頁開發者每天在用的那一套，只是它來自各平台的 WebView：macOS 是 Safari 的 Web Inspector，Windows 是 Edge DevTools，Linux 是 WebKit 的 inspector。第 1 集說過引擎因平台而異，所以三個平台上的介面長得不太一樣，但功能大同小異。
 
 目前只需要認識兩個分頁，中文介面可能會把名稱翻譯掉，認得英文原名就好：
 

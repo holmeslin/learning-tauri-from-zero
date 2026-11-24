@@ -152,7 +152,9 @@ greet not allowed. Command not found
 
 Tauri 對 scope 做的事只有一件：把 capability 與 permission 裡寫的 `allow`、`deny` 收集起來，從 `CommandScope<T>` 參數交給 command。`T` 是你自己定義的型別，能用 serde 讀就行，這裡的 `DirScope` 對應 scope 裡每一項 `{ "dir": "notes" }`。要怎麼比對，完全由 command 決定。
 
-`CommandScope<T>` 只有掛在這個 command 的 permission 上的 scope。沒有 command 的 permission 帶的是全域 scope（第 3 集），要用另一個參數 `GlobalScope<T>` 另外取。第 3 集的「兩種 scope 加在一起」是 fs plugin 的做法，它兩個都取，自己合併，Tauri 不會替你合併。我們試過：另外寫一項只有 `dir = "global"`、沒有 command 的 permission，一起放進 capability，`write_note` 同時收 `CommandScope` 與 `GlobalScope`：`GlobalScope` 有那一筆，`CommandScope` 沒有，`global/x.txt` 照樣被 `scope.matches` 拒絕。自己的 command 想要兩種都算，就得兩個參數都取、自己合併。
+`CommandScope<T>` 只有掛在這個 command 的 permission 上的 scope。沒有 command 的 permission 帶的是全域 scope（第 3 集），要用另一個參數 `GlobalScope<T>` 另外取。
+
+第 3 集的「兩種 scope 加在一起」是 fs plugin 的做法：它兩個都取，自己合併，Tauri 不會替你合併。依 tauri 2.12.6 與 tauri-utils 2.10.3 的原始碼整理，只有 `dir = "global"`、沒有 command 的 permission 會進全域 scope，不會出現在 `CommandScope` 裡，所以只收 `CommandScope` 的 `write_note` 不會因此放行 `global/x.txt`。自己的 command 想要兩種都算，就得兩個參數都取、自己合併。
 
 這集的做法是實作 `ScopeObjectMatch`：`DirScope` 說明「輸入的路徑在不在我這個資料夾底下」，`scope.matches(路徑)` 就會做完整的判斷：路徑不能符合任何一項 `deny`，而且要符合某一項 `allow`。有兩個地方要自己補：
 
