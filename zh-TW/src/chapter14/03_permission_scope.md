@@ -130,7 +130,7 @@ capability 只放行用得到的三個 command：建資料夾、寫、讀。範�
 
 scope 有兩種掛法，取決於那項 permission 有沒有 command：
 
-- 沒有 command，像 `fs:scope`：全域 scope，fs plugin 的每個 command 都會去讀它。
+- 沒有 command，像 `fs:scope`：全域 scope，fs plugin 的 command 會去讀它。
 - 有 command，像 `fs:allow-write-text-file`：只有這個 command 適用。物件寫法跟第 7 章第 3 集一樣，`identifier` 加上 `allow`、`deny`，例如 `{ "identifier": "fs:allow-write-text-file", "allow": [{ "path": "$APPDATA/*.txt" }] }` 只限制寫檔，讀檔的範圍不受影響。
 
 fs plugin 把兩種 scope 加在一起：`allow` 取聯集，`deny` 也取聯集，`deny` 一樣優先。（這是 fs plugin 的做法，Tauri 只是把兩種分開交給 command；第 4 集自己寫的 command 要合併就得自己來。）例如寫檔的 command scope 只有 `*.txt`，全域 scope 另外給 `*.md`，`note.md` 就寫得進去。

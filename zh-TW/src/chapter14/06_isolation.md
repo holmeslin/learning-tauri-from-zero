@@ -57,7 +57,7 @@ window.__TAURI_ISOLATION_HOOK__ = (message) => {
 
 `message` 就是準備送出的那則訊息：`cmd` 是 command 的名字（plugin 的是 `plugin:fs|read_text_file` 這種），`payload` 是參數物件。回傳什麼，Rust 就收到什麼。
 
-算「幾個字」用 `[...name].length`，不用 `name.length`：後者算的是 UTF-16 單位，`𠮷` 或 emoji 這類字會算成 2，10 個這樣的字會被當成 20 而被擋掉。`[...name]` 把字串展開成一個個 code point，一個字算 1。（仍然不等於螢幕上看到的一個字：`👨‍👩‍👧` 是三個 emoji 加兩個零寬連接字元，會算成 5。這裡的目的只是擋掉離譜的長度，不求精確。）
+算「幾個字」用 `[...name].length`，不用 `name.length`：後者算的是 UTF-16 單位，`𠮷` 或 emoji 這類字會算成 2，10 個這樣的字會被當成 20 而被擋掉。`[...name]` 把字串展開成一個個 code point，一個字算 1。我們在 `tauri dev` 試過：輸入 10 個 `𠮷` 放行，11 個被擋下。（仍然不等於螢幕上看到的一個字：`👨‍👩‍👧` 是三個 emoji 加兩個零寬連接字元，會算成 5。這裡的目的只是擋掉離譜的長度，不求精確。）
 
 接著在 `tauri.conf.json` 的 `app.security` 加上 `pattern`，告訴 Tauri 去哪裡找這個小網頁。`dir` 是相對於 `tauri.conf.json` 的路徑：
 
