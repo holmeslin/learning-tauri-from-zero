@@ -577,7 +577,7 @@ dist/assets/index-CgEmlDeS.js   18.98 kB │ gzip: 5.11 kB
 - 便條的文字，App 一結束就沒了。想留下來，可以用第 7 章第 7 集的 store，每次輸入就存一份，叫出視窗時再讀回來；或像第 10 章那樣寫成檔案。
 - 快捷鍵寫死在程式裡。想讓使用者自己改，設定視窗要能收按鍵，存進 store，再換掉已經註冊的那一組；怎麼取消註冊，這一章沒有教。
 - 使用者重複啟動 App，會多出一個系統匣圖示，兩個行程搶同一組快捷鍵。開機自動啟動之後，這更容易發生。第 8 章第 7 集的 single-instance 正好適合：第二個行程來的時候，把便條叫出來。
-- 範本留下的 opener plugin，這個 App 用不到。第 14 章會談為什麼權限越少越好，到時候可以連同 `opener:default` 一起拿掉。
+- 範本留下的 opener plugin，這個 App 用不到，可以拿掉，兩個地方要成對改：`src-tauri/src/lib.rs` 的 `run()` 裡，刪掉 `.plugin(tauri_plugin_opener::init())` 那一行；`src-tauri/capabilities/default.json` 的 `permissions` 裡，刪掉 `"opener:default"` 那一行。`Cargo.toml` 與 `package.json` 裡的 opener 套件留著也沒關係。第 14 章會談為什麼權限越少越好。
 - 開機自動啟動，在 dev 版登記的是開發版執行檔。第 15 章打包之後，再用安裝好的 App 試一次。
 - 這一章只在 macOS 實測。Windows 與 Linux 的系統匣、快捷鍵與開機啟動，都是依文件整理的。
 
