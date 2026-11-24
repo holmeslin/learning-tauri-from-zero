@@ -20,13 +20,13 @@
 
 `mobile_entry_point` 替 `run()` 補上手機端需要的東西：Android 的 JNI 綁定（Java 呼叫原生程式碼的介面）、iOS 呼叫用的 C 符號 `start_app`，還有把 panic 攔下來，直接中止程式，不讓它穿過 FFI 邊界。
 
-這個巨集只在手機的編譯目標才存在，桌面編譯找不到它，所以寫成 `cfg_attr`：條件成立，才加上這個屬性。桌面上這行等於沒寫，`main.rs` 照樣呼叫同一個 `run()`。
+這個巨集只在手機的 target 才存在，桌面編譯找不到它，所以寫成 `cfg_attr`：條件成立，才加上這個屬性。桌面上這行等於沒寫，`main.rs` 照樣呼叫同一個 `run()`。
 
 忘了這行會怎樣？依 tauri-cli 的原始碼，Android 與 iOS 的建置腳本都會檢查函式庫裡有沒有入口，沒有就回報 `does not include required runtime symbols`，說你可能漏了 `tauri::mobile_entry_point`。
 
 ### `cfg(mobile)` 與 `cfg(desktop)` 從哪來
 
-`mobile` 與 `desktop` 不是 Rust 內建的 cfg（內建的是 `target_os = "android"` 這一類）。它們是 `build.rs` 裡的 `tauri_build::build()` 設的別名：目標系統是 Android 或 iOS 就是 `mobile`，其他全部是 `desktop`。所以 `build.rs` 要有這一行（範本有），你的程式碼才能用這兩個 cfg。
+`mobile` 與 `desktop` 不是 Rust 內建的 cfg（內建的是 `target_os = "android"` 這一類）。它們是 `build.rs` 裡的 `tauri_build::build()` 設的別名：編譯的 target 是 Android 或 iOS 就是 `mobile`，其他全部是 `desktop`。所以 `build.rs` 要有這一行（範本有），你的程式碼才能用這兩個 cfg。
 
 `Cargo.toml` 看不到建置腳本設的別名。第 8 章那個桌面專用的相依套件區塊，只能寫成原始的 `cfg(not(any(target_os = "android", target_os = "ios")))`。
 
@@ -42,15 +42,15 @@ Rust 程式碼裡有三種用法：
 
 ### 範例：隔開桌面專用的程式碼
 
-下面的 `lib.rs` 是範本加兩處。`greet` 用 `cfg!(mobile)` 回報自己跑在哪一邊。`center_window` 用到只有桌面才有的 `center()`（把視窗置中，這裡只拿它當例子），所以寫成兩個版本。
+下面的 `lib.rs` 是範本加兩處。`greet` 用 `cfg!(mobile)` 回報自己跑在哪一邊。`center_window` 用到只有桌面才有的 `center()`（把視窗置中，跟第 6 章第 3 集 Builder 的 `.center()` 是同一件事，這裡對已經開好的視窗呼叫），所以寫成兩個版本。
 
 `src-tauri/src/lib.rs`：
 
 ```rust
 #[tauri::command]
 fn greet(name: &str) -> String {
-    let kind = if cfg!(mobile) { "手機" } else { "桌面" };
-    format!("Hello, {name}! 這裡是{kind}上的 Rust。")
+    let platform = if cfg!(mobile) { "手機" } else { "桌面" };
+    format!("Hello, {name}! 這裡是{platform}上的 Rust。")
 }
 
 #[cfg(desktop)]
@@ -100,9 +100,7 @@ pub fn run() {
 
 也有編得過、但手機不採用的：`tauri.conf.json` 視窗的 `width` 與 `height`，手機上會被忽略。
 
-手機也不是不能開多個視窗。官方有一頁 Multi-Window on Mobile，要另外設定，Android 與 iOS 各有系統版本的要求。本書不用，也不展開。
-
-另外有手機才有的：`WindowEvent::Suspended` 與 `WindowEvent::Resumed`，App 離開前景與回到前景時送出，桌面不會有。
+手機也能開多個視窗，要另外設定（官方有一頁 Multi-Window on Mobile），這集不展開。
 
 ### 本書用過的 plugin 在手機上能不能用
 
@@ -118,18 +116,26 @@ pub fn run() {
 | clipboard-manager | 部分 | 只支援純文字 |
 | autostart、global-shortcut、single-instance、updater | 沒有 | |
 
-沒有的那四個，前三個的 crate 檔頭是 `#![cfg(not(any(target_os = "android", target_os = "ios")))]`：在手機上整個 crate 是空的，連 `tauri_plugin_global_shortcut::Builder` 這個名字都找不到。所以註冊它們的程式碼一定要用 `#[cfg(desktop)]` 隔開，就是第 8 章第 6、7 集的寫法。updater 的 crate 在手機上不是空的，但依原始碼，手機版的安裝函式只回傳 `UnsupportedOs`。手機的 App 靠商店更新（第 16 章第 1 集）。
+沒有的那四個，前三個的 crate 檔頭是 `#![cfg(not(any(target_os = "android", target_os = "ios")))]`：在手機上整個 crate 是空的，連 `tauri_plugin_global_shortcut::Builder` 這個名字都找不到。
+
+所以註冊它們的程式碼一定要用 `#[cfg(desktop)]` 隔開，就是第 8 章第 6、7 集的寫法。
+
+updater 的 crate 在手機上不是空的，但依原始碼，手機版的安裝函式只回傳 `UnsupportedOs`。手機的 App 靠商店更新（第 16 章第 1 集）。
 
 capability 沒寫 `platforms` 就是所有平台都適用（第 14 章第 2 集）。範本的 `capabilities/default.json` 沒寫，所以手機也用同一份。
 
 ### notification：手機要真的問
 
-第 7 章第 8 集說過，桌面版的 notification 不會問：`isPermissionGranted()` 一律是 `true`，`requestPermission()` 一律是 `"granted"`。手機版會真的問。依 plugin 的原始碼，Rust 端的 `request_permission()` 在桌面直接回傳已允許，在 Android 上則是向系統要 `POST_NOTIFICATIONS` 這個權限。那一集的寫法本來就是先問、被拒就不送，所以兩邊通用，不用改。
+第 7 章第 8 集說過，桌面版的 notification 不會問：`isPermissionGranted()` 一律是 `true`，`requestPermission()` 一律是 `"granted"`。手機版會真的問。
+
+依 plugin 的原始碼，Rust 端的 `request_permission()` 在桌面直接回傳已允許。Android 上是向系統要 `POST_NOTIFICATIONS` 這個權限，而且只有 Android 13（API 33）以上才會跳出詢問；更舊的版本不問，直接回報通知有沒有開。iOS 用 `UNUserNotificationCenter` 的 `requestAuthorization` 向系統要授權，其他細節沒有查證。
+
+那一集的寫法本來就是先問、被拒就不送，所以兩邊通用，不用改。
 
 ### 這集實測了什麼
 
 - 實測：上面的 `lib.rs` 通過 checkcode（`cargo fmt`、`clippy -D warnings`、`tsc`），那是桌面編譯。另外在 macOS 上跑了一個單元測試，確認 `greet` 回傳「桌面」、`cfg!(mobile)` 是 `false`。桌面的 App 沒有真的開起來，所以視窗置中與 Greet 按鈕的畫面都沒看過。
-- 沒測：手機的一切。`#[cfg(mobile)]` 那個函式、`mobile_entry_point` 展開後的樣子、手機上 `greet` 回傳「手機」，檢查程式沒編譯過，我們也沒有在模擬器或實機跑過。
+- 沒測：手機的一切。寫這一章的電腦沒有 Android 與 iOS 的開發工具，所以 `#[cfg(mobile)]` 那個函式、`mobile_entry_point` 展開後的樣子、手機上 `greet` 回傳「手機」，檢查程式沒編譯過，也沒有在模擬器或實機跑過。
 - 依據：tauri 2.12.6、tauri-build 2.7.5、tauri-macros 2.7.5、tauri-runtime-wry 2.12.4 與各 plugin 的原始碼（版本依範本的 `Cargo.lock`）。plugin 的支援程度出自各自 `Cargo.toml` 的 `[package.metadata.platforms.support.*]`，缺少入口的錯誤訊息出自 tauri-cli 2.12.5，多視窗依 v2.tauri.app。
 
 ## 重點整理
