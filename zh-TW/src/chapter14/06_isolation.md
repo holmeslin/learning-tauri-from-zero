@@ -42,11 +42,13 @@ iframe 是 sandbox 的，頁面的程式讀不到、改不到裡面的東西，�
 `dist-isolation/index.js`：
 
 ```js
+const MAX_NAME_LENGTH = 10;
+
 window.__TAURI_ISOLATION_HOOK__ = (message) => {
   if (message.cmd === "greet") {
     const name = message.payload.name;
-    if (typeof name !== "string" || name.length > 10) {
-      throw new Error("greet 的 name 要是 10 個字以內的字串");
+    if (typeof name !== "string" || [...name].length > MAX_NAME_LENGTH) {
+      throw new Error(`greet 的 name 要是 ${MAX_NAME_LENGTH} 個字以內的字串`);
     }
   }
   return message;
@@ -54,6 +56,8 @@ window.__TAURI_ISOLATION_HOOK__ = (message) => {
 ```
 
 `message` 就是準備送出的那則訊息：`cmd` 是 command 的名字（plugin 的是 `plugin:fs|read_text_file` 這種），`payload` 是參數物件。回傳什麼，Rust 就收到什麼。
+
+算「幾個字」用 `[...name].length`，不用 `name.length`：後者算的是 UTF-16 單位，`𠮷` 或 emoji 這類字會算成 2，10 個這樣的字會被當成 20 而被擋掉。`[...name]` 把字串展開成一個個 code point，一個字算 1。（仍然不等於螢幕上看到的一個字：`👨‍👩‍👧` 是三個 emoji 加兩個零寬連接字元，會算成 5。這裡的目的只是擋掉離譜的長度，不求精確。）
 
 接著在 `tauri.conf.json` 的 `app.security` 加上 `pattern`，告訴 Tauri 去哪裡找這個小網頁。`dir` 是相對於 `tauri.conf.json` 的路徑：
 
@@ -172,7 +176,7 @@ window.__TAURI__.core.invoke("greet", { name: "x".repeat(100) }).then(console.lo
 - 被擋下的訊息，前端的 `invoke` 既不會成功也不會失敗，Promise 一直停在等待。需要的話，前端要自己設逾時。
 - isolation 的小網頁是編譯時嵌進 App 的。`dist-isolation/` 裡的檔案改了，`tauri dev` 不會自動重新編譯，畫面看起來沒變。存一次 `src-tauri/` 底下的檔案，例如 `lib.rs`，它才會重新編譯，新的 hook 才生效。
 - 它只檢查訊息，不取代 Rust 端的 permission 與 scope。每一條訊息要多繞一趟 iframe 和加密。Tauri 的設定說明把它標為「為了安全建議開啟」；前端用的 npm 套件越多，越值得付這個成本。
-- 同時設了 CSP（第 5 集）的話，Tauri 會自動把 isolation iframe 的來源加進 `default-src`，不用自己寫。
+- 同時設了 CSP（第 5 集）的話，Tauri 提供頁面、附上 CSP 的時候，會自動把 isolation iframe 的來源加進 `default-src`，不用自己寫。這只發生在 Tauri 自己提供頁面的版本（打包版）；`tauri dev` 載入的是 Vite 的頁面，沒有 CSP 可加。
 
 ### 跟 Electron 比一比
 

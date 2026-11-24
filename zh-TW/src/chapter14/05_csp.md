@@ -19,9 +19,9 @@
 這個頁面模擬不可信的內容溜進預覽之後的樣子。第 12 章的預覽是用 `innerHTML` 放進 HTML 的，這裡改用 `createElement` 把同樣的東西一個一個做出來，放進 `#preview`：
 
 - 第一張圖指向外部網址（這裡用 `127.0.0.1` 的一個位址代替，不需要真的有伺服器）。
-- 第二張圖的來源是壞的，會觸發 `onerror`。`setAttribute("onerror", …)` 設的是 HTML 屬性，效果跟 HTML 裡寫 `<img onerror="…">` 一樣，叫行內事件處理（inline event handler）。它要是執行了，畫面上「惡意程式沒有執行」那行字就會被改掉。
+- 第二張圖的來源是壞的，會觸發 `onerror`。`setAttribute("onerror", …)` 設的是 HTML 屬性，效果跟 HTML 裡寫 `<img onerror="…">` 一樣，叫行內事件處理（inline event handler）。它要是執行了，`#msg` 那一行「惡意程式沒有執行」就會被改掉。
 
-程式也監聽 `securitypolicyviolation`：CSP 每擋下一樣東西，WebView 就發這個事件，`violatedDirective` 是違反的指令，`blockedURI` 是被擋下的東西，行內腳本會是 `inline`。最後呼叫範本的 `greet`（`lib.rs` 沒動），確認 IPC 還通。
+程式也監聽 `securitypolicyviolation`：CSP 每擋下一樣東西，WebView 就發這個事件，`violatedDirective` 是違反的指令，`blockedURI` 是被擋下的東西，行內腳本會是 `inline`。最後呼叫範本的 `greet`（`lib.rs` 沒動），確認 IPC 還通，回應放進 `#greet-msg`；違規的紀錄放進 `#violations`。
 
 `index.html`：
 
@@ -78,13 +78,14 @@ brokenImg.setAttribute(
 brokenImg.src = "x";
 previewEl.append(brokenImg);
 
-invoke<string>("greet", { name: "CSP" })
-  .then((text) => {
-    greetEl.textContent = text;
-  })
-  .catch((error) => {
+const showGreeting = async () => {
+  try {
+    greetEl.textContent = await invoke<string>("greet", { name: "CSP" });
+  } catch (error) {
     greetEl.textContent = `出錯了：${error}`;
-  });
+  }
+};
+showGreeting();
 ```
 
 先用範本的設定（`"csp": null`，不限制）跑：
@@ -162,7 +163,7 @@ invoke<string>("greet", { name: "CSP" })
 
 ### `tauri dev` 的頁面套不到 CSP
 
-CSP 是 Tauri 提供頁面時，附在回應上的。`tauri dev` 載入的是 Vite 開發伺服器的頁面（`devUrl`，第 1 章第 5 集），回應是 Vite 給的，Tauri 沒有經手，所以不會套上 CSP。`tauri.conf.json` 另有一個 `devCsp`，是開發模式專用的另一份，同樣只會套在 Tauri 自己提供的頁面上。要看效果，得用 Tauri 自己提供頁面的版本，也就是打包過的 App。這裡用 debug 版本（第 1 章第 8 集提過），`--no-bundle` 表示只編譯，不做安裝檔，打包是第 15 章的事：
+CSP 是 Tauri 提供頁面時，附在回應上的。`tauri dev` 載入的是 Vite 開發伺服器的頁面（`devUrl`，第 1 章第 6 集），回應是 Vite 給的，Tauri 沒有經手，所以不會套上 CSP。`tauri.conf.json` 另有一個 `devCsp`，是開發模式專用的另一份，同樣只會套在 Tauri 自己提供的頁面上。要看效果，得用 Tauri 自己提供頁面的版本，也就是打包過的 App。這裡用 debug 版本（第 1 章第 8 集提過），`--no-bundle` 表示只編譯，不做安裝檔，打包是第 15 章的事：
 
 ```bash
 npm run tauri build -- --debug --no-bundle
@@ -193,7 +194,7 @@ script-src-attr：inline
 
 ### 這份 CSP 在做什麼
 
-- `default-src 'self'`：預設只准用頁面自己的來源。`script-src` 沒另外寫，也照這條，所以行內事件處理（`script-src-attr`）被擋，`onerror` 沒有跑。Tauri 打包時會替寫在 HTML 裡的 `<script>`、`<style>` 在 CSP 裡補上雜湊值（hash）或 nonce；用 `src` 載入的腳本來自頁面自己的來源，`'self'` 已經放行。所以不用為了自己的程式放寬。
+- `default-src 'self'`：預設只准用頁面自己的來源。`script-src` 沒另外寫，也照這條，所以行內事件處理（`script-src-attr`）被擋，`onerror` 沒有跑。（違規清單上寫 `script-src-attr`，是 macOS 的 WebView 實測的結果。`script-src-attr` 專管行內事件處理，沒寫時依序回退到 `script-src`、`default-src`；不認得這個指令的舊版引擎，清單上的名字可能是別的，`onerror` 一樣被擋。我們沒有在別的平台確認。）Tauri 打包時會替寫在 HTML 裡的 `<script>`、`<style>` 在 CSP 裡補上雜湊值（hash）或 nonce；用 `src` 載入的腳本來自頁面自己的來源，`'self'` 已經放行。所以不用為了自己的程式放寬。
 - `img-src 'self' data:`：圖片只能來自自己或 `data:`。第 12 章第 2 集說過，預覽放行 `http`、`https` 的圖片，代價是打開別人的檔案時 App 會去連圖片的網址；有了這一行，WebView 在送出請求之前就擋下了。想放行網路上的圖片，就得自己在這裡加。
 - `connect-src ipc: http://ipc.localhost`：`invoke` 走的是 Tauri 的 `ipc:` 協定（Windows 與 Android 是 `http://ipc.localhost`）。拿掉這一行重新打包，`greet` 一樣有回應，但違規清單會多一行 `connect-src：ipc://localhost/greet`：Tauri 的第一種連線方式被擋，才改用備援的 `postMessage`。能用，但先報一次錯才改道，所以要寫進去。
 
