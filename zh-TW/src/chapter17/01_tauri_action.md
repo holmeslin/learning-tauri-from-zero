@@ -79,7 +79,7 @@ gh workflow run release.yml
 https://github.com/<你的帳號>/tauri-app/actions/runs/45129496303
 ```
 
-這個網址是這一次執行（run）的頁面，最後的數字是 run 的編號。`gh run watch` 即時顯示進度，跑完用 `gh run view 45129496303` 看結果，輸出（節錄）：
+這個網址是這一次執行（run）的頁面，最後的數字是這次執行的編號。`gh run watch` 即時顯示進度，跑完用 `gh run view 45129496303` 看結果，輸出（節錄）：
 
 ```text
 ✓ main release · 45129496303
@@ -131,7 +131,7 @@ ls darwin-aarch64-dmg
 tauri-app_0.1.0_aarch64.dmg
 ```
 
-每個 artifact 下載成一個同名的資料夾（`.app` 那個資料夾裡是 `tauri-app.app`）。這些檔案是給你自己檢查的，要讓使用者下載得放成 GitHub Release，第 3 集做。
+每個 workflow artifact 下載成一個同名的資料夾（`.app` 那個資料夾裡是 `tauri-app.app`）。這些檔案是給你自己檢查的，要讓使用者下載得放成 GitHub Release，第 3 集做。
 
 ### 這集實測了什麼
 
