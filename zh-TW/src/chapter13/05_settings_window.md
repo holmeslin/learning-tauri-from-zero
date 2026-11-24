@@ -174,6 +174,8 @@ fn toggle_main_window(app: &AppHandle) -> tauri::Result<()> {
 
 fn open_settings_window(app: &AppHandle) -> tauri::Result<()> {
     if let Some(window) = app.get_webview_window("settings") {
+        window.show()?;
+        window.unminimize()?;
         return window.set_focus();
     }
     WebviewWindowBuilder::new(app, "settings", WebviewUrl::App("index.html".into()))

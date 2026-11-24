@@ -2,7 +2,7 @@
 
 ## 本集目標
 
-讀懂一項 permission 由 command 與 scope 組成，會用 `fs:scope` 的 `allow`、`deny` 限制 fs plugin 能碰的路徑，知道 `deny` 一定優先。順帶學會查 plugin 的 permission 放行了什麼，以及 scope 有全域與 command 兩種掛法。
+讀懂一項 permission 由「放行哪些 command」加上「限制哪些路徑」（scope）組成：會查 plugin 的 permission 放行了什麼，用 `fs:scope` 的 `allow`、`deny` 限制 fs plugin 能碰的路徑（`deny` 一定優先），也分得清 scope 掛在全域和掛在單一 command 的差別。
 
 ## 正文
 

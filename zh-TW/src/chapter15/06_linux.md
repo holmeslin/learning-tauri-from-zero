@@ -41,7 +41,7 @@
 | rpm | `tauri-app-0.1.0-1.aarch64.rpm` | `tauri-app-0.1.0-1.x86_64.rpm` |
 | AppImage | `tauri-app_0.1.0_aarch64.AppImage` | `tauri-app_0.1.0_amd64.AppImage` |
 
-最後一欄是依原始碼整理的，這裡沒有實際打過；第 17 章在 GitHub Actions 的 x86_64 機器上打包時，會看到這三個檔名。要給別種 CPU 的使用者，最直接的做法是在那種 CPU 的機器上打，一次打好各平台就是第 17 章要做的事。
+最後一欄是依 tauri-bundler 的原始碼整理的，這裡沒有實際打過；第 17 章在 GitHub Actions 的 x86_64 機器上打包時，會看到這三個檔名。要給別種 CPU 的使用者，最直接的做法是在那種 CPU 的機器上打，一次打好各平台就是第 17 章要做的事。
 
 ### deb 與 rpm：函式庫交給系統
 

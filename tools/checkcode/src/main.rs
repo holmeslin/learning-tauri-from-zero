@@ -438,11 +438,19 @@ mod tests {
     fn locked_unless_cargo_toml_replaced() {
         let mut files = BTreeMap::new();
         files.insert("src-tauri/src/lib.rs".to_string(), String::new());
-        assert!(use_locked(&files));
-        // 不管內容是什麼（devtools、isolation…），貼了 Cargo.toml 就不加 --locked。
-        for toml in ["features = [\"devtools\"]", "features = [\"isolation\"]"] {
-            files.insert("src-tauri/Cargo.toml".to_string(), toml.to_string());
-            assert!(!use_locked(&files));
-        }
+        assert!(use_locked(&files), "沒貼 Cargo.toml 時要加 --locked");
+
+        files.insert("src-tauri/tauri.conf.json".to_string(), String::new());
+        assert!(use_locked(&files), "貼了別的設定檔不影響，仍要加 --locked");
+
+        // 只看有沒有貼這個檔，不看內容（devtools、isolation 都一樣）。
+        files.insert(
+            "src-tauri/Cargo.toml".to_string(),
+            "features = [\"devtools\"]".to_string(),
+        );
+        assert!(
+            !use_locked(&files),
+            "貼了 src-tauri/Cargo.toml 就不加 --locked"
+        );
     }
 }

@@ -30,6 +30,10 @@ _Avoid_: 樣板專案、boilerplate
 **檢查點**：
 「`指令` 的輸出：」加輸出區塊；checkcode 在這裡驗證專案的編譯結果。
 
+**來源註記**：
+沒實測的平台，在集裡註明內容的依據，只用三種：「依 Tauri 文件整理」「依原始碼整理」「依 Tauri 文件與原始碼整理」。寫到具體版本或專案時照實寫，例如「依 tauri-bundler 2.10 原始碼整理」。第 18 章的「依 v2.tauri.app 與原始碼查證」是另一個意思（內容查證過但沒有跑），不用這三種。
+_Avoid_: 依文件整理、查原始碼整理、依 plugin 的原始碼與文件整理
+
 ## Tauri 術語
 
 原則：跟 Tauri、Rust、Web 平台 API 名稱相同的詞保留英文；其他翻成台灣用語，第一次出現時附英文。
@@ -57,7 +61,7 @@ _Avoid_: 樣板專案、boilerplate
 | 安裝檔 | installer | 安裝包 |
 | 圖示（App 的） | icon | 圖標 |
 | 磁碟映像檔（`.dmg`） | disk image | 光碟映像、映像檔案 |
-| 開發者工具 | developer tools（devtools） | 開發人員工具、DevTools、控制台（那是 Console 分頁） |
+| 開發者工具（產品名稱照原名，例如 Edge DevTools） | developer tools（devtools） | 開發人員工具、DevTools、控制台（那是 Console 分頁） |
 | 自動更新 | auto update | 熱更新 |
 | 程式碼簽章 | code signing | 代碼簽名 |
 | 更新檔簽章 | updater signature（`.sig`） | 更新簽名 |
@@ -101,6 +105,3 @@ _Avoid_: 樣板專案、boilerplate
 | 交易 | transaction | 事務 |
 | 語句（SQL 的） | SQL statement | 敘述、陳述式 |
 | 預備好的語句 | prepared statement | 預處理語句、預編譯語句 |
-| 依 Tauri 文件整理／依原始碼整理／依 Tauri 文件與原始碼整理 | 沒實測的平台的來源註記，只用這三種 | 依文件整理、查原始碼整理、依 plugin 的原始碼與文件整理 |
-
-來源註記裡寫到具體版本或專案時照實寫（例如「依 tauri-bundler 2.10 原始碼整理」）；第 18 章的「依 v2.tauri.app 與原始碼查證」是另一個意思（內容查證過但沒有跑），不用上面三種。

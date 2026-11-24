@@ -53,10 +53,10 @@ UPDATE todos SET done = 1 WHERE id = 2;
 DELETE FROM todos WHERE id = 1;
 ```
 
-- `INSERT INTO 表 (欄位) VALUES (值)`：新增一列。沒列出的欄位（`id`、`done`）由 SQLite 補上。
-- `SELECT 欄位 FROM 表 ORDER BY 欄位`：讀出列，這裡依 `id` 由小到大排。
-- `UPDATE 表 SET 欄位 = 值 WHERE 條件`：修改符合條件的列。
-- `DELETE FROM 表 WHERE 條件`：刪除符合條件的列。
+- `INSERT INTO 資料表 (欄位) VALUES (值)`：新增一列。沒列出的欄位（`id`、`done`）由 SQLite 補上。
+- `SELECT 欄位 FROM 資料表 ORDER BY 欄位`：讀出一列一列的資料，這裡依 `id` 由小到大排。
+- `UPDATE 資料表 SET 欄位 = 值 WHERE 條件`：修改符合條件的列。
+- `DELETE FROM 資料表 WHERE 條件`：刪除符合條件的列。
 
 `UPDATE` 與 `DELETE` 後面的 `WHERE` 不能忘：沒寫條件，整張資料表的每一列都會被改掉、刪掉。
 

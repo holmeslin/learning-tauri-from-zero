@@ -8,7 +8,7 @@
 
 ### 資料表改版：舊資料庫怎麼辦
 
-我們想在每則待辦旁邊顯示是哪一天建立的，所以 `todos` 要多一個欄位 `created_on`。最直覺的做法，是在 `CREATE TABLE IF NOT EXISTS` 那段 SQL 裡加上 `created_on TEXT`，`list` 的 `SELECT` 也跟著加上這一欄。
+我們想在每則待辦旁邊顯示是哪一天建立的，所以 `todos` 要多一個欄位 `created_on`。最直覺的做法，是在 `CREATE TABLE IF NOT EXISTS` 那段 SQL 裡加上 `created_on TEXT`，`list` 的 `SELECT` 也跟著加上這個欄位。
 
 全新的資料庫沒有問題。但你的 `todos.db` 在前幾集就已經建好、也存了資料。對它來說，`todos` 資料表早就存在，`IF NOT EXISTS` 讓整句 SQL 什麼都不做，欄位根本沒有被加上去。照這個做法改完再啟動，狀態列會出現：
 
@@ -39,7 +39,7 @@ sqlite3 "$HOME/Library/Application Support/tw.example.tauri-app/todos.db" "PRAGM
 
 ### `migrate`
 
-`db.rs` 的 `open` 不再自己建資料表，改成呼叫 `migrate`。`Todo` 也多了 `created_on`：舊的待辦是這個欄位出現之前建立的，升級之後它們在這一欄是 `NULL`，所以型別是 `Option<String>`，SQL 的 `NULL` 對應 Rust 的 `None`。`rename_all` 讓它在前端是 `createdOn`（第 3 章第 5 集）。
+`db.rs` 的 `open` 不再自己建資料表，改成呼叫 `migrate`。`Todo` 也多了 `created_on`：舊的待辦是這個欄位出現之前建立的，升級之後它們的 `created_on` 是 `NULL`，所以型別是 `Option<String>`，SQL 的 `NULL` 對應 Rust 的 `None`。`rename_all` 讓它在前端是 `createdOn`（第 3 章第 5 集）。
 
 `src-tauri/src/db.rs`：
 
@@ -149,7 +149,7 @@ pub fn delete(conn: &Connection, id: i64) -> Result<(), AppError> {
 - `conn.transaction()` 要 `&mut Connection`，所以 `open` 裡的 `conn` 改成 `mut`。
 - 資料庫的版本號比 `LATEST` 還大（例如使用者裝回舊版的 App），就回傳 `TooNew`，不去碰它：舊程式不認得新結構，硬寫進去可能會把資料寫壞。
 - `add` 的 SQL 多寫入 `created_on`，值用 SQLite 的 `date('now', 'localtime')`：今天的日期，本地時區，格式是 `2026-11-19`，存成文字。
-- SQLite 的 `ALTER TABLE` 能做的事有限，例如不能直接改欄位的型別；比較大的改動要建一張新的表、把資料搬過去、再換名字。這一章只加一個欄位，用不到。
+- SQLite 的 `ALTER TABLE` 能做的事有限，例如不能直接改欄位的型別；比較大的改動要建一張新的資料表、把資料搬過去、再換名字。這一章只加一個欄位，用不到。
 
 `lib.rs` 只多了 `TooNew` 這個錯誤變體。它有兩個版本號，所以用具名欄位 `found`（資料庫的版本）與 `supported`（程式認得的版本），不靠位置：訊息裡寫 `{found}`、`{supported}`，建立錯誤時也不會把兩個數字放反：
 

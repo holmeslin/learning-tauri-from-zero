@@ -73,7 +73,7 @@ sudo apt install libwebkit2gtk-4.1-dev \
 
 ### Node.js
 
-到 <https://nodejs.org> 安裝目前的 LTS 版本。本書用到的工具裡，要求最高的是第 9 章的測試工具：Node.js 22.22.2、24.15.0 或 26 以上，裝目前的 LTS 就符合。裝好確認：
+到 <https://nodejs.org> 安裝目前的 LTS 版本。本書用到的工具裡，要求最高的是第 9 章的測試工具：Node.js 22 系列 22.22.2 以上、24 系列 24.15.0 以上，或 26 以上，裝目前的 LTS 就符合。裝好確認：
 
 ```bash
 node -v

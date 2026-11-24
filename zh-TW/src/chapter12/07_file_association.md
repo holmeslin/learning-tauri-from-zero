@@ -755,7 +755,7 @@ npm run tauri dev -- -- -- "$PWD/hello.md"
 開啟失敗：/Users/ada/tauri-app/nope.md：No such file or directory (os error 2)
 ```
 
-測不到的是第三個入口。dev 模式用命令列帶路徑啟動，把 `run` 收到的 `RunEvent` 印出來看，只有 `Ready` 和視窗取得、失去焦點，沒有 `Opened`。`Opened` 是系統要 App 開啟檔案的通知，這一集沒有實測，等第 15 章打包之後，再用 Finder 雙擊 `.md` 檔試。這一集也只在 macOS 實測，Windows 與 Linux 收檔案的方式，是依原始碼整理的。打包安裝之後，系統的「打開方式」就會出現這個 App，要不要設成預設，由使用者在系統裡決定，App 不能替他選。
+測不到的是第三個入口。dev 模式用命令列帶路徑啟動，把 `run` 收到的 `RunEvent` 印出來看，只有 `Ready` 和視窗取得、失去焦點，沒有 `Opened`。`Opened` 是系統要 App 開啟檔案的通知，這一集沒有實測，等第 15 章打包之後，再用 Finder 雙擊 `.md` 檔試。這一集也只在 macOS 實測，Windows 與 Linux 收檔案的方式，是依 tauri-bundler、GLib 的原始碼與 single-instance 的行為整理的。打包安裝之後，系統的「打開方式」就會出現這個 App，要不要設成預設，由使用者在系統裡決定，App 不能替他選。
 
 ## 重點整理
 
