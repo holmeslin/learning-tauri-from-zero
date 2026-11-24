@@ -25,8 +25,8 @@
 | 元件 | 做什麼 |
 | --- | --- |
 | Android SDK Platform | Android 系統的函式庫與介面 |
-| Android SDK Platform-Tools | 裡面有 `adb`，電腦靠它跟模擬器、實機溝通，第 3 集才用到 |
-| NDK (Side by side) | C/C++ 的編譯工具，Rust 編成 Android 的函式庫時，用它的 clang 當連結器 |
+| Android SDK Platform-Tools | 裡面有 `adb`，電腦靠它跟模擬器（emulator）、實機（physical device）溝通，第 3 集才用到 |
+| NDK (Side by side) | C/C++ 的編譯工具，Rust 編成 Android 的函式庫時，用它的 `clang` 當連結器 |
 | Android SDK Build-Tools | 建置 App 用的工具 |
 | Android SDK Command-line Tools | 命令列的管理工具，裡面有 `sdkmanager` |
 
@@ -62,13 +62,17 @@ iOS 只能在 macOS 上做。第 1 章第 2 集裝的 Command Line Tools 只夠�
 
 從 Mac App Store 或 Apple Developer 網站安裝。裝好後先開一次 Xcode，讓它完成設定。
 
+第 1 章第 2 集裝過 Command Line Tools 的話，再跑一次 `xcode-select -p`，看現在指的是不是 Xcode。如果還是 `/Library/Developer/CommandLineTools`，用 `sudo xcode-select -s /Applications/Xcode.app/Contents/Developer` 切過去，不然需要完整 Xcode 的工具可能找不到它。
+
+官方文件沒寫這一步，依據是 cargo-mobile2（CLI 用的函式庫）的原始碼：它自己的檢查把前者當成不對的路徑，建議改成後者。
+
 ### iOS 的 Rust target、Homebrew 與 CocoaPods
 
 ```bash
 rustup target add aarch64-apple-ios x86_64-apple-ios aarch64-apple-ios-sim
 ```
 
-`aarch64-apple-ios` 給實機。另外兩個給模擬器：`x86_64-apple-ios` 是 Intel Mac 用的，`aarch64-apple-ios-sim` 是 Apple Silicon 用的。
+`aarch64-apple-ios` 給實機。另外兩個給 iOS 的模擬器（simulator）：`x86_64-apple-ios` 是 Intel Mac 用的，`aarch64-apple-ios-sim` 是 Apple Silicon 用的。
 
 接著官方文件要你裝 Homebrew（<https://brew.sh>），再用它裝 CocoaPods，一個管理 iOS 專案相依套件的工具：
 
@@ -92,16 +96,17 @@ iOS 這邊，`tauri ios init` 會檢查 XcodeGen（產生 Xcode 專案）與 lib
 
 ### 這集實測了什麼
 
-沒有實測。寫這一章的電腦沒有 Android 與 iOS 的開發工具，上面的指令與設定我們都沒有跑過，也沒有貼輸出。
+沒有實測。寫這一章的電腦沒有 Android 與 iOS 的開發工具，所以這集的指令與設定都沒有跑過，也沒有貼輸出。
 
 - 依據：Tauri 官方 Prerequisites 頁面的「Configure for Mobile Targets」，以及 tauri-cli 2.12.5 與 cargo-mobile2 0.22.5 的原始碼。
 - 原始碼那一節（CLI 自己會補的部分），只讀了程式，沒有驗證它實際跑起來的行為。
 - `adb`、NDK 與 `sdkmanager` 的說明查過原始碼。SDK Platform 與 Build-Tools 的說明是 Android 的一般知識，沒有查證。
+- `xcode-select` 那一步官方文件沒寫，只讀了 cargo-mobile2 的原始碼，沒有跑過；Command Line Tools 還在用時，Xcode 的工具實際會出什麼錯，沒有查證。
 - Android Studio 與 Xcode 的版本、選單位置與畫面，沒有查證。
 
 ## 重點整理
 
 - 做手機要在桌面的前置需求之外，另外準備 Android 與 iOS 兩份；iOS 只能在 macOS 上做。
 - Android 要裝 Android Studio，再用 SDK Manager 裝五個元件，設 `JAVA_HOME`、`ANDROID_HOME`、`NDK_HOME`，並加四個 Rust target。
-- iOS 要完整的 Xcode（不是 Command Line Tools）、三個 Rust target、Homebrew 與 CocoaPods。
+- iOS 要完整的 Xcode（不是 Command Line Tools，裝好後確認 `xcode-select -p` 指向它）、三個 Rust target、Homebrew 與 CocoaPods。
 - CLI 對沒設的環境變數與缺少的工具有備案，但官方文件的步驟照做最保險。

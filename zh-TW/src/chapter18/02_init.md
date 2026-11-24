@@ -2,9 +2,11 @@
 
 ## 本集目標
 
-用 `tauri android init` 與 `tauri ios init` 產生行動版的專案，看它在 `src-tauri/gen/` 放了什麼、沒動你的什麼，以及這個資料夾要不要進 Git。
+用 `tauri android init` 與 `tauri ios init` 產生 Android 與 iOS 的專案，看它在 `src-tauri/gen/` 放了什麼。
 
 ## 正文
+
+這一集從起始專案出發（第 1 章第 3 集建出的 `tauri-app`），不改任何檔案，只跑兩個指令。
 
 ### 兩個指令
 
@@ -50,7 +52,7 @@ iOS 同樣先補 Rust target，再檢查 XcodeGen、libimobiledevice、CocoaPods
 
 `Cargo.toml`、`tauri.conf.json`、`src/`、`package.json`、`capabilities/` 都不會被改，init 的專案檔只寫在 `gen/` 底下。
 
-不用改，是因為範本的 `[lib]` 一開始就是行動版要的樣子（第 1 章第 4 集提過）：
+不用改，是因為範本的 `[lib]` 一開始就是手機版要的樣子（第 1 章第 4 集提過）：
 
 ```toml,ignore
 [lib]
@@ -73,7 +75,7 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 | 平台 | 用的名稱 | 值 |
 | --- | --- | --- |
 | Android | applicationId，也是 Kotlin 的套件名 | `tw.example.tauri_app` |
-| iOS | bundle id | `tw.example.tauri-app` |
+| iOS | Bundle ID | `tw.example.tauri-app` |
 
 Android 的 `-` 換成 `_`，因為 Java 與 Kotlin 的套件名不能有連字號；iOS 不變。同一個 App，在兩邊的 id 不一樣。
 
@@ -83,6 +85,7 @@ Android 的 `-` 換成 `_`，因為 Java 與 Kotlin 的套件名不能有連字�
 
 - Android：資料夾依 `identifier` 建。改了之後 CLI 找不到對應的資料夾，會報錯叫你刪掉 `gen/android` 重跑 init。
 - iOS：Xcode 專案用 `Cargo.toml` 的 `[package] name` 命名。改了它，CLI 會問要不要幫你改專案名，不要就報錯，一樣叫你刪掉 `gen/apple` 重跑。
+- Android 的 App 名字來自 `productName`，只在 init 時寫進 `strings.xml`，`dev` 和 `build` 不會再同步。init 之後才改 `productName`，名字不會變，一樣要刪掉 `gen/android` 重跑。
 - iOS 的 `identifier` 與 `productName` 不用重跑，`dev` 和 `build` 會把它們同步進 Xcode 專案。
 
 其他名字（像 `[lib] name`）改了會怎樣，我們沒有查證。
@@ -94,26 +97,26 @@ Android 的 `-` 換成 `_`，因為 Java 與 Kotlin 的套件名不能有連字�
 - `gen/android/app/src/main/res/` 或 `gen/apple/Assets.xcassets/AppIcon.appiconset/` 已經存在，直接寫進去。
 - 不存在，才寫進 `src-tauri/icons/android/` 與 `src-tauri/icons/ios/`。
 
-init 不會把後面這兩個資料夾複製進 `gen/`。所以第 15 章跑過的 `tauri icon`，行動版圖示不會自動用上；init 之後再跑一次 `npm run tauri icon <來源圖>`。
+init 不會把後面這兩個資料夾複製進 `gen/`。所以第 15 章跑過的 `tauri icon`，手機版圖示不會自動用上；init 之後再跑一次 `npm run tauri icon <來源圖>`。
 
 ### `gen/` 要不要進 Git
 
 範本的 `src-tauri/.gitignore` 只排除 `/target/` 與 `/gen/schemas`（第 1 章第 4 集），所以 `gen/android` 與 `gen/apple` 預設會被 Git 追蹤。
 
-兩個資料夾裡各有自己的 `.gitignore`，排除建置輸出、`local.properties`（本機的 SDK 路徑）與 `keystore.properties`（第 6 集的簽章設定）。
+兩個資料夾裡各有自己的 `.gitignore`，內容不一樣。`gen/android` 的排除建置輸出、`local.properties`（本機的 SDK 路徑）與 `keystore.properties`（第 6 集的簽章設定）；`gen/apple` 的只排除 `xcuserdata/`、`build/` 與 `Externals/`。
 
 之後要手改 `gen/` 裡的檔案，例如第 6 集改 `app/build.gradle.kts`。改動只存在這裡，換一台電腦或重跑 init 就沒了，所以別把 `gen/` 加進 `.gitignore`，連同手改的檔案一起 commit。官方文件沒有哪一句明說要 commit `gen/`，這是從 `.gitignore` 與文件要你手改檔案推論的。
 
 ### 這集實測了什麼
 
-- 沒有實測。這台電腦沒有 Android 與 iOS 的開發工具，兩個 init 指令都沒跑過，也就不知道實際會印什麼，書中不貼輸出。
+- 沒有實測。寫這一章的電腦沒有 Android 與 iOS 的開發工具，所以兩個 init 指令都沒跑過，也就不知道實際會印什麼，書中不貼輸出。
 - 內容依 v2.tauri.app 的 CLI 參考，以及 tauri-cli 2.12.5 與它用的 cargo-mobile2 0.22.5 的原始碼整理：產生的資料夾、init 做的事、`identifier` 的改寫與檢查、`tauri icon` 的去處。
 - 沒查證：`gen/` 裡每個檔案的細節、`[lib] name` 改名的影響，以及官方有沒有建議 commit `gen/`。
 
 ## 重點整理
 
 - `npm run tauri android init` 與 `npm run tauri ios init` 把專案產生在 `src-tauri/gen/android` 與 `gen/apple`；iOS 只有 macOS 才有。
-- init 的專案檔都在 `gen/`，不改 `Cargo.toml`、`tauri.conf.json` 與 `src/`；範本的 `[lib]` 三種 crate-type 早就為行動版備好。
-- 同一個 `identifier`，Android 的 applicationId 把 `-` 換成 `_`，iOS 的 bundle id 不變；別自己改成底線，build 會擋。
-- 改了 `identifier`（Android）或 `[package] name`（iOS），要刪掉 `gen/` 裡對應的資料夾重跑 init；`gen/` 預設不被 Git 排除，手改的檔案要 commit。
+- init 的專案檔都在 `gen/`，不改 `Cargo.toml`、`tauri.conf.json` 與 `src/`；範本的 `[lib]` 三種 crate-type 早就為手機版備好。
+- 同一個 `identifier`，Android 的 applicationId 把 `-` 換成 `_`，iOS 的 Bundle ID 不變；別自己改成底線，build 會擋。
+- 改了 `identifier` 或 `productName`（Android），或 `[package] name`（iOS），要刪掉 `gen/` 裡對應的資料夾重跑 init；`gen/` 預設不被 Git 排除，手改的檔案要 commit。
 - 先 init，再跑 `tauri icon`，圖示才會寫進 `gen/`。

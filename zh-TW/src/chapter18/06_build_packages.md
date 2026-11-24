@@ -2,11 +2,11 @@
 
 ## 本集目標
 
-認識行動版的三種發佈檔：APK、AAB 與 IPA，知道各用哪個指令打、檔案放在哪裡，再看上架前的簽章與上傳流程。需要付費帳號的部分只說明流程，沒有跑。
+用 `tauri android build` 與 `tauri ios build` 打出 APK、AAB 與 IPA，並知道上架前要簽章。
 
 ## 正文
 
-這一集沿用前幾集的專案：`src-tauri/gen/` 是第 2 集產生的，版本還是範本的 `0.1.0`。沒有要改的 Rust 與 TypeScript，所以沒有程式碼檢查點。簽章是什麼，第 16 章第 5 集講過；憑證與密碼只放 secret，第 17 章第 4 集講過。這集不重講，只看行動版的做法。
+這一集接著第 5 集的專案：第 11 章的待辦清單，加上照第 2 集產生的 `src-tauri/gen/`，版本還是 `0.1.0`。沒有要改的 Rust 與 TypeScript，所以沒有程式碼檢查點。簽章是什麼，第 16 章第 5 集講過；憑證與密碼只放 secret，第 17 章第 4 集講過。這集不重講，只看手機版的做法。
 
 ### 三種檔案
 
@@ -31,7 +31,7 @@ npm run tauri android build -- --aab --target aarch64 --target armv7
 - `--target`：只編指定的架構，可以重複寫。
 - `--split-per-abi`：每種架構各一個檔，不合成 universal（ABI 先當成 CPU 架構）。官方文件說它只適合測試或商店外發佈，Google Play 會自己處理架構。
 
-CLI 先跑 `beforeBuildCommand`（`npm run build`），再叫 `gen/android` 裡的 Gradle 專案打包。Gradle 是 Android 專案用的建置工具。
+CLI 先跑 `beforeBuildCommand`（`npm run build`），再叫 `gen/android` 裡的 Gradle（第 2 集說過）去打包。
 
 ### 檔案在哪
 
@@ -50,9 +50,9 @@ CLI 打完會印出路徑。APK 的檔名，cargo-mobile2（CLI 用的函式庫�
 Android 要一個整數的 `versionCode`，預設由 `version` 算出：`主 * 1000000 + 次 * 1000 + 修`，`0.1.0` 就是 `1000`。想自己管，有兩個設定：
 
 - `bundle.android.versionCode`：直接指定。
-- `bundle.android.autoIncrementVersionCode`：設成 `true`，每次非 dev 的建置加 1。計數存在 `gen/android/app/tauri.properties`，要讓它進 Git，得先從 `gen/android/app/.gitignore` 拿掉 `/tauri.properties`。
+- `bundle.android.autoIncrementVersionCode`：設成 `true`，每次非 dev 的建置加 1。
 
-iOS 的 `CFBundleVersion` 預設也取自 `version`，用 `bundle.iOS.bundleVersion` 改。最低系統版本：Android 是 `bundle.android.minSdkVersion`，預設 24（Android 7.0）；iOS 是 `bundle.iOS.minimumSystemVersion`，預設 `15.0`。
+iOS 的 `CFBundleVersion` 預設也取自 `version`，用 `bundle.iOS.bundleVersion` 改。
 
 ### Android 簽章
 
@@ -100,7 +100,7 @@ signingConfigs {
 
 之後的 release 建置會自動簽章。Google Play 另外還有一層 Play App Signing，這集不展開。
 
-要上傳 Google Play，得先有 Play Console 的開發者帳號，在網站上登錄 App。第一次上傳要在網站上手動做，Google 會藉此檢查簽章與套件名稱。Tauri 目前沒有自動建立 release 的功能。
+要上傳 Google Play，得先有 Play Console 的開發者帳號，在網站上登錄 App。第一次上傳要在網站上手動做，Google 會藉此檢查簽章與套件名稱。Google Play 上建立新版本的流程，Tauri 目前沒有自動化的功能。
 
 ### 打包 iOS
 
@@ -110,9 +110,9 @@ signingConfigs {
 npm run tauri ios build -- --export-method app-store-connect
 ```
 
-`--export-method` 有三個值：`app-store-connect` 給 App Store，`release-testing` 給 TestFlight 或 ad hoc 發佈（CLI 的說明這樣寫），`debugging` 給開發用。TestFlight 是 Apple 給測試人員試用的管道。
+`--export-method` 有三個值：`app-store-connect` 給 App Store，`release-testing` 給 TestFlight（CLI 的說明這樣寫），`debugging` 給開發用。依原始碼，`release-testing` 在 Xcode 15.4 以前叫 `ad-hoc`，官方簽章文件的憑證那段還在用舊名。TestFlight 是 Apple 給測試人員試用的管道。
 
-沒加 `--export-method` 的話，CLI 以 `gen/apple/ExportOptions.plist` 為底，範本裡它的 `method` 是 `debugging`。所以沒加旗標打出來的是開發簽章的 IPA，不是上架用的。這是依原始碼推論，沒有實測。另一個旗標 `--build-number <N>`，說明寫它是把 N 接在 app 版本號後面。
+沒加 `--export-method` 的話，CLI 以 `gen/apple/ExportOptions.plist` 為底，範本裡它的 `method` 是 `debugging`。所以沒加旗標打出來的是開發簽章的 IPA，不是上架用的。這是依原始碼推論，沒有實測。另一個旗標 `--build-number <N>`，說明寫它是把 N 接在 App 版本號後面。
 
 ### iOS 簽章與上傳（沒有實測）
 
@@ -136,7 +136,7 @@ xcrun altool --upload-app --type ios --file "src-tauri/gen/apple/build/arm64/$AP
 
 ### 這集實測了什麼
 
-- 沒有跑任何行動裝置的指令：`tauri android build`、`tauri ios build`、`keytool`、`altool`，也沒有改過 Gradle 檔。這台電腦沒有 Android 與 iOS 的開發工具，也沒有 Play Console 與 Apple Developer 帳號。
+- 沒有實測。寫這一章的電腦沒有 Android 與 iOS 的開發工具，也沒有 Play Console 與 Apple Developer 帳號，所以 `tauri android build`、`tauri ios build`、`keytool`、`altool` 都沒有跑過，也沒有改過 Gradle 檔。
 - 內容依據 v2.tauri.app 的 Google Play、App Store、Android 簽章與 iOS 簽章四頁，加上 tauri-cli 2.12.5 與 cargo-mobile2 0.22.5 的原始碼。文件是撰寫時的版本，可能比 2.12 新。
 - 沒有查證：沒簽章的 APK 實際檔名、Google Play 開發者帳號的費用。
 
