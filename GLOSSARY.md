@@ -34,7 +34,7 @@ _Avoid_: 樣板專案、boilerplate
 
 原則：跟 Tauri、Rust、Web 平台 API 名稱相同的詞保留英文；其他翻成台灣用語，第一次出現時附英文。
 
-保留英文：command、plugin、capability、permission、scope、set（permission 的）、WebView、IPC、CSP、ACL、XSS、isolation、hook、label（視窗的）、`AppHandle`、`State`、`Channel`、`invoke`、`emit`、`listen`、payload、DOM、HTML、CSS、TypeScript、JavaScript、npm、Vite、crate、serde、JSON、AppImage、MSI、NSIS、deb、rpm、WiX、WebView2、bootstrapper、APK、AAB、IPA、tray（只在 API 名稱裡，正文寫「系統匣」）、GitHub Actions、tauri-action、workflow、job、step、action（step 套用的現成功能）、runner、matrix、secret、repo、commit、tag、token、release（GitHub 的）、workflow artifact（Actions 一次執行上傳、在那次執行的頁面下載的檔案）。
+保留英文：command、plugin、capability、permission、scope、set（permission 的）、WebView、IPC、CSP、ACL、XSS、isolation、hook、label（視窗的）、`AppHandle`、`State`、`Channel`、`invoke`、`emit`、`listen`、payload、DOM、HTML、CSS、TypeScript、JavaScript、npm、Vite、crate、serde、JSON、AppImage、MSI、NSIS、deb、rpm、WiX、WebView2、bootstrapper、APK、AAB、IPA、tray（只在 API 名稱裡，正文寫「系統匣」）、GitHub Actions、tauri-action、workflow、job、step、action（step 套用的現成功能）、runner、matrix、secret、repo、commit、tag、token、release（GitHub 的）、workflow artifact（Actions 一次執行上傳、在那次執行的頁面下載的檔案）、Android Studio、Xcode、SDK、NDK、Gradle、target（Rust 的編譯目標，例如 `aarch64-linux-android`）、identifier（`tauri.conf.json` 的）、applicationId（Android 的）、Bundle ID（iOS 的，大小寫與空格照這樣寫）。
 
 | 書中用語 | 英文 | 不要用 |
 | --- | --- | --- |
@@ -84,3 +84,4 @@ _Avoid_: 樣板專案、boilerplate
 | 草稿（release 的） | draft | 草案 |
 | 附件（release 的檔案） | asset | 資產 |
 | 一次執行（workflow 的） | run | 運行 |
+| 實機 | physical device | 真機 |

@@ -78,4 +78,4 @@ Tauri 2.12 · Rust 1.99（edition 2024）· Node LTS + npm · 前端 vanilla Typ
 ## 第 18 章 行動裝置
 01 前置需求（Android Studio、Xcode）· 02 `tauri android init` 與 `tauri ios init` · 03 在模擬器與手機上執行 · 04 桌面與行動的差異（`mobile_entry_point`、`cfg(mobile)`、不能用的 plugin）· 05 把第 11 章的待辦清單搬到手機 · 06 打包 APK、AAB 與 IPA
 
-邊界：檢查程式只驗證桌面編譯，行動裝置的指令與輸出靠作者實際跑過再貼。
+邊界：檢查程式只驗證桌面編譯。作者沒有行動裝置的開發工具，行動裝置的指令只說明、不貼輸出，依 v2.tauri.app 與原始碼查證，每集在「這集實測了什麼」寫明沒有跑。
