@@ -2,13 +2,13 @@
 
 ## 本集目標
 
-讀懂一項 permission 由什麼組成，會用 `fs:scope` 與 `allow`、`deny` 限制 plugin 能碰的路徑，知道 deny 一定優先，也會查 plugin 的 permission 到底放行了什麼。
+讀懂一項 permission 由 command 與 scope 組成，會用 `fs:scope` 的 `allow`、`deny` 限制 fs plugin 能碰的路徑，知道 `deny` 一定優先。順帶學會查 plugin 的 permission 放行了什麼，以及 scope 有全域與 command 兩種掛法。
 
 ## 正文
 
 ### permission 的組成
 
-第 7 章已經用過 permission 與 scope，這集把它拆開來看。一項 permission 由兩種東西組成，各自可以有也可以沒有：
+第 7 章已經用過 permission 與 scope，這集把它拆開來看，主線是 scope；查 permission 內容的指令、全域與 command 兩種 scope、`deny-` 開頭的 permission，都是為了用好 scope 補上的。一項 permission 由兩種東西組成，各自可以有也可以沒有：
 
 - `commands`：放行（`allow`）或禁止（`deny`）哪些 command。
 - `scope`：一份 `allow` 清單和一份 `deny` 清單，每一項是一個物件，意思由 plugin 決定。fs 的物件寫 `path`，opener 的 `allow-open-path` 也一樣（第 7 章第 3 集）。
@@ -63,6 +63,8 @@ import {
   writeTextFile,
 } from "@tauri-apps/plugin-fs";
 
+const dir = BaseDirectory.AppData;
+
 const nameEl: HTMLInputElement | null = document.querySelector("#greet-input");
 const msgEl: HTMLElement | null = document.querySelector("#greet-msg");
 if (!nameEl || !msgEl) {
@@ -72,13 +74,9 @@ if (!nameEl || !msgEl) {
 document.querySelector("#greet-form")?.addEventListener("submit", async (event) => {
   event.preventDefault();
   try {
-    await mkdir("", { baseDir: BaseDirectory.AppData, recursive: true });
-    await writeTextFile(nameEl.value, "你好，scope", {
-      baseDir: BaseDirectory.AppData,
-    });
-    const text = await readTextFile(nameEl.value, {
-      baseDir: BaseDirectory.AppData,
-    });
+    await mkdir("", { baseDir: dir, recursive: true });
+    await writeTextFile(nameEl.value, "你好，scope", { baseDir: dir });
+    const text = await readTextFile(nameEl.value, { baseDir: dir });
     msgEl.textContent = `寫好了，讀回來是：${text}`;
   } catch (error) {
     msgEl.textContent = `出錯了：${error}`;
@@ -132,10 +130,10 @@ capability 只放行用得到的三個 command：建資料夾、寫、讀。範�
 
 scope 有兩種掛法，取決於那項 permission 有沒有 command：
 
-- 沒有 command，像 `fs:scope`：全域 scope，plugin 的每個 command 都適用。
+- 沒有 command，像 `fs:scope`：全域 scope，fs plugin 的 command 會去讀它。
 - 有 command，像 `fs:allow-write-text-file`：只有這個 command 適用。物件寫法跟第 7 章第 3 集一樣，`identifier` 加上 `allow`、`deny`，例如 `{ "identifier": "fs:allow-write-text-file", "allow": [{ "path": "$APPDATA/*.txt" }] }` 只限制寫檔，讀檔的範圍不受影響。
 
-兩種 scope 會加在一起：`allow` 取聯集，`deny` 也取聯集，`deny` 一樣優先。例如寫檔的 command scope 只有 `*.txt`，全域 scope 另外給 `*.md`，`note.md` 就寫得進去。
+fs plugin 把兩種 scope 加在一起：`allow` 取聯集，`deny` 也取聯集，`deny` 一樣優先。（這是 fs plugin 的做法，Tauri 只是把兩種分開交給 command；第 4 集自己寫的 command 要合併就得自己來。）例如寫檔的 command scope 只有 `*.txt`，全域 scope 另外給 `*.md`，`note.md` 就寫得進去。
 
 所以放行 `fs:default` 要小心：它除了讀取，還帶了一份全域 scope，涵蓋 App 的各個資料夾。你用 `fs:scope` 縮小範圍，它又幫你放大回去（`deny` 還是有效）。想精確控制，就像這集一樣，不放 `fs:default`，只放需要的 command 與自己寫的 scope。
 
@@ -146,6 +144,6 @@ scope 有兩種掛法，取決於那項 permission 有沒有 command：
 ## 重點整理
 
 - 一項 permission 由 `commands`（放行或禁止哪些 command）和 `scope`（`allow`、`deny` 兩份清單）組成，set 把好幾項打包成一個名字。`src-tauri/gen/schemas/acl-manifests.json` 可以查 plugin 的 permission 裡有什麼。
-- 只放行 command 沒有 scope，路徑一律被擋。用 `fs:scope` 設全域 scope，或把 `allow`、`deny` 寫在某個 command 的 permission 上。兩種 scope 取聯集。
+- 只放行 command 沒有 scope，路徑一律被擋。用 `fs:scope` 設全域 scope，或把 `allow`、`deny` 寫在某個 command 的 permission 上。fs plugin 把兩種 scope 取聯集。
 - `deny` 永遠優先，不管 `allow` 怎麼寫；`deny-<command>` 能直接禁掉一個 command。
 - `fs:default` 帶著 App 資料夾的 scope，要精確控制就別放，只放需要的 command。
