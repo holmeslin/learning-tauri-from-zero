@@ -505,7 +505,7 @@ id    title     done  created_on
 
 ## 重點整理
 
-- `CREATE TABLE IF NOT EXISTS` 只管「沒有表才建」，不會改已經存在的表。結構要改，就得升級舊資料庫，這叫 migration。
+- `CREATE TABLE IF NOT EXISTS` 只管「沒有資料表才建」，不會改已經存在的資料表。結構要改，就得升級舊資料庫，這叫 migration。
 - 版本號存在資料庫自己的 `PRAGMA user_version`（預設 `0`）。把每次結構改動寫成一句 SQL 放進陣列，啟動時讀版本、依序跑還沒跑過的，每句各在一個交易裡跑完再更新版本。
 - 已經發出去的 migration 不能改，只能在後面加；資料庫版本比程式新時要拒絕，不去寫它。
 - `ALTER TABLE ... ADD COLUMN` 加的欄位，舊的列是 `NULL`：Rust 用 `Option<T>` 接，前端是 `T | null`。

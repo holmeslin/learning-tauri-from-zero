@@ -37,7 +37,7 @@ rusqlite 在手機上有沒有已知的問題，我們也沒有查證。
 
 `setup` 用 `app.path().app_data_dir()` 加上 `todos.db`，開檔前先 `create_dir_all`（第 11 章第 2 集）。這個函式兩個手機平台都有實作：
 
-- Android：App 自己的私有資料目錄（原始碼呼叫的是 Android 的 `dataDir`）。
+- Android：App 自己的私有資料夾（原始碼呼叫的是 Android 的 `dataDir`）。
 - iOS：跟 macOS 同一套算法（`dirs` crate），也就是 `$HOME/Library/Application Support/tw.example.tauri-app`。
 
 手機與桌面各有一份 `todos.db`，兩邊的待辦不會互通。`identifier` 還是不要動，原因跟第 11 章第 7 集一樣；它在手機上怎麼變成套件名稱，第 2 集說過。

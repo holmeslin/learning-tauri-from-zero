@@ -54,7 +54,7 @@ npm run tauri icon app-icon.svg
 - `icon.icns` 給 macOS，`icon.ico` 給 Windows，一個檔案裡收了好幾種尺寸。
 - `32x32.png`、`64x64.png`、`128x128.png`、`128x128@2x.png`（256 像素）、`icon.png`（512 像素）是 PNG，Linux 用。
 - `StoreLogo.png` 與 `Square*Logo.png` 是 Windows 商店（Microsoft Store）用的尺寸。
-- `ios/` 與 `android/` 是行動版用的，第 18 章才會碰到。桌面 App 用不到，不想看到可以刪掉。
+- `ios/` 與 `android/` 是手機版用的，第 18 章才會碰到。桌面 App 用不到，不想看到可以刪掉。
 
 跟範本原本的比，多了 `64x64.png`、`ios/` 與 `android/`，其他檔名都一樣。
 
@@ -108,6 +108,6 @@ shasum src-tauri/icons/icon.icns src-tauri/target/release/bundle/macos/tauri-app
 ## 重點整理
 
 - 各平台吃的圖示格式不同，`npm run tauri icon <來源圖>` 從一張正方形的 PNG 或 SVG 產生全部，建議 1024×1024。
-- 輸出寫進 `src-tauri/icons/`，同名檔案直接覆蓋；另外會多出行動版用的 `ios/` 與 `android/`。
+- 輸出寫進 `src-tauri/icons/`，同名檔案直接覆蓋；另外會多出手機版用的 `ios/` 與 `android/`。
 - 打包用哪些圖示由 `bundle.icon` 決定，`tauri icon` 不會改它；檔名沒變，清單就不用動。
 - 來源圖不是正方形，要加 `--fit contain` 或 `--fit cover`。

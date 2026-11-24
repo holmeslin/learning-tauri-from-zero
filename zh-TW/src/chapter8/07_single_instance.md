@@ -93,7 +93,7 @@ App 開著的時候，另開一個終端機，在專案根目錄直接執行同�
 ### 不同平台
 
 - Linux 要有 D-Bus 才能用，D-Bus 的名稱預設也是 identifier。
-- 這一集只在 macOS 實測，Windows 與 Linux 依 plugin 的原始碼與文件整理。
+- 這一集只在 macOS 實測，Windows 與 Linux 依 Tauri 文件與原始碼整理。
 
 ## 重點整理
 

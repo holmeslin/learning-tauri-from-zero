@@ -28,7 +28,7 @@
 
 ### 在 Rust 讀資源檔
 
-資源檔裝好之後在哪裡，每個平台、`tauri dev` 與打包後都不一樣，所以跟第 7 章第 6 集的 app 資料夾一樣，要用函式問。`app.path()` 的 `resolve` 要兩個參數：相對路徑，以及從哪個資料夾算起的 `BaseDirectory`（第 7 章第 5 集在 JavaScript 見過 `BaseDirectory.AppData`，Rust 這邊是 `tauri::path::BaseDirectory`）。選 `Resource`，就是資源資料夾，也就是 `app.path().resource_dir()` 回傳的那個。我們在 `setup`（第 4 章第 4 集）裡讀 `greeting.txt` 並印出來，`greet` 照範本留著：
+資源檔裝好之後在哪裡，每個平台、`tauri dev` 與打包後都不一樣，所以跟第 7 章第 6 集的 App 資料夾一樣，要用函式問。`app.path()` 的 `resolve` 要兩個參數：相對路徑，以及從哪個資料夾算起的 `BaseDirectory`（第 7 章第 5 集在 JavaScript 見過 `BaseDirectory.AppData`，Rust 這邊是 `tauri::path::BaseDirectory`）。選 `Resource`，就是資源資料夾，也就是 `app.path().resource_dir()` 回傳的那個。我們在 `setup`（第 4 章第 4 集）裡讀 `greeting.txt` 並印出來，`greet` 照範本留著：
 
 `src-tauri/src/lib.rs`（加上 `setup`）：
 

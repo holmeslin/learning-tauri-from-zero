@@ -105,7 +105,7 @@ listen("new-note", () => {
      Running `target/debug/tauri-app`
 ```
 
-選「檔案 > 新增筆記」，清單多一列「筆記 1」；按 Cmd+N（其他平台是 Ctrl+N），也多一列。快捷鍵跟用滑鼠選是同一個事件。選 app 選單裡的「結束」，或按 Cmd+Q，視窗關閉，`npm run tauri dev` 也跟著結束。
+選「檔案 > 新增筆記」，清單多一列「筆記 1」；按 Cmd+N（其他平台是 Ctrl+N），也多一列。快捷鍵跟用滑鼠選是同一個事件。選 App 選單裡的「結束」，或按 Cmd+Q，視窗關閉，`npm run tauri dev` 也跟著結束。
 
 ### id 對不上會怎樣
 
