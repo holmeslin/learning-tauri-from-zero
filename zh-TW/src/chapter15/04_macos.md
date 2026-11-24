@@ -48,7 +48,7 @@ Failed running AppleScript
 
 我們遇到的是 `-1712`，Finder 一直沒回應，等到逾時。使用者明確按了不允許的話，錯誤碼是 `-1743`，依原始碼，Tauri 會多給一行提示，要你到「系統設定」的「隱私權與安全性」，在「自動化」裡放行。
 
-沒有 Finder 可以用的環境，像沒人在螢幕前的 CI 機器，可以設環境變數 `CI=true`。Tauri 看到它就略過 AppleScript，`.dmg` 照樣做得出來，只是視窗沒有排版：沒有背景圖，圖示的位置也是系統預設的。GitHub Actions 預設就有這個變數，第 17 章會碰到。
+沒有 Finder 可以用的環境，像沒人在螢幕前的 CI 機器，可以設環境變數 `CI=true`。Tauri 看到它就略過 AppleScript，`.dmg` 照樣做得出來，只是視窗沒有排版：沒有背景圖，圖示的位置也是系統預設的。GitHub Actions 預設就有這個變數；不過第 17 章用的 tauri-action 會另外設定，讓 Tauri 不理它，runner 上照樣用 AppleScript 排版，第 17 章第 1 集會看到。
 
 `CI=true npm run tauri build -- --bundles app,dmg` 的輸出（節錄）：
 
