@@ -40,7 +40,7 @@ npm run tauri add dialog
 
 它做了四件事。`src-tauri/Cargo.toml` 多一行 `tauri-plugin-dialog = "2"`，`package.json` 多一行 `"@tauri-apps/plugin-dialog": "^2.8.4"`。`lib.rs` 多一行 `.plugin(tauri_plugin_dialog::init())`，`capabilities/default.json` 多一項 `dialog:default`。
 
-後兩個檔案現在是這樣。`lib.rs` 沿用前幾章的寫法，沒有 `greet`。CLI 會把 `default.json` 的 `"windows"` 展開成多行，內容沒變，本書一律寫成範本原本的一行：
+後兩個檔案現在是這樣。`lib.rs` 少了範本的 `greet` 與 `.invoke_handler(...)`：`tauri add` 不會動它們，是這一章大多數集用不到自己的 command，我們先拿掉的；第 6、10 集要寫 command 時，會把 `.invoke_handler(...)` 加回來。CLI 會把 `default.json` 的 `"windows"` 展開成多行，內容沒變，本書一律寫成範本原本的一行：
 
 `src-tauri/src/lib.rs`：
 
