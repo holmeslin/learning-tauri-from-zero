@@ -31,7 +31,7 @@ Tauri 2.12 · Rust 1.99（edition 2024）· Node LTS + npm · 前端 vanilla Typ
 01 視窗設定（大小、標題、可否縮放）· 02 從前端操作視窗（`getCurrentWindow`）· 03 從 Rust 開新視窗（`WebviewWindowBuilder`）· 04 多個視窗與 label · 05 無邊框與自訂標題列 · 06 視窗事件（關閉前確認）
 
 ## 第 7 章 Plugin
-01 plugin 是什麼、怎麼加（`npm run tauri add`）· 02 permission 初探（`capabilities/default.json`）· 03 opener：開網址與檔案 · 04 dialog：開檔對話框與訊息框 · 05 fs：讀寫檔案與 scope · 06 路徑：app 的資料目錄 · 07 store：儲存設定 · 08 notification · 09 clipboard-manager · 10 log
+01 plugin 是什麼、怎麼加（`npm run tauri add`）· 02 permission 初探（`capabilities/default.json`）· 03 opener：開網址與檔案 · 04 dialog：開檔對話框與訊息框 · 05 fs：讀寫檔案與 scope · 06 路徑：App 的資料夾 · 07 store：儲存設定 · 08 notification · 09 clipboard-manager · 10 log
 
 邊界：寫本章之前，先把本書用到的 plugin（Rust crate 與 npm 套件）加進 `tools/checkcode/template`，鎖住版本。permission 只講「沒加會被擋、加了就能用」，完整的權限模型在第 14 章。
 
@@ -46,7 +46,7 @@ Tauri 2.12 · Rust 1.99（edition 2024）· Node LTS + npm · 前端 vanilla Typ
 每章是一個完整的小專案，章內一集只做一個零件。順序由簡單到複雜。
 
 ## 第 10 章 實戰：筆記 App
-01 規劃畫面與資料 · 02 筆記清單 · 03 新增與編輯 · 04 存到 app 資料目錄（fs）· 05 匯入、匯出（dialog）· 06 錯誤處理與提示 · 07 收尾
+01 規劃畫面與資料 · 02 筆記清單 · 03 新增與編輯 · 04 存到 App 資料夾（fs）· 05 匯入、匯出（dialog）· 06 錯誤處理與提示 · 07 收尾
 
 ## 第 11 章 實戰：SQLite 待辦清單
 01 規劃資料表 · 02 rusqlite（`bundled`）與 `State<Mutex<Connection>>` · 03 新增與列出 · 04 完成與刪除 · 05 用事件通知畫面更新 · 06 資料庫結構升級（migration）· 07 收尾
@@ -57,7 +57,7 @@ Tauri 2.12 · Rust 1.99（edition 2024）· Node LTS + npm · 前端 vanilla Typ
 01 規劃 · 02 Rust 端轉 HTML（pulldown-cmark）· 03 即時預覽 · 04 開檔與存檔 · 05 自動儲存 · 06 未儲存就關閉的提醒 · 07 檔案關聯（雙擊 `.md` 開啟）· 08 收尾
 
 ## 第 13 章 實戰：系統匣小工具
-01 規劃 · 02 沒有主視窗的 app · 03 系統匣選單 · 04 全域快捷鍵叫出視窗 · 05 設定視窗（store）· 06 開機自動啟動（autostart）· 07 收尾
+01 規劃 · 02 沒有主視窗的 App · 03 系統匣選單 · 04 全域快捷鍵叫出視窗 · 05 設定視窗（store）· 06 開機自動啟動（autostart）· 07 收尾
 
 # 第三部 上線
 
@@ -68,7 +68,7 @@ Tauri 2.12 · Rust 1.99（edition 2024）· Node LTS + npm · 前端 vanilla Typ
 01 `npm run tauri build`（含 `--debug`，以及用 `devtools` feature 在 release 版打開開發者工具）· 02 圖示（`tauri icon`）· 03 bundle 設定與版本號 · 04 macOS：`.app` 與 `.dmg` · 05 Windows：MSI 與 NSIS · 06 Linux：AppImage、deb、rpm · 07 一起打包資源檔
 
 ## 第 16 章 自動更新與程式碼簽章
-01 updater plugin · 02 產生簽章金鑰 · 03 更新資訊檔 `latest.json` · 04 在 app 裡檢查與安裝更新 · 05 macOS 簽章與公證 · 06 Windows 簽章
+01 updater plugin · 02 產生簽章金鑰 · 03 更新資訊檔 `latest.json` · 04 在 App 裡檢查與安裝更新 · 05 macOS 簽章與公證 · 06 Windows 簽章
 
 邊界：簽章需要付費憑證的部分（Apple Developer、Windows 憑證）只說明流程，範例不依賴真的憑證。
 

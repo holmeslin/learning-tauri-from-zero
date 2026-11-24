@@ -105,10 +105,10 @@ pub fn run() {
 
 ### macOS 與 Windows、Linux 不一樣
 
-- macOS：選單屬於整個 App，顯示在螢幕最上方。第一個子選單固定是 app 選單，macOS 會把它的標題換成 App 的名稱（`productName`），不管 `SubmenuBuilder::new` 寫了什麼。範例寫成 `"tauri-app"`，讓其他平台看到的也一樣。
+- macOS：選單屬於整個 App，顯示在螢幕最上方。第一個子選單固定是 App 選單，macOS 會把它的標題換成 App 的名稱（`productName`），不管 `SubmenuBuilder::new` 寫了什麼。範例寫成 `"tauri-app"`，讓其他平台看到的也一樣。
 - Windows、Linux：選單屬於視窗，顯示在視窗上緣。`Builder::menu` 的選單會套用到每一個沒有自己選單的視窗。
 
-沒呼叫 `Builder::menu` 的時候，macOS 有 Tauri 準備好的預設選單（app、File、Edit、View、Window、Help），Windows 與 Linux 沒有選單。一呼叫 `.menu(...)`，預設的就整份被取代。
+沒呼叫 `Builder::menu` 的時候，macOS 有 Tauri 準備好的預設選單（App、File、Edit、View、Window、Help），Windows 與 Linux 沒有選單。一呼叫 `.menu(...)`，預設的就整份被取代。
 
 預設項目也不是每個平台都有：`quit`、`close_window` 在 Linux 不支援，`undo`、`redo` 在 Windows 與 Linux 不支援。
 
@@ -124,5 +124,5 @@ Linux 上「編輯」的四項也要開 `tauri` 的 `linux-libxdo` feature 才�
 
 - 選單由 `Menu`、`Submenu`、項目三層組成；用 `tauri::Builder::menu(|app| ...)` 在 App 建好時給出整份選單。
 - 自訂項目用 `MenuItem::with_id(app, id, 文字, 可不可用, 快捷鍵)`，id 留給下一集辨識；預設項目（`.copy()`、`.quit()` 等）預設是英文，要中文用 `_with_text`。
-- macOS 的選單屬於整個 App，第一個子選單是 app 選單；Windows、Linux 的選單屬於視窗。沒設選單時只有 macOS 有預設選單。
+- macOS 的選單屬於整個 App，第一個子選單是 App 選單；Windows、Linux 的選單屬於視窗。沒設選單時只有 macOS 有預設選單。
 - `.menu(...)` 會整份取代預設選單；在 macOS，沒有「編輯」選單，輸入框就不能用 Cmd+A、Cmd+V 這類快捷鍵。

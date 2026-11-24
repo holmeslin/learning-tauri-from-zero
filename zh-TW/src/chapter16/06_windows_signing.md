@@ -49,7 +49,7 @@ Tauri 做的事單純得多：打包時，替每個該簽的檔案呼叫一次�
 
 不是只有最後的安裝檔。從原始碼數得出來的有：
 
-- **app 的執行檔**：每一種安裝檔各簽一次。原因是 bundler 會先改寫執行檔、寫進打包類型，改過的檔案要重簽，所以簽章排在改寫之後。專案裡其他的執行檔目標，則在打包前就簽好。
+- **App 的執行檔**：每一種安裝檔各簽一次。原因是 bundler 會先改寫執行檔、寫進打包類型，改過的檔案要重簽，所以簽章排在改寫之後。專案裡其他的執行檔目標，則在打包前就簽好。
 - **`bundle.resources` 裡的 `.exe` 與 `.dll`**（第 15 章第 7 集）：只有這兩種副檔名才簽。在 Windows 上，bundler 先用 `signtool verify /pa` 檢查，已經簽過的就跳過。
 - **安裝檔本身**：`.msi` 與 `-setup.exe`。這就是第 15 章第 5 集預告的安裝檔簽章。
 - **NSIS 的 uninstaller**：uninstaller 是 `makensis` 打包時才做出來的，所以 bundler 把整條簽章指令（路徑的位置先寫成 `%1`）交給 `makensis` 的 `!uninstfinalize`，由 NSIS 在做好之後執行。
@@ -79,7 +79,7 @@ Tauri 做的事單純得多：打包時，替每個該簽的檔案呼叫一次�
 - 每個要簽的檔案，各執行一次這個指令。內容剛好是 `%1` 的那個參數，換成檔案路徑；其他參數照原樣傳過去，只有一個例外：如果參數是一個已經存在的相對路徑，會被換成絕對路徑，因為 NSIS 簽 uninstaller 時的工作目錄不一樣。
 - `signCommand` 也可以寫成一個字串，如 `"sign-cli --arg1 --arg2 %1"`。Tauri 只用單一空格去切，所以參數裡有空白就得用上面的物件寫法。
 - 兩種都設的話，`signCommand` 優先，指紋、`digestAlgorithm`、`timestampUrl`、`tsp` 不會被用到。
-- 指令結束碼不是 0，打包就中斷，錯誤訊息帶著指令的輸出。
+- 指令結束代碼不是 0，打包就中斷，錯誤訊息帶著指令的輸出。
 - `args` 寫在 `tauri.conf.json`，那個檔案通常會進版本控制，密碼別寫進去。
 
 ### 在 Windows 以外的機器上
@@ -102,6 +102,6 @@ Tauri 做的事單純得多：打包時，替每個該簽的檔案呼叫一次�
 
 - `bundle.windows.certificateThumbprint` 或 `signCommand` 至少設一個，打包才會簽章；兩個都沒設就不簽，兩個都設則 `signCommand` 優先。
 - 預設用 Windows SDK 的 `signtool sign`：`digestAlgorithm` 預設 `sha256`，`timestampUrl` 選用，`tsp` 決定用 `/t` 還是 `/tr`。
-- 簽的不只安裝檔：app 執行檔、資源檔裡的 `.exe` 與 `.dll`、NSIS 的 uninstaller、bundler 帶的 DLL 都會簽；`--no-sign` 全部跳過，連更新檔簽章也一起。
-- `signCommand` 取代 `signtool`，`%1` 是檔案路徑，結束碼不是 0 就中斷；在非 Windows 上只設指紋，什麼都不會簽。
+- 簽的不只安裝檔：App 執行檔、資源檔裡的 `.exe` 與 `.dll`、NSIS 的 uninstaller、bundler 帶的 DLL 都會簽；`--no-sign` 全部跳過，連更新檔簽章也一起。
+- `signCommand` 取代 `signtool`，`%1` 是檔案路徑，結束代碼不是 0 就中斷；在非 Windows 上只設指紋，什麼都不會簽。
 - 這一集沒在 Windows 上跑過，付費憑證的部分只說流程。

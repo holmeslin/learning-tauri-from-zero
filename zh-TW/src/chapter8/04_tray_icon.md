@@ -8,10 +8,10 @@
 
 ### 系統匣與 `tray-icon`
 
-系統匣是螢幕角落放小圖示的地方：macOS 在選單列右側，Windows 在工作列右下角，Linux 在面板上。有了圖示，使用者不用開著視窗，也能找到這個 App。它的 API 在 `tauri::tray` 底下，但這個模組是 `tauri` crate 的選用功能，預設沒開。打開 `src-tauri/Cargo.toml`，把 `[dependencies]` 裡 `tauri` 那一行改成：
+系統匣是螢幕角落放小圖示的地方：macOS 在選單列右側，Windows 在工作列右下角，Linux 在面板上。有了圖示，使用者不用開著視窗，也能找到這個 App。它的 API 在 `tauri::tray` 底下，但這個模組是 `tauri` crate 的選用功能，預設沒開。在專案根目錄執行，`src-tauri/Cargo.toml` 裡 `tauri` 那一行就會變成 `tauri = { version = "2", features = ["tray-icon"] }`：
 
-```toml,ignore
-tauri = { version = "2", features = ["tray-icon"] }
+```bash
+cargo add --manifest-path src-tauri/Cargo.toml tauri@2 --features tray-icon
 ```
 
 沒開的話，`use tauri::tray::...` 編譯不過。我們另外拿掉這個 feature 實際編譯過，錯誤是 ``error[E0432]: unresolved import `tauri::tray` ``，編譯器還會指出 `tray` 模組被 `tray-icon` feature 擋住了。

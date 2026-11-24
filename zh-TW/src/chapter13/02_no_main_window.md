@@ -1,4 +1,4 @@
-# 沒有主視窗的 app
+# 沒有主視窗的 App
 
 ## 本集目標
 
@@ -79,10 +79,10 @@ macOS 的 App 預設會在 Dock 放一個圖示，選單列左邊也有 App 自�
 
 ### 用系統匣圖示叫回視窗
 
-系統匣要先在 `Cargo.toml` 開啟 `tauri` 的 `tray-icon` feature，沒開的話 `use tauri::tray::...` 編譯不過（第 8 章第 4 集）。專案還沒開的話，把 `[dependencies]` 裡 `tauri` 那一行改成：
+系統匣要先在 `Cargo.toml` 開啟 `tauri` 的 `tray-icon` feature，沒開的話 `use tauri::tray::...` 編譯不過（第 8 章第 4 集）。專案還沒開的話，在專案根目錄執行：
 
-```toml,ignore
-tauri = { version = "2", features = ["tray-icon"] }
+```bash
+cargo add --manifest-path src-tauri/Cargo.toml tauri@2 --features tray-icon
 ```
 
 建圖示跟第 8 章第 4 集一樣：只處理左鍵放開（`Up`），因為一次點擊會有 `Down` 與 `Up` 兩個事件。左鍵點下去，叫出便條視窗。叫出視窗的 `show_main_window`，也是第 8 章第 4 集那三個一起用：`show()`、`unminimize()`、`set_focus()`。這些操作都可能失敗，但事件處理函式沒地方回傳 `Err`，所以它們回傳 `tauri::Result<()>`，再交給 `log_error` 印到終端機就好。

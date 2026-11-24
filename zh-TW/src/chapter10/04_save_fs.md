@@ -1,8 +1,8 @@
-# 存到 app 資料目錄（fs）
+# 存到 App 資料夾（fs）
 
 ## 本集目標
 
-用 fs plugin 把筆記存成 app 資料夾裡的 `notes.json`，啟動時讀回來，關掉再開筆記還在。
+用 fs plugin 把筆記存成 App 資料夾裡的 `notes.json`，啟動時讀回來，關掉再開筆記還在。
 
 ## 正文
 
@@ -14,7 +14,7 @@
 npm run tauri add fs
 ```
 
-`lib.rs` 多一行註冊；這個專案不寫自己的 command，所以範本的 `greet` 與 `invoke_handler` 也一併拿掉。`capabilities/default.json` 多一項 `fs:default`。它只放行讀取與建立 app 資料夾，存檔要寫入，所以再加上第 7 章第 5 集挑的 `fs:allow-appdata-write-recursive`：
+`lib.rs` 多一行註冊；這個專案不寫自己的 command，所以範本的 `greet` 與 `invoke_handler` 也一併拿掉。`capabilities/default.json` 多一項 `fs:default`。它只放行讀取與建立 App 資料夾，存檔要寫入，所以再加上第 7 章第 5 集挑的 `fs:allow-appdata-write-recursive`：
 
 `src-tauri/src/lib.rs`：
 
@@ -86,7 +86,7 @@ export async function saveNotes(notes: Note[]): Promise<void> {
 
 - `exists` 是 fs plugin 的另一個函式，回傳檔案在不在。第一次執行時 `notes.json` 還不存在，這時回傳空陣列，不是錯誤。`fs:default` 已經放行它。
 - `JSON.parse(文字)` 把 JSON 文字轉回 JavaScript 的值，`JSON.stringify(值, null, 2)` 反過來，把值轉成 JSON 文字；後面兩個參數照抄，意思是用 2 個空格縮排，用編輯器開啟檔案時才好讀。`JSON.parse` 不檢查形狀，回傳的型別是 `any`，所以直接當 `Note[]` 回傳也能通過型別檢查。檔案內容對不對，第 6 集再檢查。
-- 寫檔前的 `mkdir` 跟第 7 章第 5 集一樣不能省：app 資料夾第一次寫入時還不存在。
+- 寫檔前的 `mkdir` 跟第 7 章第 5 集一樣不能省：App 資料夾第一次寫入時還不存在。
 
 ### 載入與存檔
 
@@ -276,7 +276,7 @@ cat "$HOME/Library/Application Support/tw.example.tauri-app/notes.json"
 
 ## 重點整理
 
-- 裝 fs plugin 並放行 `fs:default` 與 `fs:allow-appdata-write-recursive`，筆記才讀得到、寫得進 app 資料夾。
+- 裝 fs plugin 並放行 `fs:default` 與 `fs:allow-appdata-write-recursive`，筆記才讀得到、寫得進 App 資料夾。
 - 讀寫檔案的函式放在 `notes.ts`：`loadNotes` 先用 `exists` 判斷檔案在不在，不在就回傳空陣列；`saveNotes` 先 `mkdir`，再把 `JSON.stringify` 的結果寫進 `notes.json`。
 - `JSON.parse` 把文字轉回值，但不檢查形狀。
 - `main.ts` 啟動時 `await loadNotes()`，資料每次變動就呼叫 `saveNotes(notes)`。

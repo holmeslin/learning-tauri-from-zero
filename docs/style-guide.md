@@ -72,6 +72,7 @@
 - 終端機指令用 ```` ```bash ````。
 - `yaml` 區塊（像 `.github/workflows/release.yml`）不用加 `ignore`。有路徑標籤的 yaml 是完整檔案，checkcode 會把它放進專案，但不檢查內容。貼 CI 的 log 時，標籤不要用上面會驗證的指令名稱（像「`npm run tauri build` 的輸出」），改寫成「某個 step 的 log」。
 - 不使用 mdBook 的隱藏行，程式碼全部給讀者看。
+- 在專案裡加 crate 或打開 crate 的 feature，一律在專案根目錄用 `cargo add --manifest-path src-tauri/Cargo.toml <crate>@<版本> [--features …]`，版本寫到跟範本一致的那一層（`thiserror@2`、`log@0.4`、`rusqlite@0.43`、`tauri@2`）；有桌面限定時加 `--target`。不手改 `Cargo.toml`，也不在 `src-tauri/` 底下執行不帶版本的 `cargo add`。（統一前的寫法：`cargo add --manifest-path` 帶版本 7 集共 8 條指令、手改 `Cargo.toml` 2 集、`cargo add log` 1 集。）第 14 章第 6 集與第 15 章第 1 集貼完整 `Cargo.toml`，是下面的例外。
 - 用到範本沒有的 crate 或 npm 套件時，先把它加進 `tools/checkcode/template`（`Cargo.toml`、`package.json`，並更新 `Cargo.lock`、`package-lock.json`），書中的版本要跟範本一致。
 - 例外：有些 feature 不能預先加進範本，例如 `tauri` 與 `tauri-build` 的 `isolation`（`tauri-build` 要求 `Cargo.toml` 的 feature 跟 `tauri.conf.json` 的設定一致，範本打開了，其他集就會失敗）。這種集要用路徑標籤貼出完整的 `src-tauri/Cargo.toml`，`tools/checkcode` 看到這個檔案，就不加 `--locked`。目前是第 14 章第 6 集（`isolation`）與第 15 章第 1 集（`devtools`）。這個例外有三件事：
   - **基準**：貼的是剛建好的專案那份 `Cargo.toml`（`tauri`、`tauri-build`、`tauri-plugin-opener`、`serde`、`serde_json`），只改那一集要講的 feature。
@@ -84,4 +85,4 @@
 
 - Rust 1.99、edition 2024（`rust-toolchain.toml`）。
 - Tauri 2.12（`@tauri-apps/cli`、`@tauri-apps/api`、`tauri` crate），版本以 `tools/checkcode/template` 的 lock 檔為準。
-- Node.js 用目前的 LTS，套件管理一律 npm。
+- Node.js 用目前的 LTS，套件管理一律 npm。書中寫的最低版本，以 `tools/checkcode/template/package-lock.json` 裡最嚴的 `engines` 為準：目前是 jsdom 31 的 `^22.22.2 || ^24.15.0 || >=26.0.0`，所以寫「Node.js 22.22.2、24.15.0 或 26 以上」（第 1 章第 2 集、第 9 章第 3 集、第 17 章第 1 集）。範本的套件升級後要重查。

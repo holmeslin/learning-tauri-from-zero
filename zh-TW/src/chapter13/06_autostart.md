@@ -524,7 +524,7 @@ cat ~/Library/LaunchAgents/tauri-app.plist
 
 ### 不同平台
 
-- Windows 與 Linux 的位置見上面「登入後啟動，各平台做法不同」，指令輸出與畫面依 plugin 的原始碼與文件整理，沒有實測。
+- Windows 與 Linux 的位置見上面「登入後啟動，各平台做法不同」，指令輸出與畫面依 Tauri 文件與原始碼整理，沒有實測。
 - 這一集只在 macOS 實測。
 
 ## 重點整理

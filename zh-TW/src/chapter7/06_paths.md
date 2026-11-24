@@ -1,16 +1,16 @@
-# 路徑：app 的資料目錄
+# 路徑：App 的資料夾
 
 ## 本集目標
 
-知道 app 的資料該放在哪，會用 `appDataDir()` 與 `join()`（前端）、`app.path().app_data_dir()`（Rust）拿到這個資料夾的路徑，也看懂第 5 集的 `baseDir` 指到哪裡。
+知道 App 的資料該放在哪，會用 `appDataDir()` 與 `join()`（前端）、`app.path().app_data_dir()`（Rust）拿到這個資料夾的路徑，也看懂第 5 集的 `baseDir` 指到哪裡。
 
 ## 正文
 
-### 每個 app 一個資料夾
+### 每個 App 一個資料夾
 
-app 要存檔，不能把檔案亂丟。每個作業系統都有慣例的位置，Tauri 在這些位置底下，用 `tauri.conf.json` 的 `identifier`（第 1 章第 6 集）當資料夾名字，替每個 app 分出專屬的 app 資料夾。不同 app 的 identifier 不同，檔案就不會互相覆蓋。反過來說，identifier 改了，資料夾也跟著換，舊資料就找不到了。
+App 要存檔，不能把檔案亂丟。每個作業系統都有慣例的位置，Tauri 在這些位置底下，用 `tauri.conf.json` 的 `identifier`（第 1 章第 6 集）當資料夾名字，替每個 App 分出專屬的 App 資料夾。不同 App 的 identifier 不同，檔案就不會互相覆蓋。反過來說，identifier 改了，資料夾也跟著換，舊資料就找不到了。
 
-app 資料夾依用途分成幾種。這一集看兩種：`AppData` 放使用者的資料（筆記、設定），`AppLog` 放日誌（第 10 集會用到）。
+App 資料夾依用途分成幾種。這一集看兩種：`AppData` 放使用者的資料（筆記、設定），`AppLog` 放日誌（第 10 集會用到）。
 
 ### 前端與 Rust 怎麼拿路徑
 
@@ -130,7 +130,7 @@ cat "$HOME/Library/Application Support/tw.example.tauri-app/hello.txt"
 
 ## 重點整理
 
-- 每個 app 在系統慣例的位置底下，有一個用 `identifier` 命名的資料夾；使用者資料放 `AppData`，日誌放 `AppLog`。
+- 每個 App 在系統慣例的位置底下，有一個用 `identifier` 命名的資料夾；使用者資料放 `AppData`，日誌放 `AppLog`。
 - 前端用 `@tauri-apps/api/path` 的 `appDataDir()`、`join()`；Rust 用 `app.path().app_data_dir()`。它們是核心 API，不是 plugin。
 - 這些函式只算路徑，不建資料夾；要寫檔，先建資料夾。
 - `baseDir: BaseDirectory.AppData` 就是從 `appDataDir()` 算起；macOS 上是 `~/Library/Application Support/<identifier>`。

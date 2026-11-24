@@ -55,7 +55,7 @@ jobs:
 
 - `on: workflow_dispatch`：只在你手動叫它的時候跑。之後會長成發佈用的，所以檔名先叫 `release.yml`。
 - `actions/checkout`：把 repo 的內容抓到 runner 上，不然機器上什麼都沒有。
-- `actions/setup-node`：裝 Node.js。Vite 8 要 Node 20.19 以上或 22.12 以上，`lts/*` 取最新的 LTS。
+- `actions/setup-node`：裝 Node.js。專案的 vitest 5.1 與 jsdom 31 要 Node 22.22.2、24.15.0 或 26 以上（第 9 章），`lts/*` 取目前的 LTS。
 - `npm ci`：照 `package-lock.json` 裝前端相依套件。tauri-action 不會替你做這件事。
 - `tauri-apps/tauri-action@v1`：本集的主角，下面說明。
 - `@v7`、`@v1` 是 tag，跟著那個版本系列走；log 會記下它實際抓到哪個 commit。
